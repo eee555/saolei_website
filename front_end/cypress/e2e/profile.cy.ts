@@ -240,9 +240,11 @@ describe('Personal Profile', () => {
     });
 
     it('Navigate from homepage', () => {
+        cy.intercept({ method: 'GET', pathname: '/api/video/newest_queue' }).as('newestQueue');
         cy.visit('/');
+        cy.wait('@newestQueue').its('response.statusCode').should('eq', 200);
 
-        cy.get('#pane-newest').should('be.visible').contains(`a[href="#/player/${USER_ID}"]`, USERNAME).click();
+        cy.get('#pane-newest').should('be.visible').find(`a[href="#/player/${USER_ID}"]`).first().should('be.visible').click();
 
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/top`);
 

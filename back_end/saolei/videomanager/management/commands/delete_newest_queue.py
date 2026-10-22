@@ -4,7 +4,7 @@ from videomanager.services import delete_newest_queue
 
 
 class Command(BaseCommand):
-    help = '清理 Redis 最新录像队列：超过 100 条时删除超过 7 天的记录'
+    help = '裁剪 Redis 最新录像队列：按上传时间保留最新 1000 条，时间相同时保留 ID 较大的录像'
 
     def handle(self, *args, **options):
         delete_newest_queue()

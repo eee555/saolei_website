@@ -5,6 +5,28 @@ import HistoryVideos from './HistoryVideos.vue';
 import { MS_State } from '@/utils/ms_const';
 
 describe('<GSC HistoryVideos />', () => {
+    it('retries preparation after a lost response and uploads using the returned participant', () => {
+        cy.intercept('POST', '**/api/tournament/gsc/history/prepare', { body: { id: 324, manual_scores: false } }).as('prepare');
+        cy.intercept({ method: 'POST', pathname: '/api/tournament/gsc/history/prepare', times: 1 }, { forceNetworkError: true }).as('lostPrepare');
+        cy.intercept('POST', '**/api/tournament/gsc/history/participants/324/identifier', { body: { identifier: 'selected', bound: true } }).as('bind');
+        cy.intercept('POST', '**/api/tournament/gsc/history/participants/324/videos', { body: { id: 904, state: MS_State.Official } }).as('upload');
+        cy.mount(HistoryVideos, { props: { order: 19, endTime: new Date('2020-01-01T00:00:00Z') } });
+        cy.get('[data-cy=history-user-id]').type('101');
+        cy.get('[data-cy=history-video-files]').selectFile('cypress/fixtures/standard_gsc.evf');
+        cy.get('[data-cy=history-identifiers] .el-tag').should('have.length', 1);
+        cy.get('[data-cy=history-videos-submit]').click();
+        cy.wait('@lostPrepare');
+        cy.get('[role=alert]').should('contain.text', '重试未完成步骤');
+        cy.get('@bind.all').should('have.length', 0);
+        cy.get('@upload.all').should('have.length', 0);
+        cy.get('[data-cy=history-videos-submit]').click();
+        cy.wait('@prepare').its('response.body.id').should('eq', 324);
+        cy.wait('@bind');
+        cy.wait('@upload');
+        cy.get('[data-cy=history-video-results]').should('contain.text', '录像 #904');
+        cy.get('[role=alert]').should('not.exist');
+    });
+
     it('deduplicates player identifiers, waits for binding and reuses the assigned timestamp when retrying uploads', () => {
         const anchor = '2020-01-01T00:00:00.000Z';
         const firstTime = new Date(new Date(anchor).getTime() - 41021).toISOString();

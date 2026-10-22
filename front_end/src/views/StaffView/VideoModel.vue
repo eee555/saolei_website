@@ -80,7 +80,7 @@ const updateVideo = (id: number) => {
 };
 
 const removeNewest = (id: number) => {
-    proxy.$axios.post<unknown>('video/newest_queue/remove/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
+    proxy.$axios.post<unknown>('/api/video/newest_queue/remove', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
 };
 
 function previewVideo() {

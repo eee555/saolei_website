@@ -93,7 +93,7 @@ describe('<LocalVideoAnalyzerView />', () => {
     it('places a single-file selector in the info slot, loads real local bytes without API requests and resets when the file changes', () => {
         cy.viewport(1100, 800);
         cy.intercept('GET', '**/api/**', { statusCode: 500 }).as('websiteApi');
-        cy.intercept('GET', '**/video/get_software/**', { statusCode: 500 }).as('softwareApi');
+        cy.intercept('GET', '**/api/video/**', { statusCode: 500 }).as('softwareApi');
         mountLocalAnalyzer();
         cy.get('.local-analyzer__file').should('be.visible');
         cy.get('.website-replay-info').should('not.exist');

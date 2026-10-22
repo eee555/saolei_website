@@ -6,6 +6,7 @@ import { serviceConfig } from '@/services/store';
 import { local } from '@/store';
 import { TournamentState, TournamentSubclass } from '@/utils/ms_const';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
+import { mockVideoInfo } from '@cy/support/videoInfo';
 
 const fixedNow = new Date('2026-07-22T12:00:00Z').getTime();
 const fullDay = 86400000;
@@ -117,8 +118,10 @@ function mountGlobal() {
 }
 
 function mockHomeQueueRequests() {
-    cy.intercept({ method: 'GET', pathname: '/video/newest_queue/' }, { body: newestQueueResponse }).as('newestQueue');
-    cy.intercept({ method: 'GET', pathname: '/api/video/review_queue' }, { body: reviewQueueResponse }).as('reviewQueue');
+    const newest = Object.entries(newestQueueResponse).map(([id, json]) => ({ id: Number(id), ...JSON.parse(json) as Record<string, unknown> }));
+    const metadata = mockVideoInfo([...newest, ...reviewQueueResponse]);
+    cy.intercept({ method: 'GET', pathname: '/api/video/newest_queue' }, { body: metadata.slice(0, newest.length) }).as('newestQueue');
+    cy.intercept({ method: 'GET', pathname: '/api/video/review_queue' }, { body: metadata.slice(newest.length) }).as('reviewQueue');
     cy.intercept({ method: 'GET', pathname: '/api/tournament/get_list' }, { body: normalTournamentResponse() }).as('normalTournaments');
 }
 
@@ -140,7 +143,7 @@ describe('HomeView components', () => {
 
     beforeEach(() => {
         local.value.language = 'en';
-        cy.clock(fixedNow);
+        cy.clock(fixedNow, ['Date']);
         configureUserInfoService();
         mockHomeQueueRequests();
         cy.mockPlayerNameFallback();

@@ -1,13 +1,14 @@
+import json
 from urllib.parse import quote
 
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import FileResponse, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
-from ninja import Query, Router
+from ninja import Form, Query, Router
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
@@ -15,12 +16,81 @@ from ninja.orm import create_schema
 from config.text_choices import MS_TextChoices
 from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
+from .cache import cache, newest_cache
 from .models import ExpandVideoModel, STNB_COEFFICIENTS, VideoModel
-from .schema import VideoBaseOut
+from .schema import ParsedVideoOut, PUBLIC_VIDEO_METADATA_FIELDS, PublicVideoMetadataOut, VIDEO_INFO_BATCH_LIMIT, VIDEO_METADATA_FIELDS, VideoBaseOut, VideoMetadataOut
 from .view_utils import video_all_fields
 
 router = Router()
 VIDEO_ACCEL_REDIRECT_PREFIX = '/internal-media/'
+
+
+def _parse_video_ids(ids: str):
+    parts = ids.split(',')
+    if len(parts) > VIDEO_INFO_BATCH_LIMIT or not parts or any(len(part) > 19 or not part.isascii() or not part.isdecimal() or int(part) < 1 or int(part) > 2**63 - 1 for part in parts):
+        raise HttpError(400, f'Expected 1 to {VIDEO_INFO_BATCH_LIMIT} positive video IDs.')
+    return list(dict.fromkeys(map(int, parts)))
+
+
+def _visible_video_info(request, videos):
+    if request.user.is_authenticated:
+        return videos.filter(Q(ongoing_tournament=False) | Q(player_id=request.user.pk))
+    return videos.filter(ongoing_tournament=False)
+
+
+# Explicit groups keep Ninja's shared Operation.run wrapper from sharing endpoint quotas.
+@router.get('/staticdetailbatch', response=list[ParsedVideoOut])
+@decorate_view(ratelimit(group='video-staticdetailbatch', key='ip', rate='5/s'))
+def get_static_video_detail_batch(request, ids: str):
+    """
+    - ratelimit(group='video-staticdetailbatch', key='ip', rate='5/s')
+
+    Stable file-derived fields. Unpublished videos are only returned to their owner, including for staff requests.
+    """
+    videos = VideoModel.objects.filter(id__in=_parse_video_ids(ids))
+    return _visible_video_info(request, videos).select_related('video')
+
+
+@router.get('/abstractbulk', response=list[PublicVideoMetadataOut])
+@decorate_view(ratelimit(group='video-abstractbulk', key='ip', rate='1/2s'))
+def get_video_abstract_bulk(request, first: int, count: int):
+    """
+    - ratelimit(group='video-abstractbulk', key='ip', rate='1/2s')
+
+    Current website fields for public video IDs from `first` to `first + count - 1`. Count is capped at 10000.
+    Unpublished videos are skipped for all callers, including their owner and staff.
+    """
+    first = max(1, first)
+    count = max(1, min(10000, count))
+    return VideoModel.objects.filter(id__gte=first, id__lt=first + count, ongoing_tournament=False).only(*PUBLIC_VIDEO_METADATA_FIELDS)
+
+
+@router.get('/newest_queue', response=list[VideoMetadataOut])
+@decorate_view(ratelimit(key='ip', rate='5/s'))
+def get_newest_queue(request):
+    """
+    - ratelimit(key='ip', rate='5/s')
+
+    Read public queue metadata directly from the cached snapshot, without querying videos.
+    """
+    videos = []
+    for video_id, raw in cache.hgetall(newest_cache.key).items():
+        cached = json.loads(raw)
+        videos.append({
+            'id': int(video_id), 'player_id': cached['player_id'], 'upload_time': cached['time'],
+            'state': cached['state'], 'ongoing_tournament': False,
+        })
+    return videos
+
+
+@router.post('/newest_queue/remove', response={204: None})
+@decorate_view(staff_required)
+def remove_newest_queue_video(request, video_id: int = Form(..., alias='id')):  # noqa: B008
+    """
+    - staff_required
+    """
+    cache.hdel(newest_cache.key, video_id)
+    return 204, None
 
 
 @router.get('/query')
@@ -41,7 +111,7 @@ def video_query(request, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode,
     videos = videos.annotate(stnb=F('iqg') * STNB_COEFFICIENTS.get(level))
     order = ('-' if r else '') + o
     orderby = (order,) if o == 'timems' else (order, 'timems')
-    videos = videos.order_by(*orderby).values(*[field for field in video_all_fields if field != 'player__realname'], 'stnb')
+    videos = videos.order_by(*orderby).values('id', 'upload_time', 'state', 'ongoing_tournament', 'player__id')
     paginator = Paginator(videos, max(1, min(ps, 100)))
     rows = list(paginator.get_page(page))
     players = UserProfile.objects.in_bulk({row['player__id'] for row in rows})
@@ -74,6 +144,7 @@ def video_query_by_id(request, user_id: int = Query(..., alias='id')):  # noqa: 
     videos = VideoModel.objects.filter(player=user)
     if request.user != user:
         videos = videos.filter(ongoing_tournament=False)
+    # Self-contained export endpoint, also used outside the website.
     return list(videos.values(
         'id', 'upload_time', 'end_time', 'level', 'mode', 'timems', 'bv', 'bvs', 'state', 'video__identifier',
         'software', 'right_ce', 'flag', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left', 'right', 'double', 'op', 'isl', 'path', 'pluck',
@@ -150,7 +221,7 @@ def video_download(request: HttpRequest, video_id: int):
     return _video_file_response(request, video_id)
 
 
-@router.get('/review_queue', response=list[VideoBaseOut])
+@router.get('/review_queue', response=list[VideoMetadataOut])
 @decorate_view(ratelimit(key='ip', rate='1/s'))
 def get_review_queue(request):
     """
@@ -160,32 +231,32 @@ def get_review_queue(request):
     if not request.user.is_staff:
         videos = videos.filter(ongoing_tournament=False)
 
-    return videos
+    return videos.only(*VIDEO_METADATA_FIELDS)
 
 
 @router.get('/infobulk', response=list[VideoBaseOut])
-@decorate_view(ratelimit(key='ip', rate='1/s'))
+@decorate_view(ratelimit(group='video-infobulk', key='ip', rate='1/s'))
 def get_video_info_bulk(request, first: int, count: int):
     """
-    - ratelimit(key='ip', rate='1/s')
+    - ratelimit(group='video-infobulk', key='ip', rate='1/s')
 
-    Video id from `first` to `first + count - 1`. Hidden videos are skipped. Count is capped at 5000.
+    Video id from `first` to `first + count - 1`. Hidden videos are skipped. Count is capped at 2000.
     """
     first = max(1, first)
-    count = max(1, min(5000, count))
+    count = max(1, min(2000, count))
 
     return VideoModel.objects.filter(id__gte=first, id__lt=first + count, ongoing_tournament=False)
 
 
 @router.get('/detailbulk', response=list[VideoFullOut])
-@decorate_view(ratelimit(key='ip', rate='1/s'))
+@decorate_view(ratelimit(group='video-detailbulk', key='ip', rate='1/s'))
 def get_video_detail_bulk(request, first: int, count: int):
     """
-    - ratelimit(key='ip', rate='1/s')
+    - ratelimit(group='video-detailbulk', key='ip', rate='1/s')
 
-    Video id from `first` to `first + count - 1`. Hidden videos are skipped. Count is capped at 1000.
+    Video id from `first` to `first + count - 1`. Hidden videos are skipped. Count is capped at 500.
     """
     first = max(1, first)
-    count = max(1, min(1000, count))
+    count = max(1, min(500, count))
 
     return VideoModel.objects.filter(id__gte=first, id__lt=first + count, ongoing_tournament=False)

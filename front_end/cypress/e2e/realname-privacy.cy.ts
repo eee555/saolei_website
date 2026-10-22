@@ -180,7 +180,11 @@ describe('Real name privacy against the backend', () => {
         cy.login(STAFF.username, STAFF.password);
         staffPatch(user.id, { can_hide_realname: true });
         cy.login(user.username, user.password);
+        cy.intercept({ method: 'GET', pathname: '/api/video/query' }).as('cachedUserVideos');
         cy.visit('/#/database/videos');
+        cy.wait('@cachedUserVideos').its('response.body.videos').should((rows: { player__id: number }[]) => {
+            expect(rows.some((row) => row.player__id === user.id), 'the cached user has a visible video').to.eq(true);
+        });
         cy.get(`.player-name a[href="#/player/${user.id}"]`).should('contain.text', user.username);
         cachedName(user.id).should('eq', user.realname);
         navigate(`#/player/${user.id}/settings`);

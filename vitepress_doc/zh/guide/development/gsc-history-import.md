@@ -30,7 +30,7 @@ digraph gsc_history_flow {
     participants [label="读取已保存的参赛成绩\nget_results", fillcolor="${#dbeafe|#1e3a5f}"];
     files [label="前端解析文件\n标识去重、多选录像"];
     times [label="前端分配上传时间\n按完成时间排序后倒推"];
-    prepare [label="创建录像来源参赛者\ncreate_history_participant", fillcolor="${#dbeafe|#1e3a5f}"];
+    prepare [label="获取或创建录像来源参赛者\ncreate_history_participant", fillcolor="${#dbeafe|#1e3a5f}"];
     bind [label="逐个请求绑定标识\nbind_history_identifier\n归属冲突只跳过绑定", fillcolor="${#dbeafe|#1e3a5f}"];
     upload [label="逐文件代传\nupload_history_video", fillcolor="${#dbeafe|#1e3a5f}"];
     associate [label="创建或复用录像\n显式加入本届比赛", fillcolor="${#dcfce7|#14532d}"];
@@ -57,7 +57,7 @@ digraph gsc_history_flow {
 
 `HistoryVideos.vue` 在浏览器解析录像，展示去重后的玩家标识，由管理员多选。只上传选中标识对应的文件；这里使用的是录像内的玩家标识，不是比赛 token。
 
-`create_history_participant` 在 API 事务内按届数和用户 ID 查询并锁定比赛、目标用户，完成权限和比赛状态校验；`prepare_gsc_history_videos` 接收这两个模型对象，拒绝本届已有该用户的 participant，再创建并返回 `manual_scores=false` 的录像来源参赛者。它不接收操作者或标识列表，也不执行绑定。已颁奖 GSC 的创建信号不会自动回填历史录像，但仍为站内用户补建默认 `TournamentUser`，并正常用当前 `t37` 尝试改善 best；录像来源新建时使用默认成绩，手工来源使用输入成绩。
+`create_history_participant` 在 API 事务内按届数和用户 ID 查询并锁定比赛、目标用户，完成权限和比赛状态校验；`prepare_gsc_history_videos` 接收这两个模型对象，返回本届该用户已有的 `manual_scores=false` 参赛者，不存在则创建。已有手工成绩来源仍拒绝，不自动切换来源。复用不保存 participant，不改变原成绩、排名积分、标识、token、参赛窗口或录像关联；也不触发创建和 best 保存信号。它不接收操作者或标识列表，也不执行绑定。新建时使用默认成绩，创建信号不会自动回填历史录像，但仍为站内用户补建默认 `TournamentUser`，并正常用当前 `t37` 尝试改善 best。
 
 前端拿到 participant ID 后，按选择顺序逐个调用 `bind_history_identifier`。每个请求只接收一个 `identifier`，API 重新检查实际比赛权限、AWARDED 状态及录像来源 participant，再将 participant 对象传给 `bind_gsc_history_identifier`，由 service 注册标识并调用 `identifier.services.bind_identifier`。绑定会刷新既有录像及排行，不能将多个标识打包进同一请求：
 
@@ -124,7 +124,7 @@ digraph gsc_history_upload {
 | API | 角色与主要结果 |
 | --- | --- |
 | `GET /api/tournament/gsc/admin-info?order=...`（`get_GSC_tournament`） | 按届数取得父表比赛 ID、起止时间和状态；前端使用结束时间作为默认时间锚点，再以比赛 ID 请求成绩，组合成管理列表。 |
-| `POST /api/tournament/gsc/history/prepare`（`create_history_participant`） | 只创建并返回录像来源 participant，不接收标识列表、不绑定标识。本届已有该用户则冲突，不覆盖、不自动切换成绩来源。 |
+| `POST /api/tournament/gsc/history/prepare`（`create_history_participant`） | 获取或创建录像来源 participant，不接收标识列表、不绑定标识。本届已有非手工记录则原样返回，手工来源仍冲突，不覆盖或切换来源。 |
 | `POST /api/tournament/gsc/history/participants/{participant_id}/identifier`（`bind_history_identifier`） | 每次注册并绑定一个标识，返回 `identifier` 和 `bound`。归属冲突返回 `bound=false`，其他错误使本请求失败；每个请求独立事务，前端顺序执行。 |
 | `POST /api/tournament/gsc/history/participants/{participant_id}/videos`（`upload_history_video`） | 每次处理一个文件：解析、标识校验、查重、创建或复用、保存上传时间、关联比赛；返回录像及审核状态。每个请求一个事务。 |
 | `POST /api/tournament/gsc/history/scores/users`（`import_history_user_scores`） | 为有站内账号但录像缺失的选手录入九项成绩，创建 `manual_scores=true` 的 participant，不从录像计算。 |
@@ -145,7 +145,7 @@ order,arbiter_identifier,bt1st,bt20th,bt20sum,it1st,it12th,it12sum,et1st,et5th,e
 
 ## 重试与人工重算
 
-前端分别记录 participant ID、已处理的标识及逐文件上传结果。绑定失败先暂停，重试时不重复创建 participant，也不重复处理已收到结果的标识；所有标识完成后，录像上传按文件记录结果，单文件失败后继续处理其他文件，只重试未成功文件并保留原上传时间。准备请求超时或页面刷新丢失本地状态时，先通过管理列表核对；不能把超时等同于事务回滚。绑定超时可对同一标识重试，已属于本人时沿用原绑定业务，不转移他人标识。已存在的 participant 不会由准备接口自动接管。
+前端分别记录 participant ID、已处理的标识及逐文件上传结果。绑定失败先暂停，重试时不重复处理已收到结果的标识；所有标识完成后，录像上传按文件记录结果，单文件失败后继续处理其他文件，只重试未成功文件并保留原上传时间。准备请求超时可直接重试，已提交的录像来源 participant 会原样返回，不会重复创建。页面刷新后需重新选择文件，准备接口仍可复用已有录像来源记录；手工来源不能用此方式接管。绑定超时可对同一标识重试，已属于本人时沿用原绑定业务，不转移他人标识。
 
 维护时备份数据并暂停结算、best 和年度积分缓存维护等相关写任务，完成材料补录并核对后，在 `back_end/saolei` 逐届执行：
 

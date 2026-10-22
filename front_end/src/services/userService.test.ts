@@ -4,7 +4,7 @@ import { openDB } from 'idb';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
 import type { SaoleiCacheDB } from './database';
-import { CACHE_DB_NAME, CACHE_DB_VERSION, CACHE_STORE_SCHEMA_VERSIONS, META_STORE_NAME, USER_INFO_STORE_NAME } from './database';
+import { CACHE_DB_NAME, CACHE_DB_VERSION, CACHE_STORE_SCHEMA_VERSIONS, META_STORE_NAME, USER_INFO_STORE_NAME, VIDEO_INFO_STORE_NAME } from './database';
 
 import type { GetUserInfoResponse } from '@/utils/common/structInterface';
 
@@ -58,6 +58,9 @@ async function openUserInfoDB() {
             }
             if (!db.objectStoreNames.contains(STORE_NAME)) {
                 db.createObjectStore(STORE_NAME, { keyPath: 'id' });
+            }
+            if (!db.objectStoreNames.contains(VIDEO_INFO_STORE_NAME)) {
+                db.createObjectStore(VIDEO_INFO_STORE_NAME, { keyPath: ['scope', 'id'] }).createIndex('scope', 'scope');
             }
         },
     });

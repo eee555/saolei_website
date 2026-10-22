@@ -2,6 +2,7 @@
     <Menu>
         <main class="common-layout">
             <VideoPlayer />
+            <VideoInfoProgress />
             <router-view />
             <Footer />
         </main>
@@ -31,6 +32,7 @@ import { onMounted, ref, watch } from 'vue';
 
 import BaseButtonConfirm from './components/common/BaseButtonConfirm.vue';
 import Footer from './components/Footer.vue';
+import VideoInfoProgress from './components/VideoInfoProgress.vue';
 import VideoPlayer from './components/VideoPlayer/App.vue';
 import { local } from './store';
 import Menu from './views/Menu.vue';

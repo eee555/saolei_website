@@ -266,6 +266,8 @@ else:
         r'api/video/preview/?',
         r'api/video/infobulk/?',
         r'api/video/detailbulk/?',
+        r'api/video/staticdetailbatch/?',
+        r'api/video/abstractbulk/?',
     ]
     CORS_URLS_REGEX = rf'^/({"|".join(CORS_PATHS)})$'
 

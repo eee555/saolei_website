@@ -1,143 +1,14 @@
 # -*- coding: utf-8 -*-
-import json
 import logging
 
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
-from django.views.decorators.http import require_GET, require_POST
-from django_redis import get_redis_connection
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.views.decorators.http import require_POST
 
-from config.text_choices import MS_TextChoices
-from msuser.models import UserMS
 from userprofile.decorators import staff_required
-from userprofile.models import UserProfile
-from utils import ComplexEncoder
-from utils.cache import maybe_bytes_to_str
 from .models import VideoModel
 from .view_utils import refresh_video
 
 logger = logging.getLogger('videomanager')
-cache = get_redis_connection('saolei_website')
-
-
-# 根据id向后台请求软件类型（适配flop播放器用）
-@require_GET
-def get_software(request):
-    if not (videoid := request.GET.get('id')):
-        return HttpResponseBadRequest()
-    if not (video := VideoModel.objects.filter(id=videoid).first()):
-        return HttpResponseNotFound()
-    if video.ongoing_tournament and request.user.id != video.player_id:
-        return HttpResponseForbidden()
-    return JsonResponse({'msg': video.software})
-
-
-# 获取最新录像
-# http://127.0.0.1:8000/video/newest_queue
-@require_GET
-def newest_queue(request: HttpRequest):
-    newest_queue_ids = cache.hgetall('newest_queue')
-    for key in list(newest_queue_ids.keys()):
-        newest_queue_ids.update({
-            maybe_bytes_to_str(key): newest_queue_ids.pop(key),
-        })
-    return JsonResponse(newest_queue_ids, encoder=ComplexEncoder)
-
-
-@require_POST
-@staff_required
-def remove_from_newest_queue(request: HttpRequest):
-    if not (video_id := request.POST.get('id')):
-        return HttpResponseBadRequest()
-    cache.hdel('newest_queue', video_id)
-    return HttpResponse()
-
-
-# 获取全网被冻结的录像
-# http://127.0.0.1:8000/video/freeze_queue
-@require_GET
-def freeze_queue(request):
-    freeze_queue_ids = cache.hgetall('freeze_queue')
-    for key in list(freeze_queue_ids.keys()):
-        freeze_queue_ids.update({
-            maybe_bytes_to_str(key): freeze_queue_ids.pop(key),
-        })
-    return JsonResponse(freeze_queue_ids, encoder=ComplexEncoder)
-
-
-# 审核通过单个录像
-# check_identifier 为 true 则检查是否要修改玩家标识列表，并在修改后扫描所有待审录像的标识
-def approve_single(videoid, check_identifier=True):
-    if not (video := VideoModel.objects.filter(id=videoid).first()):
-        return None
-    if video.state == MS_TextChoices.State.OFFICIAL:
-        return False
-    userms: UserMS = video.player.userms
-    video.state = MS_TextChoices.State.OFFICIAL
-    video.save(update_fields=['state'])
-    identifier = video.video.identifier
-    if check_identifier and identifier not in userms.identifiers:
-        userms.identifiers.append(identifier)
-        userms.save(update_fields=['identifiers'])
-        logger.info(
-            f'用户 {video.player.username}#{video.player.id} 新标识 "{identifier}"')
-        approve_identifier(video.player.id, identifier)
-    return True
-
-
-# 审核通过所有特定用户特定标识的录像
-def approve_identifier(userid, identifier):
-    user_identifier_list = cache.hgetall('review_queue')
-    for key in user_identifier_list:
-        value = json.loads(user_identifier_list[key])
-        if value['player_id'] == userid and value['identifier'] == identifier:
-            logger.info(f'用户 #{userid} 录像#{key} 机审成功')
-            approve_single(key, False)
-
-
-# 【管理员】审核通过队列里的录像，未审核或冻结状态的录像可以审核通过
-# 返回"True","False"（已经是通过的状态）,"Null"（不存在该录像）
-# http://127.0.0.1:8000/video/approve?ids=[18,19,999]
-@require_GET
-@staff_required
-def approve(request):
-    ids = json.loads(request.GET['ids'])
-    res = []
-    for _id in ids:
-        logger.info(
-            f'管理员 {request.user.username}#{request.user.id} 过审录像#{_id}')
-        res.append(approve_single(_id))
-    return JsonResponse(res, safe=False)
-
-
-# 【管理员】冻结队列里的录像，未审核或审核通过的录像可以冻结
-# 两种用法，冻结指定的录像id，或冻结某用户的所有录像
-# 冻结的录像七到14天后删除，用一个定时任务
-# http://127.0.0.1:8000/video/freeze?ids=[18,19,20,21,102,273]
-# http://127.0.0.1:8000/video/freeze?ids=12
-# http://127.0.0.1:8000/video/freeze?user_id=20
-@require_GET
-@staff_required
-def freeze(request):
-    if video_ids := request.GET.get('ids'):
-        res = []
-        for video_id in video_ids:
-            if not (v := VideoModel.objects.filter(id=video_id).first()):
-                res.append('Null')
-            else:
-                v.state = MS_TextChoices.State.FROZEN
-                v.save(update_fields=['state'])
-                logger.info(
-                    f'管理员 {request.user.username}#{request.user.id} 冻结录像#{id}')
-        return JsonResponse(res)
-    elif user_id := request.GET.get('user_id'):
-        if not (user := UserProfile.objects.filter(id=user_id).first()):
-            return HttpResponseNotFound()
-        for v in VideoModel.objects.filter(player=user):
-            v.state = MS_TextChoices.State.FROZEN
-            v.save(update_fields=['state'])
-        return HttpResponse()
-    else:
-        return HttpResponseBadRequest()
 
 
 set_videoModel_fields = ['player', 'upload_time', 'state']  # 可修改的域列表

@@ -19,14 +19,15 @@ import $axios from '@/http';
 import i18n from '@/i18n';
 import { videoPlayerConfig } from '@/store';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
+import { mockVideoInfo } from '@cy/support/videoInfo';
 
 type Layout = 'counter-left' | 'counter-right' | 'counter-top' | 'board-top';
 
 function mountAnalyzer(width = 1100, fixture: { filename: string; durationMs: number; software?: string } = { filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf', durationMs: 129073 }, info?: () => VNode[]) {
     cy.viewport(1280, 800);
     cy.mockPlayerNameFallback();
-    cy.intercept('GET', '**/api/common/video/123/analyzer-info', { body: { video: { id: 123, player: 7, upload_time: '2026-10-12T10:00:00Z' }, expanded_video: {}, tournament_ids: [], filename: fixture.filename, rankings: [] } }).as('getWebsiteInfo');
-    cy.intercept('GET', '**/video/get_software/**', { body: { msg: fixture.software ?? 'e' } }).as('getSoftware');
+    const metadata = mockVideoInfo([{ id: 123, software: fixture.software ?? 'e', upload_time: '2026-10-12T10:00:00Z' }], 'getSoftware');
+    cy.intercept('GET', '**/api/common/video/123/analyzer-info', { body: { video: metadata[0], tournament_ids: [], filename: fixture.filename, rankings: [] } }).as('getWebsiteInfo');
     cy.intercept('GET', '**/api/video/preview**', {
         headers: { 'content-type': 'application/octet-stream' },
         fixture: `${fixture.filename},null`,
@@ -37,7 +38,7 @@ function mountAnalyzer(width = 1100, fixture: { filename: string; durationMs: nu
     }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } }, stubs: { transition: false } } }).then(({ wrapper }) => {
         cy.wrap(wrapper).as('analyzer');
     });
-    cy.wait('@getSoftware').its('request.query.id').should('eq', '123');
+    cy.wait('@parsedVideoInfo').its('request.query.ids').should('eq', '123');
     cy.wait('@getReplay').its('request.query.id').should('eq', `123.${fixture.filename.split('.').pop()}`);
     cy.get('.analyzer-progress-bar__slider', { timeout: 10000 }).should('have.attr', 'max', String(fixture.durationMs)).and('not.be.disabled');
 }
@@ -393,7 +394,7 @@ describe('<VideoAnalyzerView />', () => {
         assertLayout('board-top');
         cy.get('.analyzer-progress-bar__slider').should('have.value', '5000');
         cy.get('.custom-replay-info').should('have.length', 1).and('contain.text', 'Replay detail 2');
-        cy.get('@getSoftware.all').should('have.length', 1);
+        cy.get('@getSoftware.all').should('have.length', 0);
         cy.get('@getReplay.all').should('have.length', 1);
     });
 
@@ -428,7 +429,7 @@ describe('<VideoAnalyzerView />', () => {
             });
         }
         cy.get('.analyzer-progress-bar__play').click();
-        cy.get('@getSoftware.all').should('have.length', 1);
+        cy.get('@getSoftware.all').should('have.length', 0);
         cy.get('@getReplay.all').should('have.length', 1);
     });
 
@@ -506,7 +507,7 @@ describe('<VideoAnalyzerView />', () => {
 
     it('reports backend errors and keeps playback disabled', () => {
         cy.intercept('GET', '**/api/common/video/999999/analyzer-info', { statusCode: 404, body: '' });
-        cy.intercept('GET', '**/video/get_software/**', { statusCode: 404, body: '' }).as('getSoftware');
+        cy.intercept('GET', '**/api/video/staticdetailbatch*', { statusCode: 404, body: '' }).as('getSoftware');
         cy.intercept('GET', '**/api/video/preview**', { body: '' }).as('getReplay');
         cy.mount(defineComponent({ expose: [], render: () => h(App, { id: '999999' }) }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@getSoftware');

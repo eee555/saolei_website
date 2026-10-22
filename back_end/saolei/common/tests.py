@@ -77,6 +77,22 @@ class APSchedulerRegistrationTests(TestCase):
         self.assertEqual(job.trigger.get_next_fire_time(None, monday), monday)
         self.assertEqual(job.trigger.get_next_fire_time(monday, monday), monday + timedelta(days=7))
 
+    def test_newest_queue_cleanup_runs_daily_at_original_time(self):
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from common.apscheduler import register_jobs
+        from videomanager.services import delete_newest_queue
+
+        scheduler = BackgroundScheduler(timezone=datetime_timezone.utc)
+        register_jobs(scheduler)
+        job = scheduler.get_job('delete_newest_queue')
+        now = datetime(2026, 10, 22, 1, 7, tzinfo=job.trigger.timezone)
+        first_run = job.trigger.get_next_fire_time(None, now)
+
+        self.assertEqual(job.func, delete_newest_queue)
+        self.assertEqual(job.max_instances, 1)
+        self.assertEqual(first_run, now.replace(minute=8))
+        self.assertEqual(job.trigger.get_next_fire_time(first_run, first_run), first_run + timedelta(days=1))
+
     def test_registration_removes_only_retired_monitor_job(self):
         from apscheduler.schedulers.background import BackgroundScheduler
         from common.apscheduler import register_jobs
@@ -791,7 +807,9 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.assertEqual(rank['count'], 1)
         self.assertEqual(rank['players'][0]['video_id'], video.id)
         self.assertAlmostEqual(rank['players'][0]['pluck'], CUSTOM_PLUCK_FIXTURE_PLUCK, places=12)
-        self.assertEqual(rank['players'][0]['timems'], video.timems)
+        response = self.client.get('/api/video/staticdetailbatch', {'ids': rank['players'][0]['video_id']})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()[0]['timems'], video.timems)
 
     def test_identifier_bind_and_unbind_refreshes_custom_pluck_record(self):
         parser = self.parse_fixture(self.fixture_path('custom_pluck.evf'))

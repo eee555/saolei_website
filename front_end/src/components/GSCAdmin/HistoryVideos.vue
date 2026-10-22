@@ -147,9 +147,7 @@ async function upload() {
             }
         }
     } catch (reason) {
-        error.value = participantId.value === undefined
-            ? `${String(reason)}。若准备请求超时，请先核对管理列表，避免重复创建参赛者。`
-            : `${String(reason)}。已完成步骤已保留，请重试未完成步骤。`;
+        error.value = `${String(reason)}。已完成步骤已保留，请重试未完成步骤。`;
     } finally {
         busy.value = false;
         emit('imported');

@@ -12,6 +12,7 @@ import { pinia } from '@/store/create';
 import { MS_Mode } from '@/utils/ms_const';
 import { UserProfile } from '@/utils/userprofile';
 import type { VideoAbstract } from '@/utils/videoabstract';
+import { mockVideoInfo } from '@cy/support/videoInfo';
 
 const ScatterStub = defineComponent({
     props: { videos: { type: Array<VideoAbstract>, default: () => [] } },
@@ -26,7 +27,7 @@ function mountUserVideos(userId = 99, hiddenStates = [true, false], overrides: R
     activityCalendarConfig.value.useEndTime = false;
     const user = reactive(new UserProfile({ id: userId }));
     cy.intercept('GET', '**/api/userprofile/videolist*', {
-        body: hiddenStates.map((hidden, index) => ({
+        body: mockVideoInfo(hiddenStates.map((hidden, index) => ({
             id: 101 + index,
             level: 'e',
             mode: MS_Mode.Standard,
@@ -36,7 +37,7 @@ function mountUserVideos(userId = 99, hiddenStates = [true, false], overrides: R
             ongoing_tournament: hidden,
             upload_time: new Date(2026, 9, 14, 12).toISOString(),
             ...overrides[index],
-        })),
+        }))),
     }).as('videos');
     cy.intercept('GET', '**/api/video/preview*', { statusCode: 404 }).as('preview');
     const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/player/:id/videos', name: 'user-videos', component: UserVideoView }] });

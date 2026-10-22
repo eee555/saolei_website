@@ -195,8 +195,11 @@ def _new_history_participant(tournament, **kwargs):
 @ranking_access(operation='tournament.gsc.history.prepare')
 @transaction.atomic
 def prepare_gsc_history_videos(tournament: GSCTournament, user: UserProfile):
-    if GSCParticipant.objects.filter(tournament=tournament, user=user).exists():
-        raise ExceptionToResponse('participant', 'registered', status_code=409)
+    participant = get_gsc_scores(tournament).filter(user=user).first()
+    if participant is not None:
+        if participant.manual_scores:
+            raise ExceptionToResponse('participant', 'not_video_source', status_code=409)
+        return participant
     if not user.userms_id:
         user.userms = UserMS.objects.create()
         user.save(update_fields=['userms'])

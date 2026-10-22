@@ -7,6 +7,8 @@ description: 开源扫雷网Redis/Django缓存结构详解，包括录像队列�
 
 本文记录项目当前使用的 Redis / Django cache 结构，以及缓存与数据库、API 之间的读写流向。数据库字段结构以各 app 的 `models.py` 为准，这里只记录缓存中实际保存的数据结构。
 
+录像解析字段现在由前端 IndexedDB 按 ID 缓存。普通查询返回 ID 和网站动态字段，再批量补全；字段定义变化时随前端更新递增 `CACHE_STORE_DEFINITIONS['video-info'].version`，加载新前端后清空整张录像表，接口无需携带版本。接口和 Redis 改动前后字段表见仓库 `front_end/src/services/videoService.md`。部署后运行 [compact_video_cache](./management-commands.md#compact-video-cache) 压缩存量载荷。
+
 旧竞速排行榜及新闻的读写逻辑已移除，可运行`python manage.py delete_legacy_speedranking_cache`清理旧个人纪录hash、排行zset及`news_queue`。支持`--dry-run`预览，具体范围见[管理命令文档](./management-commands.md#delete-legacy-speedranking-cache)。
 
 旧 World 监控页面及其 CPU/网络 IO 采集已移除，不再读写历史采样。`monitor` APP 现在承载服务器页面的磁盘、任务、录像和内存统计 Ninja API，路径为 `/api/monitor/diskusage`、`/api/monitor/tasksummary`、`/api/monitor/videosummary`、`/api/monitor/memoryusage`；旧 `/monitor/io_cpus/` 和 `/monitor/capacity/` 不恢复。部署并停止旧采集进程后，可按固定名称清理 `saolei_website` Redis DB 中的五个遗留 key，无需遍历其他 key：
@@ -149,13 +151,13 @@ digraph cache {
         get_review_queue [label="/api/video/review_queue"];
         get_video_info_bulk [label="/api/video/infobulk"];
         get_video_detail_bulk [label="/api/video/detailbulk"];
-        get_software [label="/video/get_software/"]
-        video_preview [label="/video/preview/"];
-        video_download [label="/video/download/"];
-        video_query [label="/video/query/"];
-        video_query_by_id [label="/video/query_by_id/"];
-        newest_queue [label="/video/newest_queue/"];
-        freeze_queue [label="/video/freeze_queue/"];
+        get_static_video_detail_batch [label="/api/video/staticdetailbatch"];
+        get_video_abstract_bulk [label="/api/video/abstractbulk"];
+        video_preview [label="/api/video/preview"];
+        video_download [label="/api/video/download/{video_id}"];
+        video_query [label="/api/video/query"];
+        video_query_by_id [label="/api/video/query_by_id"];
+        newest_queue [label="/api/video/newest_queue"];
     }
 
     subgraph db_nodes {
@@ -185,8 +187,6 @@ digraph cache {
         pluck_rank_cache [label="customranking:pluck:{level}:rank\nzset"];
         pluck_detail_cache [label="customranking:pluck:{level}:detail\nhash"];
         newest_cache [label="newest_queue\nhash"];
-        freeze_cache [label="freeze_queue\nhash"];
-        review_cache [label="review_queue\nhash"];
         tournament_cache [label="tournament:normal\nhash\nsubclass + data", width=2.6, height=1.0];
         participant_cache [label="tournament:normal:participants\nhash", width=3.2, height=0.9];
         tournament_user_rank_cache [label="tournament:user:{field}\nzset\nmember = user_id", width=3.4, height=1.0];
@@ -490,8 +490,8 @@ digraph cache {
     video_db -> get_review_queue;
     video_db -> get_video_info_bulk;
     video_db -> get_video_detail_bulk;
-    video_db -> get_software;
-    userprofile_db -> get_software;
+    video_db -> get_static_video_detail_batch;
+    video_db -> get_video_abstract_bulk;
     video_db -> video_preview;
     userprofile_db -> video_preview;
     video_files -> video_preview;
@@ -503,7 +503,6 @@ digraph cache {
     userprofile_db -> video_query_by_id;
     video_db -> video_query_by_id;
     newest_cache -> newest_queue;
-    freeze_cache -> freeze_queue;
 
     // videomanager signals
     video_db -> capture_video_update [label="pre_save"];
@@ -512,8 +511,6 @@ digraph cache {
     video_db -> refresh_state_queue_on_video_save [label="O2O read"];
     userprofile_db -> refresh_state_queue_on_video_save [label="FK read"];
     refresh_state_queue_on_video_save -> newest_cache [label="write/delete"];
-    refresh_state_queue_on_video_save -> freeze_cache [label="write/delete"];
-    refresh_state_queue_on_video_save -> review_cache [label="write/delete"];
 
     // msuser signals
     video_db -> update_video_count_on_video_save [label="post_save"];
@@ -624,13 +621,11 @@ digraph cache {
 
 | 所属 app | key | Redis 类型 | 数据结构 |
 | --- | --- | --- | --- |
-| `videomanager` | `newest_queue` | hash | `field = video_id`；`value = VideoQueue JSON`，包含 `state`、`tournament`、`software`、`time`、`player_id`、`identifier`、`level`、`mode`、`timems`、`bv`、`cl`、`ce`、`right_ce`。 |
-| `videomanager` | `freeze_queue` | hash | 同 `newest_queue`，用于冻结录像队列。 |
-| `videomanager` | `review_queue` | hash | 同 `newest_queue`，用于待审核录像队列。 |
+| `videomanager` | `newest_queue` | hash | `field = video_id`；JSON 仅包含 `state`、`time`、`player_id`。最新录像接口直接读取 Hash 快照并转换成元信息数组，不查询数据库；队列只写入公开录像，因此响应的 `ongoing_tournament` 为 `false`。解析字段由浏览器录像缓存补全；后台任务每天 01:08 按 `time` 保留最新 1000 条，时间相同时保留 ID 较大的录像，不再按天数过期。写入时不裁剪，允许暂时超过上限；裁剪使用 Python 排序和普通 Redis 删除操作，管理命令复用同一逻辑。`freeze_queue`、`review_queue` 已停止维护，遗留 key 由升级命令删除。 |
 | `effranking` | `effranking:thrp:records` | hash | `field = player_id`；完整 `b/i/e` 原始纪录 JSON，每项为 `null` 或包含 `value`、`video_id`、`upload_time` 的对象。sum 不重复存储。 |
 | `effranking` | `effranking:thrp:{stat}` | zset | `stat = b/i/e/sum`；`member = player_id`，score 为六位小数成绩和分钟级达成时间的排序编码，升序读取，不用于恢复成绩。 |
 | `customranking` | `customranking:pluck:{level}:rank` | zset | `member = player_id`；`score = pluck`，当 `pluck == 0` 时使用 `timems - MAX_TIMEMS` 降低 0 碰撞风险。 |
-| `customranking` | `customranking:pluck:{level}:detail` | hash | `field = player_id`；`value = detail JSON`，包含 `video_id`、`mode`、`timems`、`bv`、`upload_time`。 |
+| `customranking` | `customranking:pluck:{level}:detail` | hash | `field = player_id`；JSON 包含 `video_id`、`timems`、`upload_time`。展示用的模式和 3BV 通过录像缓存补全；排序 zset 保持原编码。 |
 | `tournament` | `tournament:normal` | hash | `field = tournament_id`；`value = CachedTournament JSON`，包含 `id`、`state`、`subclass`、`host_id`、`start_time`、`end_time`、`data`。`data` 保存子类独占字段：GSC 为 `order`、`token`；周赛为 `year`、`week`、`tournament_format`。 |
 | `tournament` | `tournament:normal:participants` | hash | `field = user_id`；`value = list[CachedNormalParticipant] JSON`，每项包含 `id`、`token`、`arbiter_identifier`、`tournament`、`start_time`、`end_time`。 |
 | `tournament` | `tournament:user:score_current` | zset | `member = user_id`；`score = score_current × tournament_score_decay_factor(last_updated, 缓存时间基准)`；所有成员使用同一时间基准。数据库 `score_current = 0` 时不写入。 |

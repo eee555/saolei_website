@@ -4,7 +4,7 @@ import type { MaybeRefOrGetter, Ref, ShallowRef } from 'vue';
 
 import type { ReplaySource } from '@/components/VideoAnalyzer/replayParser';
 import $axios from '@/http';
-import type { MS_Software } from '@/utils/ms_const';
+import { fetchVideoInfo } from '@/services/videoInfoService';
 import { getSoftwareExtension } from '@/utils/strings';
 
 export interface SiteReplaySourceState {
@@ -26,9 +26,9 @@ export function useSiteReplaySource(id: MaybeRefOrGetter<string>): SiteReplaySou
         loading.value = true;
         errorMessage.value = '';
         try {
-            const softwareResponse = await $axios.get<{ msg: MS_Software }>('/video/get_software/', { params: { id: videoId }, signal: controller.signal });
+            const video = await fetchVideoInfo(Number(videoId));
             if (controller.signal.aborted) return;
-            const software = softwareResponse.data.msg;
+            const { software } = video;
             const filename = videoId + getSoftwareExtension(software);
             const response = await $axios.get<ArrayBuffer>('/api/video/preview', { params: { id: filename }, responseType: 'arraybuffer', signal: controller.signal });
             if (controller.signal.aborted) return;
