@@ -141,6 +141,32 @@ class TestGscHistory(TournamentTestCaseBase):
         self.assertIsNone(participant.rank)
         self.assertEqual(participant.rank_score, 0)
 
+    def test_prepare_reuses_video_participant_without_changes_and_allows_more_videos(self):
+        identifier = Identifier.objects.create(identifier='original arbiter identifier', safe=True)
+        participant = GSCParticipant.objects.create(
+            user=self.user, tournament=self.tournament, token='original token', arbiter_identifier=identifier,
+            start_time=self.tournament.start_time - timedelta(hours=1), end_time=self.tournament.end_time + timedelta(hours=1),
+            rank=7, rank_score=123, **dict.fromkeys(GSC_SCORE_FIELDS, 1000),
+        )
+        old_video = self.create_video(tournament_identifier=[])
+        self.tournament.videos.add(old_video)
+        original = GSCParticipant.objects.values().get(pk=participant.pk)
+
+        for _ in range(2):
+            response = self.prepare()
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertEqual(response.json()['id'], participant.pk)
+            self.assertTrue(response.json()['has_videos'])
+        self.assertEqual(GSCParticipant.objects.count(), 1)
+        self.assertEqual(GSCParticipant.objects.values().get(pk=participant.pk), original)
+
+        bound = self.bind(participant.pk, MSVideoParser(self.replay()).identifier)
+        self.assertEqual(bound.status_code, 200, bound.content)
+        uploaded = self.upload(participant.pk, self.tournament.end_time.isoformat())
+        self.assertEqual(uploaded.status_code, 200, uploaded.content)
+        self.assertEqual(set(self.tournament.videos.values_list('pk', flat=True)), {old_video.pk, uploaded.json()['id']})
+        self.assertEqual(GSCParticipant.objects.values().get(pk=participant.pk), original)
+
     def test_manual_import_updates_best_and_preserves_scores_on_refresh_and_cleanup(self):
         response = self.post('/scores/users', self.batch([self.row(user_id=self.user.id)]))
         self.assertEqual(response.status_code, 200, response.content)
@@ -220,7 +246,6 @@ class TestGscHistory(TournamentTestCaseBase):
         self.assertFalse(self.tournament.videos.exists())
         collision.refresh_from_db()
         self.assertEqual(collision.userms_id, self.host.userms_id)
-        self.assertEqual(self.prepare().status_code, 409)
         self.assertEqual(self.bind(participant_id, ['bulk', 'not allowed']).status_code, 422)
         self.assertFalse(Identifier.objects.filter(identifier__in=['bulk', 'not allowed']).exists())
 
@@ -295,6 +320,9 @@ class TestGscHistory(TournamentTestCaseBase):
     def test_upload_rejects_manual_and_anonymous_participants(self):
         self.assertEqual(self.post('/scores/users', self.batch([self.row(user_id=self.user.pk)])).status_code, 200)
         self.assertEqual(self.post('/scores/anonymous', self.batch([self.row(arbiter_identifier='anonymous')])).status_code, 200)
+        response = self.prepare()
+        self.assertEqual(response.status_code, 409)
+        self.assertEqual(response.json()['category'], 'not_video_source')
         for participant in GSCParticipant.objects.all():
             response = self.upload(participant.pk, self.tournament.end_time.isoformat())
             self.assertEqual(response.status_code, 409, response.content)
