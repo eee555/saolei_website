@@ -81,7 +81,7 @@ def register_jobs(scheduler):
 
     scheduler.add_job(
         delete_newest_queue,
-        trigger=CronTrigger(day_of_week='*', hour='01', minute='08'),
+        trigger=CronTrigger(minute='*/5'),
         id='delete_newest_queue',
         misfire_grace_time=300,
         max_instances=1,

@@ -63,7 +63,7 @@
 
 | key / 数据结构 | 修改前 | 修改后 |
 | --- | --- | --- |
-| `newest_queue` Hash，field 为录像 ID | JSON `{state, tournament, software, time, player_id, identifier, level, mode, timems, bv, cl, ce, right_ce}` | JSON `{state, time, player_id}`；保留原成员和过期时间规则 |
+| `newest_queue` Hash，field 为录像 ID | JSON `{state, tournament, software, time, player_id, identifier, level, mode, timems, bv, cl, ce, right_ce}` | JSON `{state, time, player_id}`；后台每 5 分钟按上传时间保留最新 1000 条，时间相同时保留 ID 较大的录像；允许暂时超过上限，不再按 7 天期限清理 |
 | `freeze_queue` Hash | 与最新队列相同的完整 JSON，持续写入 | 停止维护；原读取函数没有有效路由，部署命令删除旧 key |
 | `review_queue` Hash | 与最新队列相同的完整 JSON，持续写入 | 停止维护；有效待审接口一直直接查询数据库，删除已无路由的旧审核函数及其读取依赖 |
 | `customranking:pluck:{level}:detail` Hash | JSON `{video_id, mode, timems, bv, upload_time}` | JSON `{video_id, timems, upload_time}` |

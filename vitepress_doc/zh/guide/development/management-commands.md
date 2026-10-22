@@ -260,7 +260,7 @@ python manage.py delete_legacy_speedranking_cache
 
 位置：`videomanager/management/commands/delete_newest_queue.py`
 
-清理 Redis 最新录像队列。不超过 100 条时不处理；超过 100 条时删除所有超过 7 天的记录，清理后可能少于 100 条。自动运行时间见下方定时任务表。
+裁剪 Redis 最新录像队列，按上传时间保留最新 1000 条，上传时间相同时保留 ID 较大的录像。不再按 7 天期限删除；不足 1000 条时全部保留。写入时不裁剪，允许暂时超过上限，由后台任务每 5 分钟统一裁剪；也可运行本命令立即清理。
 
 ```bash
 python manage.py delete_newest_queue
@@ -299,7 +299,7 @@ python manage.py db_worker_robust --queue-name default --interval 2
 | 任务 | 频率 | 说明 |
 | --- | --- | --- |
 | `delete_old_job_executions` | 每天 00:03 | 清理超过 7 天的 APScheduler 执行记录 |
-| `delete_newest_queue` | 每天 01:08 | 队列超过 100 条时删除超过 7 天的记录 |
+| `delete_newest_queue` | 每 5 分钟 | 按上传时间保留最新 1000 条，允许两次清理之间暂时超过上限 |
 | `delete_freezed_video` | 每天 01:28 | 删除 7 天以前冻结状态的录像 |
 | `delete_overdue_emailverifyrecord` | 每周一 01:03 | 清理 1 小时以前的邮箱验证码 |
 | `delete_overdue_captcha` | 每周一 01:05 | 清理过期图形验证码 |
