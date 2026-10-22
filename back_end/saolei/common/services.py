@@ -1,12 +1,78 @@
 import json
 
+from django.db import transaction
+from django.tasks import TaskResultStatus
+from django.utils import timezone as django_timezone
+from django_tasks_db.models import DBTaskResult
+
+from config.common import TASK_CLEANUP_CONFIGS
 from config.customranking import CUSTOM_PLUCK_LEVELS
+from config.text_choices import MS_TextChoices
 from customranking.cache import PLuckRankingCache
+from identifier.models import Identifier
+from identifier.utils import verify_identifier
+from msuser.models import UserMS
 from speedranking.pb.cache import PBRankingCache
 from speedranking.pb.utils import member, record_field
 from speedranking.saolei.cache import SpeedRankingCache
 from speedranking.saolei.utils import RANKING_NAMES, RULES
+from utils.exceptions import ExceptionToResponse
+from utils.parser import MSVideoParser
+from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
+from videomanager.services import find_identical_video
+
+
+TASK_CLEANUP_BATCH_SIZE = 200
+
+
+@ranking_access(operation='common.upload_video')
+def new_video_by_file(user, file):
+    parser = MSVideoParser(file)
+    if not user.userms_id:
+        user.userms = UserMS.objects.create()
+        user.save(update_fields=['userms'])
+    if not verify_identifier(parser.identifier):
+        raise ExceptionToResponse('identifier', 'verify')
+    if not Identifier.verify(parser.identifier, user.userms) and parser.state == MS_TextChoices.State.OFFICIAL:
+        parser.state = MS_TextChoices.State.IDENTIFIER
+
+    if find_identical_video(file, timems=parser.timems, bv=parser.bv) is not None:
+        raise ExceptionToResponse('file', 'collision')
+
+    video = VideoModel.create_from_parser(parser, user)
+    video.save(update_fields=['ongoing_tournament'])
+    video.update_redis()
+    return video
+
+
+def cleanup_expired_tasks(*, delete_all=False):
+    """按配置分批清理过期的成功任务，默认每种任务只删除一批。"""
+    deleted_count = 0
+    now = django_timezone.now()
+
+    for config in TASK_CLEANUP_CONFIGS:
+        deadline = now - config['expires']
+        queryset = DBTaskResult.objects.filter(
+            task_path=config['task_path'],
+            status=TaskResultStatus.SUCCESSFUL,
+            finished_at__lt=deadline,
+        )
+
+        while True:
+            with transaction.atomic():
+                task_ids = list(
+                    queryset
+                    .select_for_update(skip_locked=True)
+                    .values_list('id', flat=True)[:TASK_CLEANUP_BATCH_SIZE],
+                )
+                count, _ = DBTaskResult.objects.filter(id__in=task_ids).delete()
+
+            deleted_count += count
+            if not delete_all or len(task_ids) < TASK_CLEANUP_BATCH_SIZE:
+                break
+
+    return deleted_count
 
 
 def get_video_rankings(video: VideoModel):

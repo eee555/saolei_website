@@ -11,11 +11,12 @@ export interface ReplaySource {
 
 const parsers = { a: AvfVideo, e: EvfVideo, m: MvfVideo, r: RmvVideo };
 
-export function parseReplay(data: ArrayBuffer, filename: string, software: MS_Software): ReplayVideo {
+export function parseReplay(data: ArrayBuffer, filename: string, software: MS_Software, features: string[] = []): ReplayVideo {
     const video = new parsers[software](new Uint8Array(data), filename);
     try {
         video.parse();
         video.analyse();
+        if (features.length > 0) video.analyse_for_features(features);
         return video;
     } catch (error) {
         video.free();

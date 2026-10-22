@@ -239,7 +239,7 @@ Common commands:
 ```bash
 git checkout -b docs/fix-guide
 git status
-git add vitepress_doc/guide/some-file.md
+git add vitepress_doc/zh/guide/some-file.md
 git commit -m "docs: improve guide"
 git push origin docs/fix-guide
 ```

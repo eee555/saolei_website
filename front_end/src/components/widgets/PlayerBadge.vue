@@ -1,5 +1,5 @@
 <template>
-    <UserAvatar :user-id="userId" style="height: 1em; margin-right: 0.25em" />
+    <UserAvatar v-if="showAvatar" :user-id="userId" style="height: 1em; margin-right: 0.25em" />
     <span v-if="name === ''">
         {{ t('common.anonymous') }}
     </span>
@@ -16,6 +16,7 @@ import UserAvatar from '@/components/widgets/UserAvatar.vue';
 defineProps({
     userId: { type: Number, required: true },
     name: { type: String, default: '' },
+    showAvatar: { type: Boolean, default: true },
 });
 
 const { t } = useI18n();

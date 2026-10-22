@@ -5,11 +5,14 @@ from django.db.models import F, Q, Window
 from django.db.models.functions import RowNumber
 
 from config.text_choices import MS_TextChoices
+from utils.querysets import player_batches
+from utils.ranking_lock import ranking_access
 from videomanager.models import VideoModel
 from .cache import TopRankingCache
-from .utils import insert_video, merge_videos, MINIMUM_BV, parse_field, RANK_FIELDS, record_field, score, STAT_COLUMNS, stat_record, TOP_SIZE
+from .events import soft_refresh_requested
+from .utils import insert_video, merge_videos, MINIMUM_BV, parse_field, RANK_FIELDS, ranking_score, record_field, record_mean, score, SOFT_FIELDS, soft_values, STAT_COLUMNS, stat_record, TOP_SIZE
 from ..cache import pipeline
-from ..utils import log_update_errors, player_batches
+from ..utils import log_update_errors
 
 
 def eligible_videos(videos, nf=False):
@@ -107,17 +110,41 @@ def write_records(pipe, previous, records, ranking=None, force_fields=None):
         old = previous[player_id]
         if old != record or player_id in force_fields:
             ranking.write_record(pipe, player_id, record)
-        for field in set(old) | set(record) | force_fields.get(player_id, set()):
+        for field in RANK_FIELDS:
             before, after = old.get(field), record.get(field)
-            if before is not None and after is not None and before['mean'] == after['mean'] and field not in force_fields.get(player_id, set()):
+            stat = parse_field(field)[2]
+            membership_changed = bool(old) != bool(record)
+            forced = field in force_fields.get(player_id, set())
+            if not membership_changed and not forced and record_mean(stat, before) == record_mean(stat, after):
                 continue
-            if before is None and after is None and field not in force_fields.get(player_id, set()):
-                continue
-            ranking.write_score(pipe, player_id, field, score(parse_field(field)[2], after['mean']) if after else None)
+            ranking.write_score(pipe, player_id, field, ranking_score(stat, record_mean(stat, after)) if record else None)
             affected.add(field)
     return affected
 
 
+def complete_update(previous, records, affected, ranking=None, *, force=False):
+    """先按已发布锚点局部更新，再由真实锚点变化触发后台重建。"""
+    ranking = ranking or TopRankingCache()
+    publication = ranking.get_publication()
+    anchors = publication['anchors'] if publication else {}
+    with pipeline() as pipe:
+        for player_id, record in records.items():
+            old = previous[player_id]
+            if record == old and not force:
+                continue
+            before = soft_values(old, anchors)
+            after = soft_values(record, anchors)
+            for field in SOFT_FIELDS:
+                if not record:
+                    pipe.zrem(ranking.soft_key(field), player_id)
+                elif not old or force or before[field] != after[field]:
+                    pipe.zadd(ranking.soft_key(field), {str(player_id): after[field]})
+        pipe.execute()
+    if ranking.refresh_anchors(affected):
+        soft_refresh_requested.send(sender=TopRankingCache)
+
+
+@ranking_access(operation='top.rebuild_record')
 def rebuild_player_record(player_id: int, level: str, stat: str, nf: bool):
     """强制重建指定用户的小榜明细、排序索引和锚点。"""
     ranking = TopRankingCache()
@@ -129,10 +156,18 @@ def rebuild_player_record(player_id: int, level: str, stat: str, nf: bool):
         with pipeline() as pipe:
             affected = write_records(pipe, previous, records, ranking, {player_id: {field}})
             pipe.execute()
-        ranking.refresh_anchors(affected)
+        complete_update(previous, records, affected, ranking, force=True)
         return {'player_id': player_id, 'records': records[player_id]}
 
 
+@ranking_access(exclusive=True, operation='top.rebuild_soft')
+def rebuild_soft_ranks():
+    """在独占范围内从原始索引重建并发布全部九项软实力。"""
+    with log_update_errors('top.rebuild_soft'):
+        return TopRankingCache().rebuild_soft()
+
+
+@ranking_access(exclusive=True, operation='top.rebuild')
 def rebuild_top_ranks(batch_size: int = 100, progress=None):
     """按玩家分段构建临时榜，生成全部锚点后原子发布。"""
     if batch_size <= 0:
@@ -152,6 +187,7 @@ def rebuild_top_ranks(batch_size: int = 100, progress=None):
                 if progress:
                     progress(count, players[-1])
             ranking.refresh_anchors(set(RANK_FIELDS))
+            ranking.rebuild_soft()
             ranking.publish_to(TopRankingCache())
         finally:
             ranking.flush()

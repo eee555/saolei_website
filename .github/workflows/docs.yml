@@ -40,6 +40,7 @@ jobs:
       run: |
         cd vitepress_doc
         npm install
+        npm test
         npm run build
 
   deploy-pages:
@@ -69,6 +70,7 @@ jobs:
       run: |
         cd vitepress_doc
         npm install
+        npm test
         npm run build
 
     - name: Upload GitHub Pages artifact
@@ -100,6 +102,7 @@ jobs:
       run: |
         cd vitepress_doc
         npm install
+        npm test
         npm run build
 
     - name: Upload docs to server

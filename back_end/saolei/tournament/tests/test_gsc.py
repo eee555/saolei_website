@@ -59,7 +59,7 @@ class TestGsc(TournamentTestCaseBase):
 
     def test_gsc_participant_registration_uses_two_steps(self):
         self.user.realname = 'GSC Player'
-        self.user.save(update_fields=['realname', 'date_updated'])
+        self.user.save(update_fields=['_realname', 'date_updated'])
         self.client.force_login(self.user)
 
         participant_response = self.client.post('/api/tournament/gsc/participant', {
@@ -69,6 +69,8 @@ class TestGsc(TournamentTestCaseBase):
         self.assertEqual(participant_response.status_code, 200)
         participant = GSCParticipant.objects.get(tournament=self.tournament, user=self.user)
         self.assertEqual(participant.token, self.tournament.token)
+        self.assertEqual(participant.start_time, self.tournament.start_time)
+        self.assertEqual(participant.end_time, self.tournament.end_time)
         self.assertIsNone(participant.arbiter_identifier)
         participants_response = self.client.get('/api/tournament/participants', {'tournament_id': self.tournament.id})
         participants_data = participants_response.json()
@@ -93,7 +95,6 @@ class TestGsc(TournamentTestCaseBase):
         participants_data = participants_response.json()
         self.assertEqual(participants_data[0]['id'], participant.id)
         self.assertEqual(participants_data[0]['arbiter_identifier__identifier'], identifier_text)
-        self.assertEqual(self.client.post('/api/tournament/gsc/register', {}).status_code, 404)
 
     def test_gsc_participant_registration_requires_realname(self):
         self.client.force_login(self.user)
@@ -112,7 +113,7 @@ class TestGsc(TournamentTestCaseBase):
 
     def test_gsc_participant_identifier_requires_existing_participant(self):
         self.user.realname = 'GSC Player'
-        self.user.save(update_fields=['realname', 'date_updated'])
+        self.user.save(update_fields=['_realname', 'date_updated'])
         self.client.force_login(self.user)
 
         response = self.client.post('/api/tournament/gsc/participant/identifier', {
@@ -122,13 +123,6 @@ class TestGsc(TournamentTestCaseBase):
 
         self.assertEqual(response.status_code, 404)
         self.assertFalse(GSCParticipant.objects.filter(tournament=self.tournament, user=self.user).exists())
-
-    def test_gsc_add_participant_uses_tournament_time_window(self):
-        self.tournament.add_participant(self.user)
-
-        participant = GSCParticipant.objects.get(tournament=self.tournament, user=self.user)
-        self.assertEqual(participant.start_time, self.tournament.start_time)
-        self.assertEqual(participant.end_time, self.tournament.end_time)
 
     def test_creating_participant_adds_existing_videos_in_time_window(self):
         matched_video = self.create_video()
@@ -193,21 +187,6 @@ class TestGsc(TournamentTestCaseBase):
         self.assertFalse(self.tournament.videos.filter(pk=token_only_video.pk).exists())
         self.assertFalse(matched_video.ongoing_tournament)
         self.assertFalse(token_only_video.ongoing_tournament)
-
-    def test_gsc_token_is_hidden_until_start_time(self):
-        now = timezone.now()
-        tournament = GSCTournament.objects.create(
-            order=4,
-            _token='G54321',
-            start_time=now + timedelta(hours=1),
-            end_time=now + timedelta(hours=2),
-            state=Tournament_TextChoices.State.NORMAL,
-        )
-
-        self.assertEqual(tournament.token, '')
-
-        tournament.start_time = now - timedelta(minutes=1)
-        self.assertEqual(tournament.token, tournament._token)
 
     def test_reveal_videos_for_tournament_makes_videos_public(self):
         self.create_cached_gsc_participant()

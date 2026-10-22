@@ -12,6 +12,7 @@ import { pinia } from '@/store/create';
 import { MS_Mode } from '@/utils/ms_const';
 import { UserProfile } from '@/utils/userprofile';
 import type { VideoAbstract } from '@/utils/videoabstract';
+import { mockVideoInfo } from '@cy/support/videoInfo';
 
 const ScatterStub = defineComponent({
     props: { videos: { type: Array<VideoAbstract>, default: () => [] } },
@@ -26,7 +27,7 @@ function mountUserVideos(userId = 99, hiddenStates = [true, false], overrides: R
     activityCalendarConfig.value.useEndTime = false;
     const user = reactive(new UserProfile({ id: userId }));
     cy.intercept('GET', '**/api/userprofile/videolist*', {
-        body: hiddenStates.map((hidden, index) => ({
+        body: mockVideoInfo(hiddenStates.map((hidden, index) => ({
             id: 101 + index,
             level: 'e',
             mode: MS_Mode.Standard,
@@ -36,7 +37,7 @@ function mountUserVideos(userId = 99, hiddenStates = [true, false], overrides: R
             ongoing_tournament: hidden,
             upload_time: new Date(2026, 9, 14, 12).toISOString(),
             ...overrides[index],
-        })),
+        }))),
     }).as('videos');
     cy.intercept('GET', '**/api/video/preview*', { statusCode: 404 }).as('preview');
     const router = createRouter({ history: createMemoryHistory(), routes: [{ path: '/player/:id/videos', name: 'user-videos', component: UserVideoView }] });
@@ -63,7 +64,49 @@ function openActions(videoId: number) {
     cy.get('[data-tippy-root] [data-cy=reveal-video]:visible').should('be.visible');
 }
 
-describe('<UserVideoView /> video reveal', () => {
+describe('<UserVideoView />', () => {
+    it('merges local CSV rows into the existing table, clears before failed imports and preserves server data', () => {
+        const user = mountUserVideos();
+        cy.get('[data-cy=arbiter-csv-upload] input[type=file]').should('not.exist');
+        cy.get('[data-cy=toggle-arbiter-csv]').should('have.attr', 'aria-expanded', 'false').click();
+        cy.get('[data-cy=toggle-arbiter-csv]').should('have.attr', 'aria-expanded', 'true');
+        cy.then(() => {
+            VideoListConfig.value.profile = ['state', 'time', 'bv', 'upload_time', 'file_size'];
+        });
+        cy.fixture('stats_csv.csv', 'utf8').then((csv: string) => {
+            const lines = csv.trim().split(/\r?\n/);
+            const contents = Cypress.Buffer.from([...lines, lines[1].replace(/^5,/, '6,')].join('\n'));
+            cy.get('[data-cy=arbiter-csv-upload] input[type=file]').selectFile({ contents, fileName: 'stats.csv' }, { force: true });
+        });
+        cy.get('[data-cy=arbiter-csv-result]').should('contain.text', '2 local videos not uploaded');
+        cy.get('[data-cy=toggle-arbiter-csv]').click();
+        cy.get('[data-cy=arbiter-csv-upload] input[type=file]').should('not.exist');
+        cy.get('[data-cy=local-video-state]').should('have.length', 2);
+        cy.get('[data-cy=toggle-arbiter-csv]').click();
+        cy.get('[data-cy=arbiter-csv-result]').should('contain.text', '2 local videos not uploaded');
+        cy.get('.p-datatable-table').getTable().should('have.length', 4);
+        cy.get('.p-datatable-table').contains('td', '35.090').click();
+        cy.get('.p-datatable-table').contains('tr', '35.090').within(() => {
+            cy.get('a, [data-cy=video-row-actions]').should('not.exist');
+            cy.get('td').filter(':contains("—")').should('have.length', 2);
+        });
+        cy.get('@preview.all').should('have.length', 0);
+        cy.get('[data-cy=video-shared-filters] input[value=l]').should('be.checked').uncheck();
+        cy.get('[data-cy=local-video-state]').should('not.exist');
+        cy.get('[data-cy=video-shared-filters] input[value=l]').check();
+        cy.get('[data-cy=arbiter-csv-upload] input[type=file]').selectFile({ contents: Cypress.Buffer.from('bad'), fileName: 'bad.csv' }, { force: true });
+        cy.get('[data-cy=local-video-state]').should('not.exist');
+        cy.get('[role=alert]').should('contain.text', 'Missing date or Time headers');
+        cy.get('[data-cy=arbiter-csv-upload] input[type=file]').selectFile('cypress/fixtures/stats_csv.csv', { force: true });
+        cy.get('[data-cy=local-video-state]').should('have.length', 1);
+        cy.get('[data-cy=clear-arbiter-csv]').click();
+        cy.get('[data-cy=local-video-state]').should('not.exist');
+        cy.then(() => {
+            expect(user.videos?.map((video) => video.id)).to.deep.equal([101, 102]);
+        });
+        cy.get('@videos.all').should('have.length', 1);
+    });
+
     it('keeps BV display filters independent while sharing selection and filters with the scatter plot', () => {
         mountUserVideos(100, [false, false, false, false], [{ software: 'a' }, { software: 'r' }, { level: 'i' }, { bv: 101 }]);
         cy.get('[data-cy=video-overview]').select('bv');
@@ -216,5 +259,7 @@ describe('<UserVideoView /> video reveal', () => {
         });
         cy.get('[data-cy=video-row-actions]').should('not.exist');
         cy.contains('th', 'Action').should('not.exist');
+        cy.get('[data-cy=arbiter-csv-upload] input[type=file]').should('not.exist');
+        cy.get('[data-cy=toggle-arbiter-csv]').should('not.exist');
     });
 });

@@ -77,10 +77,10 @@ describe('Personal Profile', () => {
     });
 
     it('Upload video', function () {
-        cy.intercept({ method: 'GET', pathname: '/api/userprofile/info/0' }).as('currentUser');
+        cy.intercept({ method: 'GET', pathname: '/api/common/loginauto' }).as('currentUser');
         cy.login(USERNAME, PASSWORD);
         cy.visitUser(USER_ID, 'upload');
-        cy.wait('@currentUser').its('response.body.realname').should('eq', REALNAME);
+        cy.wait('@currentUser').its('response.body.user.realname').should('eq', REALNAME);
         cy.get('.profile').contains(REALNAME);
 
         // 准备录像文件
@@ -240,9 +240,11 @@ describe('Personal Profile', () => {
     });
 
     it('Navigate from homepage', () => {
+        cy.intercept({ method: 'GET', pathname: '/api/video/newest_queue' }).as('newestQueue');
         cy.visit('/');
+        cy.wait('@newestQueue').its('response.statusCode').should('eq', 200);
 
-        cy.get('#pane-newest').should('be.visible').contains(`a[href="#/player/${USER_ID}"]`, REALNAME).click();
+        cy.get('#pane-newest').should('be.visible').find(`a[href="#/player/${USER_ID}"]`).first().should('be.visible').click();
 
         cy.url().should('eq', `http://localhost:8080/#/player/${USER_ID}/top`);
 

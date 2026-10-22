@@ -86,7 +86,7 @@ const refresh = async () => {
 };
 
 function verify() {
-    proxy.$axios.post('accountlink/verify/', {
+    proxy.$axios.post('/api/accountlink/verify/', {
         id: form.id,
         platform: form.platform,
         identifier: form.identifier,

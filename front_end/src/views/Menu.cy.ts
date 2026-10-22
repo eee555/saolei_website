@@ -24,7 +24,7 @@ const PageState = defineComponent({
 
 function mountMenu(width: number, options: { layout?: 'top' | 'sidebar'; settings?: boolean } = {}) {
     cy.viewport(width, 720);
-    cy.intercept({ method: 'GET', pathname: '/api/userprofile/info/0' }, user).as('fetchUser');
+    cy.intercept({ method: 'GET', pathname: '/api/common/loginauto' }, { user, top_anchors: { 'std:et': { value: 30000, sample_count: 20 } } }).as('fetchUser');
     local.value.language = 'en';
     local.value.navigation_layout = options.layout ?? 'top';
     store.login(user);
@@ -75,14 +75,21 @@ describe('<Menu /> navigation layouts', () => {
 
     it('tracks the parent section of nested routes and returns home through the logo', () => {
         const router = mountMenu(1440);
+        cy.title().should('eq', 'OpenMS - Home');
+        cy.then(() => {
+            expect(store.topAnchors?.['std:et']?.value).to.equal(30000);
+        });
         cy.then(() => router.push('/ranking/pb'));
         cy.get('.site-menu--top [data-navigation-id=ranking]').should('have.class', 'is-active');
+        cy.title().should('eq', 'OpenMS - Ranking');
         cy.then(() => router.push('/video/123'));
         cy.get('.site-menu--top [data-navigation-id=database]').should('have.class', 'is-active');
+        cy.title().should('eq', 'OpenMS - Database');
         cy.then(() => router.push('/database/identifiers'));
         cy.get('.site-menu--top [data-navigation-id=database]').should('have.class', 'is-active');
         cy.get('[data-cy=navigation-home]').click();
         cy.wrap(router).its('currentRoute.value.path').should('eq', '/');
+        cy.title().should('eq', 'OpenMS - Home');
     });
 
     it('collects overflowing navigation and tools into one menu and restores them when the container grows', () => {
@@ -168,15 +175,17 @@ describe('<Menu /> navigation layouts', () => {
         cy.get('@fetchUser.all').should('have.length', 1);
     });
 
-    it('updates language selection and the documentation URL together', () => {
+    it('keeps the documentation URL unchanged when switching the interface language', () => {
         mountMenu(1440);
         cy.get('[data-cy=languagePicker]').click();
         cy.get('[data-navigation-id=language-en] button:visible').should('have.attr', 'aria-pressed', 'true');
         cy.get('[data-navigation-id=language-zh-cn] button:visible').click();
-        cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /[?&]lang=zh(?:&|$)/);
+        cy.title().should('eq', '开源扫雷网 - 首页');
+        cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /\/docs\/$/);
         cy.get('[data-cy=languagePicker]').click();
         cy.get('[data-navigation-id=language-en] button:visible').click();
-        cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /[?&]lang=en(?:&|$)/);
+        cy.title().should('eq', 'OpenMS - Home');
+        cy.get('[data-navigation-id=docs] a').should('have.attr', 'href').and('match', /\/docs\/$/);
     });
 
     it('opens Team from About and preserves Contact links in a dropdown', () => {

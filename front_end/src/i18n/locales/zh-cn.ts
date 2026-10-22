@@ -97,6 +97,8 @@ export default {
             op: '空',
             player: '玩家',
             realName: '姓名',
+            localName: '本名',
+            internationalName: '英文名',
             sex: '性别',
             software: '软件',
             state: '状态', // 录像属性
@@ -149,6 +151,7 @@ export default {
             b: '已冻结',
             c: '有效',
             d: '标识不匹配',
+            l: '本机录像，未上传',
         },
         toDo: '敬请期待',
         website: {
@@ -322,11 +325,26 @@ export default {
         exportArbiterCSVTooltip: '兼容 Minesweeper Arbiter 生成的 <span style="font-family: \'Courier New\', Courier, monospace;">stats_csv.csv</span>。<br/> 目前不支持 Leff, Reff, Deff, GZiNi, HZiNi。',
     },
     ranking: {
+        grade: {
+            format: '{name}{stage}阶',
+            names: {
+                0: '新手',
+                1: '工兵',
+                2: '小雷神',
+                3: '大雷神',
+                4: '小雷圣',
+                5: '大雷圣',
+                6: '小雷帝',
+                7: '大雷帝',
+                8: '外星人',
+            },
+        },
         saolei: {
             title: '扫雷网规则',
         },
         empty: '暂无纪录',
         loadFailed: '排行榜加载失败',
+        refreshBusy: '排行榜锚点正在刷新，暂时无法执行此操作。请稍候再试。',
     },
     server: {
         videoSummary: {

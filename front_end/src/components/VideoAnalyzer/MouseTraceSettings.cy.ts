@@ -21,6 +21,9 @@ describe('<MouseTraceSettings />', () => {
         }
         cy.get('.mouse-trace-settings__marker--lc summary').click();
         cy.get('.mouse-trace-settings__marker--lc').within(() => {
+            cy.get('.mouse-trace-settings__enabled').should('not.be.checked');
+            cy.get('.mouse-trace-settings__shape').should('be.disabled');
+            cy.get('.mouse-trace-settings__enabled').check();
             cy.get('.mouse-trace-settings__shape').select('square');
             editNumber('.mouse-trace-settings__size', '0.8');
             editNumber('.mouse-trace-settings__stroke-width', '0.12');
@@ -41,6 +44,7 @@ describe('<MouseTraceSettings />', () => {
         });
         for (const action of ['lr', 'rc', 'rr']) {
             cy.get(`.mouse-trace-settings__marker--${action} summary`).click();
+            cy.get(`.mouse-trace-settings__marker--${action} .mouse-trace-settings__enabled`).should('not.be.checked').check();
             cy.get(`.mouse-trace-settings__marker--${action} .mouse-trace-settings__enabled`).uncheck();
         }
         cy.wrap(appearance).should((value) => {

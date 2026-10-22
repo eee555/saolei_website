@@ -59,7 +59,7 @@ const videomodel = ref<Record<string, unknown>>({});
 const softwareSet = new Set<unknown>(MS_Softwares);
 
 const getVideo = () => {
-    proxy.$axios.get<Record<string, unknown>>('video/get', { params: { id: videoid.value } }).then(
+    proxy.$axios.get<Record<string, unknown>>(`/api/video/admin/detail/${videoid.value}`).then(
         function (response) {
             videomodel.value = response.data;
         },
@@ -80,7 +80,7 @@ const updateVideo = (id: number) => {
 };
 
 const removeNewest = (id: number) => {
-    proxy.$axios.post<unknown>('video/newest_queue/remove/', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
+    proxy.$axios.post<unknown>('/api/video/newest_queue/remove', { id: id }).then(setVideoResponse).catch(httpErrorNotification);
 };
 
 function previewVideo() {

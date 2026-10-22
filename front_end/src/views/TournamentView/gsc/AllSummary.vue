@@ -3,7 +3,8 @@
     <ElTable :data="data" :default-sort="{ prop: 'sum_tsum', order: 'ascending' }" @row-click="handleRowClick">
         <ElTableColumn prop="user_id" sortable>
             <template #default="{row}">
-                <PlayerName :user-id="row.user_id" />
+                <PlayerName v-if="row.user_id !== 0" :user-id="row.user_id" />
+                <span v-else>{{ row.arbiter_identifier__identifier }}</span>
             </template>
         </ElTableColumn>
         <ElTableColumn :label="t('common.level.b')">

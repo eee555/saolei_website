@@ -11,9 +11,9 @@ export const MS_Softwares = ['e', 'a', 'r', 'm'] as const;
 export type MS_Software = typeof MS_Softwares[number];
 
 export const STNB_const = useLocalStorage('stnb_const', {
-    b: 47.299,
-    i: 153.73,
-    e: 435.001,
+    b: 36,
+    i: 162,
+    e: 435,
 });
 
 export const MS_Mode = {
@@ -30,8 +30,11 @@ export const MS_State = {
     Frozen: 'b',
     Official: 'c',
     Identifier: 'd',
+    Local: 'l',
 } as const;
 export type MS_State = typeof MS_State[keyof typeof MS_State];
+export const MS_ServerStates = [MS_State.Plain, MS_State.Frozen, MS_State.Official, MS_State.Identifier];
+export type MS_ServerState = typeof MS_ServerStates[number];
 
 export const TournamentState = {
     Pending: 'p',

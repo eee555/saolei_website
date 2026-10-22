@@ -40,7 +40,7 @@
 import '@/styles/link.css';
 import '@/styles/text.css';
 import { ElInput } from 'element-plus';
-import { computed, ref } from 'vue';
+import { ref } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -69,7 +69,7 @@ const newIdentifier = ref<string>('');
 const registeringParticipant = ref(false);
 const registeringIdentifier = ref(false);
 
-const gscGuideUrl = computed(() => getDocsUrl('guide/gsc', locale.value));
+const gscGuideUrl = getDocsUrl('guide/gsc');
 
 async function registerParticipant() {
     registeringParticipant.value = true;
@@ -121,7 +121,7 @@ const i18nMessages = {
     } },
 };
 
-const { t, locale } = useI18n({ messages: i18nMessages });
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>

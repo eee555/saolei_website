@@ -1,5 +1,3 @@
-import type { ComponentProps } from 'vue-component-type-helpers';
-
 import EditProfile from './EditProfile.vue';
 
 import $axios from '@/http';
@@ -7,7 +5,7 @@ import i18n from '@/i18n';
 import { pinia } from '@/store/create';
 import { UserProfile } from '@/utils/userprofile';
 
-function mountOptions(props?: ComponentProps<typeof EditProfile>) {
+function mountOptions(props?: { user?: UserProfile; expTimeMs?: number; qualificationStatus?: 'idle' | 'loading' | 'ready' | 'error' }) {
     return {
         props: props,
         global: {
@@ -47,6 +45,60 @@ function mockUpdateResponse(body: unknown) {
 describe('EditProfile', () => {
     beforeEach(() => {
         cy.clock(new Date('2025-01-01T00:00:00Z'));
+    });
+
+    it('offers an unchecked hide option only with eligibility and a valid new real name', () => {
+        cy.mount(EditProfile, mountOptions({ user: new UserProfile({ can_hide_realname: true }) }));
+        cy.get('[data-cy=hide-realname-toggle]').should('not.exist');
+        findLocalNameInput().type('Real Name');
+        cy.get('[data-cy=real-name-section] [data-cy=hide-realname-toggle]').should('not.be.checked');
+        findLocalNameInput().clear();
+        cy.get('[data-cy=hide-realname-toggle]').should('not.exist');
+    });
+
+    for (const hide of [true, false]) {
+        it(`saves hide_realname=${String(hide)} with the profile Save button`, () => {
+            const user = new UserProfile({ realname: 'Real Name', can_hide_realname: true, hide_realname: !hide });
+            mockUpdateResponse({ realname: null, firstname: null, lastname: null, signature: null, hide_realname: { type: 'success' } });
+            cy.mount(EditProfile, mountOptions({ user }));
+            if (hide) cy.get('[data-cy=real-name-section] [data-cy=hide-realname-toggle]').check();
+            else cy.get('[data-cy=real-name-section] [data-cy=hide-realname-toggle]').uncheck();
+            cy.get('[data-cy=save-profile]').click();
+            cy.wait('@updateProfile').interceptFormData((data) => {
+                expect(data.hide_realname).to.eq(String(hide));
+                expect(data.realname).to.be.undefined;
+                expect(data.firstname).to.be.undefined;
+                expect(data.lastname).to.be.undefined;
+                expect(data.signature).to.be.undefined;
+            });
+            cy.then(() => {
+                expect(user.hide_realname).to.eq(hide);
+            });
+        });
+    }
+
+    it('keeps the saved hiding state on failure and resets the draft with Cancel', () => {
+        const user = new UserProfile({ realname: 'Real Name', can_hide_realname: true });
+        mockUpdateResponse({ realname: null, firstname: null, lastname: null, signature: null, hide_realname: { type: 'error', object: 'privacy', category: 'not_authorized' } });
+        cy.mount(EditProfile, mountOptions({ user }));
+        cy.get('[data-cy=hide-realname-toggle]').check();
+        cy.get('[data-cy=save-profile]').click();
+        cy.wait('@updateProfile');
+        cy.contains('You are not authorized to hide your real name');
+        cy.then(() => {
+            expect(user.hide_realname).to.eq(false);
+        });
+        cy.contains('button', 'Cancel').click();
+        cy.get('[data-cy=hide-realname-toggle]').should('not.be.checked');
+    });
+
+    it('rejects reserved names before posting', () => {
+        cy.intercept('POST', '/api/userprofile/update_profile').as('save');
+        cy.mount(EditProfile, mountOptions({ user: new UserProfile() }));
+        findLocalNameInput().type('hidden');
+        cy.get('[data-cy=save-profile]').click();
+        cy.contains('A name cannot be the reserved value hidden');
+        cy.get('@save.all').should('have.length', 0);
     });
 
     describe('Local name', () => {

@@ -211,10 +211,8 @@ function readDescriptionValue(label: string) {
 
 before(() => {
     cy.flushDatabase();
-    cy.registerUser(HOST);
-    cy.registerUser(STAFF);
+    cy.registerUsers([HOST, STAFF, USER]);
     cy.setStaff(STAFF.id);
-    cy.registerUser(USER);
 });
 
 beforeEach(() => {
@@ -676,6 +674,111 @@ describe('GSC tournament finish task', () => {
         cy.contains('button', '计算排行并结束比赛').click();
         cy.contains('操作成功');
         cy.closeElNotifications();
+    });
+});
+
+describe('GSC historical supplementation', () => {
+    let historyTournamentId = 0;
+    let secondHistoryTournamentId = 0;
+    let uploadedTournamentId = 0;
+
+    before(() => {
+        cy.registerUsers(Array.from({ length: 21 }, (_, index) => {
+            const id = 101 + index;
+            return { id, username: `history${id}`, email: `history${id}@example.com`, password: 'historyPassword' };
+        }));
+        for (const order of [19, 20, 18]) {
+            cy.dangerzonePost<DangerzoneTournament>('create_gsc_tournament', { order, state: 'a', start_time: '2000-01-01T00:00:00Z', end_time: '2000-01-02T00:00:00Z', host_id: HOST.id }).then(({ body }) => {
+                if (order === 19) historyTournamentId = body.id;
+                else if (order === 20) secondHistoryTournamentId = body.id;
+                else uploadedTournamentId = body.id;
+            });
+        }
+    });
+
+    it('imports CSV scores across tournaments and more than ten rows, then publishes only after explicit recalculation', () => {
+        cy.login(HOST.username, HOST.password);
+        cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/results', query: { tournament_id: String(historyTournamentId) } }).as('history');
+        cy.intercept('POST', '**/api/tournament/gsc/history/scores/users').as('userBatch');
+        cy.intercept('POST', '**/api/tournament/gsc/history/scores/anonymous').as('anonymousBatch');
+        visitGSCAdmin(19);
+        cy.wait('@history');
+        cy.contains('.el-tabs__item', '站内成绩 CSV').click();
+        cy.fixture<string>('gsc/type2.csv', 'utf8').then((fixture) => {
+            const extra = Array.from({ length: 11 }, (_, i) => [19, 111 + i, 1000, 2000, 40000, 10000, 12000, 130000, 40000, 50000, 230000].join(','));
+            const crossOrder = fixture.trim().split(/\r?\n/)[1].replace(/^19,/, '20,');
+            const text = `${fixture.trim()}\n${extra.join('\n')}\n${crossOrder}`;
+            cy.get('.el-tab-pane:visible [data-cy=history-csv]').selectFile({ contents: Cypress.Buffer.from(text), fileName: 'history-users.csv' });
+        });
+        cy.get('.el-tab-pane:visible [data-cy=history-csv-submit]').should('contain.text', '22').click();
+        cy.wait('@userBatch').its('request.body.rows').should('have.length', 10);
+        cy.wait('@userBatch').its('request.body.rows').should('have.length', 10);
+        cy.wait('@userBatch').its('request.body.rows').should('have.length', 1);
+        cy.wait('@userBatch').its('request.body.order').should('eq', 20);
+        cy.get('.el-tab-pane:visible [data-cy=history-csv-progress]').should('contain.text', '22 / 22');
+        cy.wait('@history');
+        cy.contains('.el-tabs__item', '匿名成绩 CSV').click();
+        cy.get('.el-tab-pane:visible [data-cy=history-csv]').selectFile('cypress/fixtures/gsc/type3.csv');
+        cy.get('.el-tab-pane:visible [data-cy=history-csv-submit]').click();
+        cy.wait('@anonymousBatch').its('response.statusCode').should('eq', 200);
+        cy.wait('@history');
+        cy.get('[data-cy=history-participants] tbody tr:not(.base-table-empty-row)').should('have.length', 31);
+        cy.get('[data-cy=history-participants] table').getTable().should((rows) => {
+            expect(rows).to.have.length(31);
+            expect(rows.find((row) => row.选手 === 'kiraa96G09511')).to.include({ 成绩来源: '手工', '总成绩 / ms': '319830' });
+        });
+        cy.then(() => cy.dangerzonePost('refresh_tournament_scores', { id: historyTournamentId }));
+        cy.then(() => cy.dangerzonePost('refresh_tournament_scores', { id: secondHistoryTournamentId }));
+        cy.then(() => cy.visit(`/#/tournament/${historyTournamentId}`));
+        cy.wait('@history');
+        cy.get('[data-cy=all-participants-tabs] .el-table__body tbody tr').should('have.length', 31);
+        cy.get('[data-cy=all-participants-tabs] .el-table__body').extractTableData().should((rows) => {
+            expect(rows).to.have.length(31);
+            expect(rows.find((row) => row[0] === 'kiraa96G09511')?.slice(1, 4)).to.deep.equal(['1.470', '1.830', '33.690']);
+        });
+    });
+
+    it('reuses a replay participant after reloading and imports without the historical race token', () => {
+        cy.login(HOST.username, HOST.password);
+        cy.intercept({ method: 'GET', pathname: '/api/tournament/gsc/results', query: { tournament_id: String(uploadedTournamentId) } }).as('history');
+        cy.intercept('POST', '**/api/tournament/gsc/history/prepare').as('prepareHistory');
+        cy.intercept('POST', '**/api/tournament/gsc/history/participants/*/identifier').as('bindHistory');
+        cy.intercept('POST', '**/api/tournament/gsc/history/participants/*/videos').as('uploadHistory');
+        visitGSCAdmin(18);
+        cy.wait('@history');
+        cy.get('[data-cy=history-user-id]').type('101');
+        cy.get('[data-cy=history-video-files]').selectFile('cypress/fixtures/standard_gsc.evf');
+        cy.get('[data-cy=history-identifiers] .el-tag').should('have.length', 1);
+        cy.get('[data-cy=history-videos-submit]').click();
+        cy.wait('@prepareHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@bindHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@uploadHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@history');
+        cy.get('[data-cy=history-participants] tbody tr:not(.base-table-empty-row)').should('have.length', 1);
+        cy.get('[data-cy=history-participants] table').getTable().should((rows) => {
+            expect(rows).to.have.length(1);
+            expect(rows[0]).to.include({ 成绩来源: '录像', 录像: '有' });
+        });
+        cy.get('[data-cy=history-delete]').should('not.exist');
+        visitGSCAdmin(18);
+        cy.wait('@history');
+        cy.get('[data-cy=history-user-id]').type('101');
+        cy.get('[data-cy=history-video-files]').selectFile('cypress/fixtures/standard_gsc.evf');
+        cy.get('[data-cy=history-identifiers] .el-tag').should('have.length', 1);
+        cy.get('[data-cy=history-videos-submit]').click();
+        cy.wait('@prepareHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@bindHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@uploadHistory').its('response.statusCode').should('eq', 200);
+        cy.wait('@history');
+        cy.get('[data-cy=history-participants] tbody tr:not(.base-table-empty-row)').should('have.length', 1);
+        cy.then(() => cy.dangerzonePost('refresh_tournament_scores', { id: uploadedTournamentId }));
+        cy.then(() => cy.visit(`/#/tournament/${uploadedTournamentId}`));
+        cy.wait('@history');
+        cy.get('[data-cy=all-participants-tabs] .el-table__body tbody tr').should('have.length', 1);
+        cy.get('[data-cy=all-participants-tabs] .el-table__body').extractTableData().should((rows) => {
+            expect(rows).to.have.length(1);
+            expect(rows[0].slice(7, 10)).to.deep.equal(['41.021', '240.000', '1001.021']);
+        });
     });
 });
 

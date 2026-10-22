@@ -48,14 +48,14 @@ import { useStatistic } from './useStatistic';
 import BaseTextButton from '@/components/common/BaseTextButton.vue';
 import RefreshableCard from '@/components/common/RefreshableCard.vue';
 import { local } from '@/store';
-import { MS_Levels, MS_Mode, MS_Softwares, MS_State } from '@/utils/ms_const';
+import { MS_Levels, MS_Mode, MS_ServerStates, MS_Softwares } from '@/utils/ms_const';
 
 const dimensions = ['software', 'level', 'mode', 'state'] as const;
 type Dimension = typeof dimensions[number];
 type VideoSummary = { total: number } & Record<Dimension, Record<string, number>>;
 const dimension = ref<Dimension>('software');
 const orders: Record<Dimension, readonly string[]> = {
-    software: MS_Softwares, level: MS_Levels, mode: Object.values(MS_Mode), state: Object.values(MS_State),
+    software: MS_Softwares, level: MS_Levels, mode: Object.values(MS_Mode), state: MS_ServerStates,
 };
 const extraModes = ['07', '08', '09'];
 const omittedCategories: Record<Dimension, readonly string[]> = {

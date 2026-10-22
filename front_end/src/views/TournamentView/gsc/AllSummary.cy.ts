@@ -5,7 +5,7 @@ import i18n from '@/i18n';
 import { GSCParticipant } from '@/utils/gsc';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
 
-const realnames = {
+const usernames = {
     18: 'UserNoFinish',
     6: 'UserChampion',
     82: 'UserNoScore',
@@ -26,9 +26,9 @@ describe('<AllSummary />', () => {
             },
             {
                 body: [
-                    { id: 6, realname: realnames[6] },
-                    { id: 18, realname: realnames[18] },
-                    { id: 82, realname: realnames[82] },
+                    { id: 6, username: usernames[6] },
+                    { id: 18, username: usernames[18] },
+                    { id: 82, username: usernames[82] },
                 ],
             },
         ).as('getUserInfo');
@@ -82,5 +82,18 @@ describe('<AllSummary />', () => {
                 '310.000', '310.000', '2120.000',
             ]);
         });
+    });
+
+    it('renders separate anonymous identifiers without requesting User#0', () => {
+        cy.mockPlayerNameFallback();
+        const data = [
+            new GSCParticipant({ id: 1, user_id: 0, arbiter_identifier__identifier: 'Anonymous A', bt20sum: 1 }),
+            new GSCParticipant({ id: 2, user_id: 0, arbiter_identifier__identifier: 'Anonymous B', bt20sum: 2 }),
+        ];
+        cy.mount(AllSummary, { props: { data }, global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
+        cy.get('.el-table__body').extractTableData().should((rows) => {
+            expect(rows.map((row) => row[0])).to.deep.equal(['Anonymous A', 'Anonymous B']);
+        });
+        cy.contains('User#0').should('not.exist');
     });
 });

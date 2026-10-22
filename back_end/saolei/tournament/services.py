@@ -1,12 +1,14 @@
 import logging
 
-from django.db.models import Q, Sum
+from django.db.models import Exists, OuterRef, Q, Sum
 from django.utils import timezone
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.services import add_videos_to_custom_pluck_ranks
+from effranking.services import add_videos_to_eff_ranks
 from speedranking.services import add_videos_to_speed_ranks
 from tournament.cache import TournamentCache
+from utils.ranking_lock import ranking_access
 from videomanager.cache import add_videos_to_state_queues_bulk
 from videomanager.models import VideoModel
 from .models import (
@@ -20,6 +22,10 @@ from .models import (
 
 cache = TournamentCache()
 logger = logging.getLogger('tournament')
+
+
+def with_participant_video_status(participants):
+    return participants.annotate(has_videos=Exists(VideoModel.objects.filter(tournaments__id=OuterRef('tournament_id'), player_id=OuterRef('user_id'))))
 
 
 def checkin_with_arbiter(video: VideoModel, arbiter_identifier: str):
@@ -39,6 +45,8 @@ def checkin_with_token(video: VideoModel, tokens: list[str]):
 
 
 def add_existing_videos_to_participant_tournament(participant: TournamentParticipant):
+    if participant.tournament.subclass == Tournament_TextChoices.Subclass.GSC and participant.tournament.state == Tournament_TextChoices.State.AWARDED:
+        return 0
     if participant.user_id is None or participant.start_time is None or participant.end_time is None:
         return 0
 
@@ -88,6 +96,8 @@ def delete_participants_without_videos(tournament: Tournament):
         .filter(tournament=tournament, user_id__isnull=False)
         .exclude(user_id__in=video_player_ids)
     )
+    if tournament.subclass == Tournament_TextChoices.Subclass.GSC:
+        participants = participants.exclude(pk__in=GSCParticipant.objects.filter(tournament=tournament, manual_scores=True).values('pk'))
     deleted_count = participants.count()
     participants.delete()
     return deleted_count
@@ -227,6 +237,7 @@ def award_tournament_rank_scores(tournament: Tournament, *, batch_size=1000):
     return len(participants)
 
 
+@ranking_access(operation='tournament.reveal_videos')
 def reveal_videos_for_tournament(tournament: Tournament):
     """批量恢复已颁奖比赛中不再属于其他未颁奖且未取消比赛的录像。"""
     logger.info(f'比赛#{tournament.id} 录像公开开始，状态 {tournament.state}')
@@ -266,6 +277,7 @@ def reveal_videos_for_tournament(tournament: Tournament):
     add_videos_to_state_queues_bulk(videos)
     add_videos_to_speed_ranks(videos)
     add_videos_to_custom_pluck_ranks(videos)
+    add_videos_to_eff_ranks(videos)
 
     logger.info(f'比赛#{tournament.id} 录像公开完成，公开录像 {len(video_ids)} 个')
     return len(video_ids)

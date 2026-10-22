@@ -91,9 +91,25 @@ describe('<GSC App />', () => {
     beforeEach(() => {
         cy.mockPlayerNameFallback();
     });
+
+    it('uses stored manual scores in a site participant summary even when no replays exist', () => {
+        const tournament = gscTournament();
+        tournament.state = TournamentState.Awarded;
+        const row = { id: 701, user_id: 987654, manual_scores: true, arbiter_identifier: null, has_videos: false, rank: 1, rank_score: 0, bt1st: 1000, bt20th: 2000, bt20sum: 3000, it1st: 4000, it12th: 5000, it12sum: 6000, et1st: 7000, et5th: 8000, et5sum: 9000 };
+        cy.intercept('GET', '**/api/tournament/gsc/results*', { body: [row] }).as('results');
+        cy.intercept('GET', '**/api/tournament/get_videos/participant*', { body: [] }).as('manualVideos');
+        store.logout();
+        cy.mount(App, { props: { tournament }, global: { plugins: [pinia, i18n, hashRouter()], config: { globalProperties: { $axios } } } });
+        cy.wait('@results');
+        cy.get('.el-table__body tbody tr').first().find('td').eq(1).click();
+        cy.wait('@manualVideos');
+        cy.get('[data-cy=manual-personal-summary] .el-table__body').extractTableData().should((rows) => {
+            expect(rows[0].slice(1)).to.deep.equal(['1.000', '2.000', '3.000', '4.000', '5.000', '6.000', '7.000', '8.000', '9.000', '12.000', '15.000', '18.000']);
+        });
+    });
     it('hides real-time score for anonymous users during ongoing tournament', () => {
         mountGSC({ loginStatus: LoginStatus.NotLogin, participant: false });
-        cy.get('a.link[href$="/en/guide/gsc"]').should('be.visible');
+        cy.get('a.link[href$="/guide/gsc"]').should('be.visible');
 
         cy.contains('Ongoing').should('be.visible');
         cy.contains('Real-Time Score').should('not.exist');

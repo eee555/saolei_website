@@ -1,82 +1,93 @@
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
 import json
-from unittest.mock import call, patch
+from types import SimpleNamespace
+from unittest.mock import patch
+from uuid import uuid4
 
 from django.core.files.base import ContentFile
+from django.core.management import call_command
 from django.test import override_settings, SimpleTestCase, TestCase
 import requests
 
-from common.utils import new_video_by_file
+from common.services import new_video_by_file
 from msuser.models import UserMS
 from userprofile.models import UserProfile
+from utils import ComplexEncoder
+from .cache import cache, NEWEST_QUEUE_LIMIT, serialize_video_to_queue, VideoQueueCache
 from .models import ExpandVideoModel, VideoModel
 from .services import delete_newest_queue
 from .view_utils import refresh_video
 # Create your tests here.
 
 
-class DeleteNewestQueueTests(SimpleTestCase):
+class NewestQueueTests(SimpleTestCase):
     def setUp(self):
-        cache_patch = patch('videomanager.services.cache')
-        self.cache = cache_patch.start()
-        self.addCleanup(cache_patch.stop)
-        datetime_patch = patch('videomanager.services.datetime', wraps=datetime)
-        self.mock_datetime = datetime_patch.start()
-        self.addCleanup(datetime_patch.stop)
-        self.mock_datetime.now.return_value = datetime(2026, 9, 21, 12, tzinfo=timezone.utc)
+        self.queue = VideoQueueCache(f'test:newest_queue:{uuid4().hex}')
+        self.addCleanup(cache.delete, self.queue.key)
+        self.time = datetime(2026, 9, 21, 12, tzinfo=timezone.utc)
 
-    def set_queue(self, times):
-        queue = {
-            str(index).encode(): json.dumps({'time': time_str}).encode()
-            for index, time_str in enumerate(times)
-        }
-        self.cache.hlen.return_value = len(queue)
-        self.cache.hgetall.return_value = queue
-        return queue
+    def video(self, video_id, *, upload_time=None, ongoing=False):
+        return SimpleNamespace(id=video_id, state='c', player_id=1, upload_time=upload_time or self.time, ongoing_tournament=ongoing)
 
-    def test_skips_queues_with_at_most_100_entries(self):
-        for size in (0, 99, 100):
+    def seed(self, videos):
+        mapping = {video.id: json.dumps(serialize_video_to_queue(video), cls=ComplexEncoder) for video in videos}
+        if mapping:
+            cache.hset(self.queue.key, mapping=mapping)
+
+    def ids(self):
+        return {int(video_id) for video_id in cache.hkeys(self.queue.key)}
+
+    def test_trim_keeps_at_most_1000_entries_regardless_of_age(self):
+        for size in (0, NEWEST_QUEUE_LIMIT - 1, NEWEST_QUEUE_LIMIT):
             with self.subTest(size=size):
-                self.cache.reset_mock()
-                self.set_queue(['2026-09-01T12:00:00Z'] * size)
+                cache.delete(self.queue.key)
+                self.seed(self.video(index, upload_time=self.time - timedelta(days=30)) for index in range(1, size + 1))
+                self.assertEqual(self.queue.trim(), 0)
+                self.assertEqual(len(self.ids()), size)
 
-                delete_newest_queue()
+    def test_single_add_allows_overflow_until_cleanup_and_trim_removes_oldest(self):
+        self.seed(self.video(index) for index in range(1, NEWEST_QUEUE_LIMIT + 1))
+        self.queue.add(self.video(NEWEST_QUEUE_LIMIT + 1, upload_time=self.time - timedelta(days=30)))
+        self.queue.add(self.video(NEWEST_QUEUE_LIMIT + 2, upload_time=self.time + timedelta(seconds=1)))
+        self.queue.add(self.video(NEWEST_QUEUE_LIMIT + 3, ongoing=True))
+        self.assertEqual(len(self.ids()), NEWEST_QUEUE_LIMIT + 2)
+        self.assertNotIn(NEWEST_QUEUE_LIMIT + 3, self.ids())
+        self.assertEqual(self.queue.trim(), 2)
+        self.assertEqual(self.ids(), {*range(2, NEWEST_QUEUE_LIMIT + 1), NEWEST_QUEUE_LIMIT + 2})
 
-                self.cache.hgetall.assert_not_called()
-                self.cache.hdel.assert_not_called()
-
-    def test_deletes_only_entries_strictly_older_than_seven_days(self):
-        self.set_queue([
-            '2026-09-14T11:59:59Z',
-            '2026-09-14T12:00:00Z',
-            '2026-09-14T12:00:01Z',
-            *['2026-09-21T12:00:00Z'] * 98,
+    def test_bulk_add_allows_overflow_and_cleanup_keeps_latest_uploads(self):
+        # IDs deliberately run opposite to upload times; imports are not necessarily chronological.
+        self.queue.add_bulk([
+            *(self.video(index, upload_time=self.time - timedelta(seconds=index)) for index in range(1, 2501)),
+            self.video(2501, upload_time=self.time + timedelta(seconds=1), ongoing=True),
         ])
+        self.assertEqual(len(self.ids()), 2500)
+        self.assertNotIn(2501, self.ids())
+        self.assertEqual(self.queue.trim(), 1500)
+        self.assertEqual(self.ids(), set(range(1, NEWEST_QUEUE_LIMIT + 1)))
 
-        delete_newest_queue()
+    def test_update_only_changes_existing_entries_and_cleanup_uses_updated_timestamp(self):
+        self.seed(self.video(index) for index in range(1, NEWEST_QUEUE_LIMIT + 2))
+        changed = self.video(NEWEST_QUEUE_LIMIT + 1, upload_time=self.time - timedelta(days=30))
+        self.queue.update_bulk([changed, self.video(NEWEST_QUEUE_LIMIT + 2)])
+        self.assertEqual(self.ids(), set(range(1, NEWEST_QUEUE_LIMIT + 2)))
+        self.assertEqual(self.queue.trim(), 1)
+        self.assertEqual(self.ids(), set(range(1, NEWEST_QUEUE_LIMIT + 1)))
+        self.queue.update_bulk([changed])
+        self.assertEqual(self.ids(), set(range(1, NEWEST_QUEUE_LIMIT + 1)))
+        kept = self.video(1)
+        kept.state = 'a'
+        self.queue.update_bulk([kept])
+        self.assertEqual(json.loads(cache.hget(self.queue.key, kept.id))['state'], 'a')
 
-        self.cache.hlen.assert_called_once_with('newest_queue')
-        self.cache.hgetall.assert_called_once_with('newest_queue')
-        self.cache.hdel.assert_called_once_with('newest_queue', b'0')
-
-    def test_keeps_large_queue_without_expired_entries(self):
-        self.set_queue(['2026-09-21T12:00:00Z'] * 101)
-
-        delete_newest_queue()
-
-        self.cache.hdel.assert_not_called()
-
-    def test_deletes_all_expired_entries_even_if_fewer_than_100_remain(self):
-        queue = self.set_queue(['2026-09-01T12:00:00Z'] * 101)
-        self.cache.hlen.side_effect = lambda key: len(queue)
-        self.cache.hgetall.side_effect = lambda key: queue.copy()
-        self.cache.hdel.side_effect = lambda key, field: queue.pop(field)
-        expected_calls = [call('newest_queue', key) for key in queue]
-
-        delete_newest_queue()
-
-        self.assertCountEqual(self.cache.hdel.call_args_list, expected_calls)
-        self.assertEqual(queue, {})
+    def test_service_and_management_command_trim_preexisting_overflow_with_numeric_id_tiebreak(self):
+        with patch('videomanager.services.newest_cache', self.queue):
+            for cleanup in (delete_newest_queue, lambda: call_command('delete_newest_queue', verbosity=0)):
+                with self.subTest(cleanup=cleanup):
+                    cache.delete(self.queue.key)
+                    self.seed(self.video(index) for index in range(1, NEWEST_QUEUE_LIMIT + 2))
+                    cleanup()
+                    self.assertEqual(self.ids(), set(range(2, NEWEST_QUEUE_LIMIT + 2)))
 
 
 class VideoManagerTestCase(TestCase):

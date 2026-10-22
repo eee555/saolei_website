@@ -1,8 +1,5 @@
 <template>
     <div style="display: flex; gap: 1rem; align-items: center">
-        <BaseButton class="square-button" :aria-label="t('common.action.refresh')" :title="t('common.action.refresh')" @click="load">
-            <BaseIconRefresh :loading="loading" aria-hidden="true" />
-        </BaseButton>
         <label class="checkbox nf-toggle">
             <input v-model="nf" class="checkbox-input" type="checkbox">
             <span>{{ t('common.nf') }}</span>
@@ -38,7 +35,7 @@
             <td class="table-col-player">
                 <PlayerName :user-id="row.player_id" />
             </td>
-            <td v-for="field in saoleiFields" :key="field" class="table-col-number">
+            <td v-for="field in saoleiFields" :key="field" class="table-col-number" :style="cellStyle(row, field)">
                 <VideoPreviewLink v-if="saoleiVideoId(row, field)" :id="saoleiVideoId(row, field)">
                     {{ formatSaoleiValue(row, field) }}
                 </VideoPreviewLink>
@@ -62,26 +59,38 @@ import { computed, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import SaoleiRankingColumn from './SaoleiRankingColumn.vue';
+import { queryChoice, queryInteger, queryNF, useRankingQuery } from './useRankingQuery';
 
-import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
-import { BaseIconRefresh } from '@/components/common/icon';
 import PlayerName from '@/components/PlayerName.vue';
 import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
-import { fetchSaoleiRanking, formatSaoleiValue, saoleiFields, SaoleiLevels, saoleiVideoId } from '@/services/saoleiRankingService';
+import { fetchSaoleiRanking, formatSaoleiValue, isSaoleiTimeStat, saoleiFields, SaoleiLevels, saoleiVideoId } from '@/services/saoleiRankingService';
 import type { SaoleiField, SaoleiRecord } from '@/services/saoleiRankingService';
+import { colorThemes } from '@/store/color';
+import { getPiecewiseColorSchemeName } from '@/utils/ms_const';
+
+const props = defineProps({ colored: { type: Boolean, default: false } });
 
 const levels = [...SaoleiLevels, 'sum'] as const;
-const nf = ref(false);
-const stat = ref<SaoleiField>('sumt');
-const currentPage = ref(1);
-const pageSize = ref(20);
+const { fields: { nf, sort: stat, page: currentPage, page_size: pageSize }, update } = useRankingQuery<{ nf: boolean; sort: SaoleiField; page: number; page_size: number }>(
+    { nf: false, sort: 'sumt', page: 1, page_size: 20 },
+    (query, defaults) => ({ nf: queryNF(query.nf), sort: queryChoice(query.sort, saoleiFields, defaults.sort), page: queryInteger(query.page, defaults.page), page_size: queryChoice(query.page_size, [20, 50, 100], defaults.page_size) }),
+    ['nf', 'sort', 'page_size'],
+);
 const first = computed(() => (currentPage.value - 1) * pageSize.value);
 const total = ref(0);
 const rows = ref<SaoleiRecord[]>([]);
 const loading = ref(false);
 const failed = ref(false);
 let requestId = 0;
+
+function cellStyle(row: SaoleiRecord, field: SaoleiField) {
+    const cellLevel = SaoleiLevels.find((candidateLevel) => field.startsWith(candidateLevel));
+    const value = row[field];
+    if (!props.colored || cellLevel === undefined || value === null) return undefined;
+    const cellStat = isSaoleiTimeStat(field) ? 'time' : 'bvs';
+    return colorThemes[getPiecewiseColorSchemeName(cellStat, cellLevel)].value.getStyle(cellStat === 'time' ? value / 1000 : value);
+}
 
 async function load() {
     const current = ++requestId;
@@ -93,7 +102,7 @@ async function load() {
         rows.value = data.players;
         total.value = data.count;
         if (first.value > 0 && first.value >= total.value) {
-            currentPage.value = Math.max(1, Math.ceil(total.value / pageSize.value));
+            void update({ page: Math.max(1, Math.ceil(total.value / pageSize.value)) }, true);
         }
     } catch {
         if (current !== requestId) return;
@@ -110,13 +119,12 @@ function selectStat(selected: SaoleiField) {
     stat.value = selected;
 }
 
-watch([nf, stat, pageSize], () => {
-    currentPage.value = 1;
-}, { flush: 'sync' });
 watch([nf, stat, pageSize, currentPage], () => {
     rows.value = [];
     void load();
 }, { immediate: true });
+
+defineExpose({ refresh: load, loading });
 
 const { t } = useI18n();
 </script>

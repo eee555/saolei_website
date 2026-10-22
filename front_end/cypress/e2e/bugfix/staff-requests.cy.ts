@@ -23,9 +23,8 @@ interface TaskDetail {
 describe('Staff requests against the backend', () => {
     it('Before All', () => {
         cy.flushDatabase();
-        cy.registerUser(STAFF);
+        cy.registerUsers([STAFF, USER]);
         cy.setStaff(STAFF.id);
-        cy.registerUser(USER);
     });
 
     it('persists staff edits and shows the updated profile on the lightweight PB tab', () => {

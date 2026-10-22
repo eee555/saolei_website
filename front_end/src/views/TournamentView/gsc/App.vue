@@ -17,8 +17,9 @@
             <AllSummary v-if="state === TournamentState.Awarded" :data="data" @row-click="onParticipantSelect" />
             <Registered v-else :loading="loading" :participants="participants" />
         </template>
-        <template #personalSummary="{ videos }">
-            <GSCPersonalSummary :videos="videos" />
+        <template #personalSummary="{ videos, participant: summaryParticipant }">
+            <AllSummary v-if="summaryParticipant.manual_scores" :data="[summaryParticipant]" data-cy="manual-personal-summary" />
+            <GSCPersonalSummary v-else :videos="videos" />
         </template>
     </PublicTournament>
 </template>

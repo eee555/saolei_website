@@ -1,11 +1,14 @@
 from datetime import datetime
 
+from django.db import transaction
 from django.http import HttpRequest, HttpResponse, HttpResponseForbidden
 from django.shortcuts import get_object_or_404
 from django.utils import timezone
-from ninja import Form, Router, Schema
+from ninja import Field, File, Form, Router, Schema
 from ninja.decorators import decorate_view
+from ninja.files import UploadedFile
 from ninja.orm import create_schema
+from pydantic import PositiveInt
 
 from config.text_choices import Tournament_TextChoices
 from config.tournaments import TournamentWeights
@@ -19,8 +22,9 @@ from userprofile.decorators import login_required_error
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
 from utils.response import HttpResponseConflict, realname_required_response
-from utils.schema import DBTaskOut
-from .services import get_gsc_scores
+from utils.schema import DBTaskOut, MySQLPositiveInteger
+from videomanager.schema import VideoBaseOut
+from .services import bind_gsc_history_identifier, get_gsc_scores, import_gsc_history_scores, prepare_gsc_history_videos, upload_gsc_history_video
 from .tasks import helper_gsc_finish_tournament
 
 router = Router()
@@ -59,12 +63,138 @@ GSCScoreOut = create_schema(
         'bt1st', 'bt20th', 'bt20sum',
         'it1st', 'it12th', 'it12sum',
         'et1st', 'et5th', 'et5sum',
+        'manual_scores',
     ],
     custom_fields=[
         ('user_id', int, 0),
+        ('has_videos', bool, False),
+        ('arbiter_identifier', str | None, Field(None, alias='arbiter_identifier.identifier')),
     ],
     base_class=ParticipantOutBase,
 )
+
+
+class HistoryPrepareIn(Schema):
+    order: PositiveInt
+    user_id: PositiveInt
+
+
+class HistoryIdentifierIn(Schema):
+    identifier: str = Field(max_length=80)
+
+
+class IdentifierBindingOut(Schema):
+    identifier: str
+    bound: bool
+
+
+class HistoryScoreIn(Schema):
+    bt1st: MySQLPositiveInteger
+    bt20th: MySQLPositiveInteger
+    bt20sum: MySQLPositiveInteger
+    it1st: MySQLPositiveInteger
+    it12th: MySQLPositiveInteger
+    it12sum: MySQLPositiveInteger
+    et1st: MySQLPositiveInteger
+    et5th: MySQLPositiveInteger
+    et5sum: MySQLPositiveInteger
+
+
+class HistoryUserScoreIn(HistoryScoreIn):
+    user_id: PositiveInt
+
+
+class HistoryAnonymousScoreIn(HistoryScoreIn):
+    arbiter_identifier: str = Field(min_length=1, max_length=80)
+
+
+class HistoryUserBatchIn(Schema):
+    order: PositiveInt
+    rows: list[HistoryUserScoreIn] = Field(min_length=1, max_length=10)
+
+
+class HistoryAnonymousBatchIn(Schema):
+    order: PositiveInt
+    rows: list[HistoryAnonymousScoreIn] = Field(min_length=1, max_length=10)
+
+
+def _get_history_tournament(request: HttpRequest, order: int):
+    tournament = get_object_or_404(GSCTournament.objects.select_for_update(), order=order)
+    if not request.user.is_staff and tournament.host_id != request.user.pk:
+        raise ExceptionToResponse('tournament', 'permission', status_code=403)
+    if tournament.state != Tournament_TextChoices.State.AWARDED or tournament.end_time is None:
+        raise ExceptionToResponse('tournament', 'not_awarded', status_code=409)
+    return tournament
+
+
+def _get_history_video_participant(request: HttpRequest, participant_id: int):
+    participant = get_object_or_404(GSCParticipant.objects.select_related('user', 'tournament__gsctournament'), pk=participant_id)
+    _get_history_tournament(request, participant.tournament.gsctournament.order)
+    if participant.manual_scores or participant.user_id is None:
+        raise ExceptionToResponse('participant', 'not_video_source', status_code=409)
+    return participant
+
+
+@router.post('/history/prepare', response=GSCScoreOut)
+@decorate_view(login_required_error)
+def create_history_participant(request: HttpRequest, data: HistoryPrepareIn):
+    """
+    - `login_required_error`
+
+    获取或创建录像来源参赛者，已有非手工记录原样返回，手工来源拒绝。
+    """
+    with transaction.atomic():
+        tournament = _get_history_tournament(request, data.order)
+        user = get_object_or_404(UserProfile.objects.select_for_update(), pk=data.user_id)
+        return prepare_gsc_history_videos(tournament, user)
+
+
+@router.post('/history/participants/{participant_id}/identifier', response=IdentifierBindingOut)
+@decorate_view(login_required_error)
+def bind_history_identifier(request: HttpRequest, participant_id: int, data: HistoryIdentifierIn):
+    """
+    - `login_required_error`
+    """
+    with transaction.atomic():
+        participant = _get_history_video_participant(request, participant_id)
+        return bind_gsc_history_identifier(participant, data.identifier)
+
+
+@router.post('/history/participants/{participant_id}/videos', response=VideoBaseOut)
+@decorate_view(login_required_error)
+def upload_history_video(request: HttpRequest, participant_id: int, upload_time: datetime = Form(...), file: UploadedFile = File(...)):  # noqa: B008
+    """
+    - `login_required_error`
+    """
+    try:
+        with transaction.atomic():
+            participant = _get_history_video_participant(request, participant_id)
+            return upload_gsc_history_video(participant, file, upload_time)
+    except ExceptionToResponse as exc:
+        status = exc.status_code if exc.status_code >= 400 else 400
+        raise ExceptionToResponse(exc.obj, exc.category, status_code=status) from exc
+
+
+@router.post('/history/scores/users', response=int)
+@decorate_view(login_required_error)
+def import_history_user_scores(request: HttpRequest, data: HistoryUserBatchIn):
+    """
+    - `login_required_error`
+    """
+    with transaction.atomic():
+        tournament = _get_history_tournament(request, data.order)
+        return import_gsc_history_scores(tournament, data.rows)
+
+
+@router.post('/history/scores/anonymous', response=int)
+@decorate_view(login_required_error)
+def import_history_anonymous_scores(request: HttpRequest, data: HistoryAnonymousBatchIn):
+    """
+    - `login_required_error`
+    """
+    with transaction.atomic():
+        tournament = _get_history_tournament(request, data.order)
+        return import_gsc_history_scores(tournament, data.rows, anonymous=True)
 
 
 def task_response(task):

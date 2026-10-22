@@ -1,13 +1,17 @@
 from datetime import timedelta
+from tempfile import TemporaryDirectory
 from unittest.mock import patch
 from urllib.parse import urlencode
 
+from django.core.files.base import ContentFile
 from django.test import override_settings, TestCase
 from django.utils import timezone
 
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
+from videomanager.models import ExpandVideoModel, VideoModel
+from videomanager.view_utils import generate_file_stream
 
 
 @override_settings(RATELIMIT_ENABLE=False)
@@ -156,7 +160,7 @@ class UserProfileUpdateApiTests(TestCase):
 
     def test_update_profile_keeps_error_when_name_censorship_fails(self):
         with patch(
-            'userprofile.api.try_update_user_name_fields',
+            'userprofile.services.try_update_user_name_fields',
             side_effect=ExceptionToResponse('censorship', 'unknown'),
         ):
             response = self.client.post(
@@ -172,3 +176,146 @@ class UserProfileUpdateApiTests(TestCase):
         self.user.refresh_from_db()
         self.assertEqual(self.user.realname, '匿名')
         self.assertFalse(self.user.has_realname())
+
+
+@override_settings(RATELIMIT_ENABLE=False)
+class RealnamePrivacyTests(TestCase):
+    patch_update = UserProfileAdminApiTests.patch_update
+
+    def setUp(self):
+        UserProfileAdminApiTests.setUp(self)
+        self.user.can_hide_realname = True
+        self.user.hide_realname = True
+        self.user.save(update_fields=['can_hide_realname', 'hide_realname'])
+
+    def privacy(self, hide):
+        return self.client.post('/api/userprofile/update_profile', {'hide_realname': hide})
+
+    def test_public_and_private_names_have_distinct_contracts(self):
+        for viewer in (None, self.user, self.staff):
+            with self.subTest(viewer=viewer):
+                self.client.logout()
+                if viewer:
+                    self.client.force_login(viewer)
+                for url in (f'/api/userprofile/info/{self.user.pk}', f'/api/userprofile/infobulk?ids={self.user.pk}'):
+                    response = self.client.get(url)
+                    self.assertEqual(response.status_code, 200, response.content)
+                    data = response.json()
+                    if isinstance(data, list):
+                        data = data[0]
+                    for field in ('realname', 'firstname', 'lastname'):
+                        self.assertEqual(data[field], 'hidden')
+                        self.assertNotIn('_' + field, data)
+                    self.assertNotIn('has_realname', data)
+                    self.assertNotIn('hide_realname', data)
+        self.client.force_login(self.user)
+        response = self.client.get('/api/userprofile/info/0')
+        self.assertEqual(response.json()['realname'], '旧名')
+        self.assertTrue(response.json()['hide_realname'])
+        with patch('common.api.TopRankingCache.get_anchors', return_value={}):
+            response = self.client.get('/api/common/loginauto')
+        self.assertEqual(response.json()['user']['realname'], '旧名')
+        self.assertTrue(response.json()['user']['hide_realname'])
+        self.client.force_login(self.staff)
+        response = self.client.get(f'/api/userprofile/admin/detail/{self.user.pk}')
+        self.assertEqual(response.json()['realname'], '旧名')
+
+    def test_getters_and_realname_gate_use_original_values(self):
+        self.assertEqual(self.user.realname, 'hidden')
+        self.assertTrue(self.user.has_realname())
+        self.assertEqual(self.user._realname, '旧名')
+        for missing in ('', '   ', '匿名'):
+            with self.subTest(missing=missing):
+                self.user.realname = missing
+                self.assertFalse(self.user.has_realname())
+                self.assertFalse(self.user.is_name_hidden)
+                self.assertEqual(self.user.realname, missing)
+
+    def test_private_switch_revoke_and_name_clear(self):
+        self.client.force_login(self.user)
+        self.assertEqual(self.privacy(False).json()['hide_realname']['type'], 'success')
+        self.user.refresh_from_db()
+        self.assertFalse(self.user.hide_realname)
+        self.assertEqual(self.privacy(True).json()['hide_realname']['type'], 'success')
+        self.user.refresh_from_db()
+        self.assertTrue(self.user.hide_realname)
+        self.client.force_login(self.staff)
+        response = self.patch_update(self.user.pk, {'can_hide_realname': False})
+        self.assertFalse(response.json()['hide_realname'])
+        self.client.force_login(self.user)
+        self.assertEqual(self.privacy(True).json()['hide_realname'], {'type': 'error', 'object': 'privacy', 'category': 'not_authorized'})
+        self.assertEqual(self.privacy(False).json()['hide_realname']['type'], 'success')
+        self.client.force_login(self.staff)
+        self.patch_update(self.user.pk, {'can_hide_realname': True})
+        self.client.force_login(self.user)
+        self.privacy(True)
+        self.client.force_login(self.staff)
+        response = self.patch_update(self.user.pk, {'realname': ''})
+        self.assertTrue(response.json()['can_hide_realname'])
+        self.assertFalse(response.json()['hide_realname'])
+        self.client.force_login(self.user)
+        self.assertEqual(self.privacy(True).json()['hide_realname'], {'type': 'error', 'object': 'privacy', 'category': 'realname_required'})
+
+    def test_saving_name_and_hiding_is_atomic(self):
+        self.user._realname = '匿名'
+        self.user._firstname = ''
+        self.user.hide_realname = False
+        self.user.save(update_fields=['_realname', '_firstname', 'hide_realname'])
+        self.client.force_login(self.user)
+        with patch('userprofile.services.verify_text', return_value=True):
+            response = self.client.post('/api/userprofile/update_profile', {'realname': '首次实名', 'hide_realname': True})
+        self.assertEqual(response.json()['hide_realname']['type'], 'success')
+        self.user.refresh_from_db()
+        self.assertEqual(self.user._realname, '首次实名')
+        self.assertEqual(self.user.realname, 'hidden')
+        # An empty English name remains writable while all public names are masked.
+        with patch('userprofile.services.verify_text', return_value=True):
+            response = self.client.post('/api/userprofile/update_profile', {'firstname': 'Given'})
+        self.assertEqual(response.json()['firstname']['type'], 'success')
+        self.user.refresh_from_db()
+        self.assertEqual(self.user._firstname, 'Given')
+        self.assertTrue(self.user.hide_realname)
+
+    def test_failed_privacy_or_name_validation_rolls_back_names(self):
+        self.user._realname = '匿名'
+        self.user.can_hide_realname = False
+        self.user.hide_realname = False
+        self.user.save(update_fields=['_realname', 'can_hide_realname', 'hide_realname'])
+        self.client.force_login(self.user)
+        with patch('userprofile.services.verify_text', return_value=True):
+            response = self.client.post('/api/userprofile/update_profile', {'realname': '首次实名', 'hide_realname': True, 'can_hide_realname': True})
+        self.assertEqual(response.json()['realname']['type'], 'error')
+        self.user.refresh_from_db()
+        self.assertEqual(self.user._realname, '匿名')
+        self.assertFalse(self.user.can_hide_realname)
+        for field in ('realname', 'firstname', 'lastname'):
+            with self.subTest(field=field):
+                response = self.client.post('/api/userprofile/update_profile', {field: ' hidden ', 'realname': 'hidden' if field == 'realname' else '首次实名'})
+                self.assertEqual(response.json()['realname']['type'], 'error')
+                self.client.force_login(self.staff)
+                self.assertEqual(self.patch_update(self.user.pk, {field: 'hidden'}).status_code, 400)
+                self.client.force_login(self.user)
+                self.user.refresh_from_db()
+                self.assertEqual(self.user._realname, '匿名')
+
+    def test_video_queries_and_export_do_not_bypass_name_getters(self):
+        with TemporaryDirectory() as root, override_settings(MEDIA_ROOT=root):
+            video = VideoModel(player=self.user, video=ExpandVideoModel.objects.create(identifier='privacy'), software='e', level='e', bv=100, timems=100000)
+            video.file.save('privacy.evf', ContentFile(b'original replay'))  # noqa: DJM100
+            other = VideoModel.objects.create(player=self.staff, video=ExpandVideoModel.objects.create(), software='e', level='e', bv=100, timems=90000)
+            response = self.client.get('/api/video/query', {'level': 'e', 'mode': '00'})
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertEqual([row['id'] for row in response.json()['videos']], [other.pk, video.pk])
+            row = next(row for row in response.json()['videos'] if row['id'] == video.pk)
+            self.assertEqual(row['player__realname'], 'hidden')
+            for sort_field in ('player__realname', 'player___realname'):
+                for reverse in (False, True):
+                    with self.subTest(sort_field=sort_field, reverse=reverse):
+                        response = self.client.get('/api/video/query', {'level': 'e', 'mode': '00', 'o': sort_field, 'r': reverse})
+                        self.assertEqual(response.status_code, 400, response.content)
+            response = self.client.get(f'/api/video/admin/detail/{video.pk}')
+            self.assertEqual(response.json()['player__realname'], self.user._realname)
+            self.assertEqual(self.client.get('/video/get/', {'id': video.pk}).status_code, 404)
+            stream = iter(generate_file_stream(VideoModel.objects.filter(pk=video.pk)))
+            next(stream)
+            self.assertEqual(next(stream).decode(), f'{self.user.pk}_hidden/privacy.evf')

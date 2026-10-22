@@ -1,18 +1,29 @@
 from collections import defaultdict
 import logging
 
+from django.db import transaction
 from django.db.models import F, Window
 from django.db.models.functions import RowNumber
+from django.utils import timezone
 from django_tasks_db.models import DBTaskResult
 
 from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from config.tournaments import GSC_Defaults
+from identifier.models import Identifier
+from identifier.services import bind_identifier
+from identifier.utils import verify_identifier
+from msuser.models import UserMS
 from tournament.cache import TournamentCache
 from tournament.gsc.utils import gsc_encode_best
 from tournament.models import GSCParticipant, GSCTournament, TournamentUser
-from tournament.services import refresh_tournament_ranks
+from tournament.services import refresh_tournament_ranks, with_participant_video_status
 from tournament.utils import MAX_TOURNAMENT_BEST
+from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
+from utils.parser import MSVideoParser
+from utils.ranking_lock import ranking_access
+from videomanager.models import VideoModel
+from videomanager.services import find_identical_video, set_import_upload_time
 
 GSC_SCORE_FIELDS = [
     'bt1st', 'bt20th', 'bt20sum',
@@ -99,7 +110,7 @@ def refresh_gsc_scores(tournament: GSCTournament, *, batch_size=1000):
     GSC 成绩，最后用 bulk_update 分批写回。
     """
     logger.info(f'GSC#{tournament.order} 成绩刷新开始，比赛#{tournament.id}')
-    participants = list(GSCParticipant.objects.filter(tournament=tournament))
+    participants = list(GSCParticipant.objects.filter(tournament=tournament, manual_scores=False))
     if not participants:
         logger.info(f'GSC#{tournament.order} 成绩刷新跳过，没有参赛者')
         return 0
@@ -172,7 +183,102 @@ def update_gsc_best(tournament_user: TournamentUser, tournament: GSCTournament, 
 
 
 def get_gsc_scores(tournament: GSCTournament):
-    return GSCParticipant.objects.filter(tournament=tournament)
+    return with_participant_video_status(GSCParticipant.objects.filter(tournament=tournament).select_related('arbiter_identifier'))
+
+
+def _new_history_participant(tournament, **kwargs):
+    participant = GSCParticipant(tournament=tournament, token=tournament._token, start_time=tournament.start_time or tournament.end_time, end_time=tournament.end_time, **kwargs)
+    participant.save()  # noqa: DJM100
+    return participant
+
+
+@ranking_access(operation='tournament.gsc.history.prepare')
+@transaction.atomic
+def prepare_gsc_history_videos(tournament: GSCTournament, user: UserProfile):
+    participant = get_gsc_scores(tournament).filter(user=user).first()
+    if participant is not None:
+        if participant.manual_scores:
+            raise ExceptionToResponse('participant', 'not_video_source', status_code=409)
+        return participant
+    if not user.userms_id:
+        user.userms = UserMS.objects.create()
+        user.save(update_fields=['userms'])
+    return _new_history_participant(tournament, user=user)
+
+
+@ranking_access(operation='tournament.gsc.history.bind')
+@transaction.atomic
+def bind_gsc_history_identifier(participant: GSCParticipant, identifier_text: str):
+    user = participant.user
+    if not user.userms_id:
+        user.userms = UserMS.objects.create()
+        user.save(update_fields=['userms'])
+    identifier, _ = Identifier.objects.select_for_update().get_or_create(identifier=identifier_text, defaults={'safe': True})
+    if identifier.userms_id is not None and identifier.userms_id != user.userms_id:
+        return {'identifier': identifier.identifier, 'bound': False}
+    if not identifier.safe:
+        raise ExceptionToResponse('identifier', 'invalid', status_code=400)
+    bind_identifier(identifier, user.userms)
+    return {'identifier': identifier.identifier, 'bound': True}
+
+
+@ranking_access(operation='tournament.gsc.history.upload')
+@transaction.atomic
+def upload_gsc_history_video(participant: GSCParticipant, file, upload_time):
+    if timezone.is_naive(upload_time):
+        raise ExceptionToResponse('upload_time', 'timezone_required', status_code=422)
+
+    parser = MSVideoParser(file)
+    user = participant.user
+    if not user.userms_id:
+        user.userms = UserMS.objects.create()
+        user.save(update_fields=['userms'])
+    if not verify_identifier(parser.identifier):
+        raise ExceptionToResponse('identifier', 'verify', status_code=400)
+    if not Identifier.verify(parser.identifier, user.userms) and parser.state == MS_TextChoices.State.OFFICIAL:
+        parser.state = MS_TextChoices.State.IDENTIFIER
+
+    video = find_identical_video(file)
+    if video is not None:
+        if video.player_id != user.pk:
+            raise ExceptionToResponse('file', 'collision', status_code=409)
+        set_import_upload_time(video, upload_time)
+    else:
+        video = VideoModel.create_from_parser(parser, user, upload_time=upload_time)
+        set_import_upload_time(video, upload_time, created=True)
+        video.save(update_fields=['ongoing_tournament'])
+        video.update_redis()
+    participant.tournament.videos.add(video)
+    return video
+
+
+@transaction.atomic
+def import_gsc_history_scores(tournament: GSCTournament, rows, *, anonymous=False):
+    identity_field = 'arbiter_identifier' if anonymous else 'user_id'
+    identities = [getattr(row, identity_field) for row in rows]
+    if len(set(identities)) != len(identities):
+        raise ExceptionToResponse('participant', 'duplicate', status_code=409)
+    if anonymous:
+        if GSCParticipant.objects.filter(tournament=tournament, user_id__isnull=True, arbiter_identifier__identifier__in=identities).exists():
+            raise ExceptionToResponse('participant', 'registered', status_code=409)
+        identifiers = Identifier.objects.in_bulk(identities, field_name='identifier')
+        for text in identities:
+            if text not in identifiers:
+                identifiers[text] = Identifier.objects.create(identifier=text, safe=True)
+    else:
+        users = UserProfile.objects.in_bulk(identities)
+        if len(users) != len(identities):
+            raise ExceptionToResponse('user', 'not_found', status_code=404)
+        if GSCParticipant.objects.filter(tournament=tournament, user_id__in=identities).exists():
+            raise ExceptionToResponse('participant', 'registered', status_code=409)
+    for row in rows:
+        fields = row.model_dump(include=set(GSC_SCORE_FIELDS))
+        if anonymous:
+            fields['arbiter_identifier'] = identifiers[row.arbiter_identifier]
+        else:
+            fields['user'] = users[row.user_id]
+        _new_history_participant(tournament, manual_scores=True, **fields)
+    return len(rows)
 
 
 def calculate_gsc_best_score(user_id: int):

@@ -8,9 +8,11 @@
 
 网站软件下载弹窗是发布历史展示的例外：[AnalyzerHelper.vue](../src/components/dialogs/AnalyzerHelper.vue) 的 `tableData` 按用户要求硬编码版本、日期及文件名，手动更新，不随 `version.json` 自动变化。它不作为当前构建版本的来源；提供新版本下载后，将实际可下载的条目手动添加到表格，最新版本放在前面，历史链接只在文件仍可下载时保留。
 
-构建和网站发布不自动递增 Analyzer 版本，不使用网站 tag、commit 次数、日期或整个仓库的改动作为递增依据。ZIP 命名为 `OpenMinesweeperVideoAnalyzer-${version}.zip`；本地生成、网站 assets 中的文件和下载按钮的文件名均从 `version.json` 的版本派生，更新版本时必须同步构建网站下载资源。
+只有用户明确要求升级 Analyzer 版本号时，才修改 `version.json`。功能开发、修复、依赖升级、构建和网站发布均不主动递增版本；不使用网站 tag、commit 次数、日期或整个仓库的改动作为递增依据。ZIP 命名为 `OpenMinesweeperVideoAnalyzer-${version}.zip`；本地生成、网站 assets 中的文件和下载按钮的文件名均从 `version.json` 的版本派生，用户要求更新版本后同步构建网站下载资源。
 
-## 哪些改动必须递增
+## 哪些改动需要记录版本影响
+
+下列改动记录在 `CHANGELOG.md` 的“未发布 / Unreleased”段；未得到用户明确的版本升级指令时，保持当前版本号。
 
 - 公共组件 `src/components/VideoAnalyzer/` 的功能、默认配置、布局、表达式/计数器语义、播放或导出行为发生变化。
 - `src/views/LocalVideoAnalyzerView/`、本目录离线入口、离线使用说明/帮助/版权正文，或离线构建及打包逻辑改变交付给用户的内容或行为。
@@ -20,16 +22,18 @@
 
 ## 如何递增
 
+以下规则仅在用户明确要求升级 Analyzer 版本号后执行。
+
 - 新增兼容功能：递增 MINOR，PATCH 归零。
 - 修复问题、兼容性的布局/文案/许可修正：递增 PATCH。
 - 不兼容的公开接口、保存配置或表达式行为变化：稳定版本递增 MAJOR，MINOR/PATCH 归零；`0.x` 阶段递增 MINOR，并明确说明不兼容行为和迁移方法。
 
-每项独立更新在交付前手动修改版本，并在 [CHANGELOG.md](./CHANGELOG.md) 记录日期、用户可见变化及必要的兼容说明。一次更新包含多个改动时按最高级别递增一次；同一更新后续的 lint/typecheck 修正、测试维护或文档补充合并到该版本，不按对话轮次机械递增。已发布版本的历史记录保留，后续实际修复使用新版本。
+用户要求升级版本时，手动修改版本，并将 [CHANGELOG.md](./CHANGELOG.md) 中本次未发布的变化归入该版本，记录日期、用户可见变化及必要的兼容说明。一次更新包含多个改动时按最高级别递增一次；同一更新后续的 lint/typecheck 修正、测试维护或文档补充合并到该版本，不按对话轮次机械递增。已发布版本的历史记录保留；后续修复先记录为未发布，等待用户决定何时升级版本。
 
 ## 更新时必须完成的工作
 
-1. 判断实际影响范围，按上述规则修改 `version.json` 和 `CHANGELOG.md`；无须递增时在交付说明中简述原因。
+1. 判断实际影响范围并更新 `CHANGELOG.md` 的未发布记录；仅当用户明确要求升级版本号时修改 `version.json`，其余情况保持当前版本。
 2. 同步必要的使用说明及中英文界面文本，保持页面、ZIP 内 `version.json` 和变更记录中的版本一致。
-3. 在 `front_end` 执行 `npm.cmd run build:offline`，核对 ZIP 的版本文件、页面版本显示及内联资源检查。网站下载内容也需要刷新时使用 `npm.cmd run build:openms`，其 pre hook 会先生成离线包。
+3. 按 [构建与部署说明](./README.md) 在 `front_end` 执行 `npm.cmd run build:offline`，核对 ZIP 的版本文件、页面版本显示及内联资源检查。网站下载内容也需要刷新时使用 `npm.cmd run build:openms`，其 pre hook 会先生成离线包。
 4. 按改动维护相关测试。Cypress 命令留给用户，真实断网 `file://` 打开/解析/导出由用户验收；未运行的验证如实注明。lintfix/typecheck 遵循根目录 [.codex/instructions.md](../../.codex/instructions.md) 的跨轮工作流，不为本约束增加等待或额外审批。
 5. 源码、版本文件和变更记录交由 Git 管理；生成的 HTML 目录和 ZIP 沿用 `.gitignore`，不提交二进制产物。需要保留历史包时可发布到独立的 `analyzer-vX.Y.Z` Release；创建 tag/Release 或上传产物必须有用户授权，不由普通更新自动执行。

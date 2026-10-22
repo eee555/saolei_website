@@ -1,7 +1,7 @@
 <template>
     <DataTable
         v-model:first="first" v-model:rows="effectiveRows" v-model:sort-field="sortField" v-model:sort-order="sortOrder" :filters="externalFiltering ? emptyFilters : filters" :value="videos"
-        :filter-display="externalFiltering ? undefined : 'menu'" row-hover
+        :filter-display="externalFiltering ? undefined : 'menu'" row-hover data-key="rowKey"
         style="min-width: 50em"
         size="small" :filter-button-props="{
             filter: {
@@ -27,7 +27,7 @@
         />
         <Column v-if="$slots.rowActions" column-key="rowActions" :header="t('common.prop.action')" style="width: 5rem">
             <template #body="{ data }: { data: VideoAbstract }">
-                <div @click.stop>
+                <div v-if="!data.isLocal" @click.stop>
                     <Tippy interactive trigger="click" placement="bottom-end" :append-to="appendToBody">
                         <button type="button" class="base-button square-button" :aria-label="t('common.prop.action')" data-cy="video-row-actions" :data-video-id="data.id">
                             <i class="pi pi-ellipsis-h" aria-hidden="true" />
@@ -95,6 +95,7 @@ const ColumnSoftware = defineAsyncComponent(() => import('./ColumnSoftware.vue')
 const ColumnUploadTime = defineAsyncComponent(() => import('./ColumnUploadTime.vue'));
 
 function handleRowClick(event: { data: VideoAbstract }) {
+    if (event.data.isLocal) return;
     void preview(event.data.id, event.data.software);
 }
 

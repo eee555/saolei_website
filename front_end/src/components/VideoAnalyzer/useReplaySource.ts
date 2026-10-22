@@ -21,7 +21,7 @@ export function useReplaySource(source: MaybeRefOrGetter<ReplaySource | null>): 
         errorMessage.value = '';
         if (input === null) return;
         try {
-            const parsed = parseReplay(input.data, input.filename, input.software);
+            const parsed = parseReplay(input.data, input.filename, input.software, ['pluck']);
             onCleanup(() => {
                 video.value = null;
                 parsed.free();

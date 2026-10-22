@@ -2,6 +2,8 @@
 
 `userService.ts` 封装用户资料、用户标识和用户录像列表相关的前端请求逻辑。其中 `fetchUserInfo` 带有 IndexedDB 缓存、缓存失效检查、请求合并和批量请求能力。本文档是针对该缓存机制的说明。
 
+`fetchUserVideos` 继续按查看者与资料版本合并列表请求；`videolist` 返回网站元信息后，由录像服务补全稳定字段。录像缓存独立于用户信息表，接口字段及配置见 [录像信息缓存](./videoService.md)。
+
 - [需求解析](#需求解析)：大致的设计构思、存在的挑战与解决方案。
 - [实际流程](#实际流程)：代码中实现的流程简述。
 - [特殊细节](#特殊细节)：容易犯的错误或考虑的不周到的地方。
@@ -48,6 +50,7 @@
   - `processUserInfoBatch`职责完成
 
 ## 特殊细节
+- 姓名字段可以缓存精确字符串 `hidden`，不新增缓存列、递增版本或清空旧缓存。后端隐藏偏好与资格变更更新 `date_updated`，继续通过现有 `infoupdated` 流程更新姓名，允许正常缓存延迟。授权与展示规则见 [用户姓名隐藏](../../../back_end/saolei/userprofile/README.md)。
 - `serviceConfig.userInfoLastUpdate`的初始值是0，此时没有必要请求`infoupdated`，强行请求必然会导致返回所有id，添加不必要的负担。因此实现中直接跳过`infoupdated`，清空整个缓存。这个机制也可以用来在其他需要的时候重置缓存。
 - `infoupdated`响应后才创建删除缓存的IndexedDB事务，避免事务在等待网络期间自动提交。事务成功提交后，将`userInfoLastUpdate`设为本次检查开始时的时间；请求或缓存操作失败时保留旧值，以便下次重试。
 

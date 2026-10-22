@@ -11,6 +11,7 @@ from django.http import FileResponse
 from django.shortcuts import get_object_or_404
 from django.tasks import TaskResultStatus
 from django.utils import timezone as django_timezone
+from django.views.decorators.cache import cache_control
 from django_ratelimit.decorators import ratelimit
 from django_tasks_db.models import DBTaskResult
 from ninja import Form, Router, Schema
@@ -20,20 +21,19 @@ from ninja.orm import create_schema
 import psutil
 
 from accountlink.services import restart_accountlink_task
-from config.common import TASK_CLEANUP_CONFIGS
 from monitor.cache import invalidate_task_summary
+from speedranking.top.cache import TopRankingCache
 from tournament.gsc.services import restart_gsc_task
 from userprofile.decorators import staff_required
 from videomanager.models import VideoModel
-from .schema import AnalyzerWebsiteInfoOut
-from .services import get_video_rankings
+from .schema import AnalyzerWebsiteInfoOut, AutoLoginOut
+from .services import cleanup_expired_tasks, get_video_rankings
 
 router = Router()
 
 LOG_DIR = Path('logs')
 DEFAULT_TAIL_BYTES = 64 * 1024
 MAX_TAIL_BYTES = 1024 * 1024
-TASK_CLEANUP_BATCH_SIZE = 200
 RUNNING_TASK_STALE_AFTER_SECONDS = 60 * 60
 WORKER_STARTED_TOLERANCE_SECONDS = 120
 WORKER_STATE_ALIVE = 'alive'
@@ -43,6 +43,18 @@ TASK_RESTART_SERVICES = [
     restart_accountlink_task,
     restart_gsc_task,
 ]
+
+
+@router.get('/loginauto', response=AutoLoginOut)
+@decorate_view(ratelimit(key='ip', rate='5/s'), cache_control(no_store=True, private=True))
+def login_auto(request):
+    """
+    - ratelimit(key='ip', rate='5/s')
+    - cache_control(no_store=True, private=True)
+
+    首次访问时一次返回登录用户及完整实时 top 锚点，访客的 user 为 None。
+    """
+    return {'user': request.user if request.user.is_authenticated else None, 'top_anchors': TopRankingCache().get_anchors()}
 
 
 @router.get('/video/{video_id}/analyzer-info', response=AnalyzerWebsiteInfoOut)
@@ -58,7 +70,6 @@ def video_analyzer_info(request, video_id: int):
         raise HttpError(403, 'Forbidden.')
     return {
         'video': video,
-        'expanded_video': video.video,
         'tournament_ids': list(video.tournaments.order_by('id').values_list('id', flat=True)),
         'filename': video.file.name.replace('\\', '/').rsplit('/', 1)[-1],
         'rankings': get_video_rankings(video),
@@ -293,28 +304,7 @@ def cleanup_tasks(request):
     """
     - staff_required
     """
-    deleted_count = 0
-    now = django_timezone.now()
-
-    for config in TASK_CLEANUP_CONFIGS:
-        deadline = now - config['expires']
-        queryset = DBTaskResult.objects.filter(
-            task_path=config['task_path'],
-            status=TaskResultStatus.SUCCESSFUL,
-            finished_at__lt=deadline,
-        )
-
-        with transaction.atomic():
-            task_ids = list(
-                queryset
-                .select_for_update(skip_locked=True)
-                .values_list('id', flat=True)[:TASK_CLEANUP_BATCH_SIZE],
-            )
-            count, _ = DBTaskResult.objects.filter(id__in=task_ids).delete()
-
-        deleted_count += count
-
-    return deleted_count
+    return cleanup_expired_tasks()
 
 
 @router.get('/staff/logs', response=list[LogFileOut])

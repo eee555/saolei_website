@@ -75,6 +75,8 @@ const acknowledgements = [
     { text: 'Arya' },
     { text: 'StrangeDust' },
     { text: 'jabajop' },
+    { text: 'qqwref' },
+    { text: 'gacord' },
 ];
 
 /* 本地化 Localization */

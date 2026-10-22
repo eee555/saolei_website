@@ -1,6 +1,9 @@
 <template>
     <div class="layout-row">
         <UserArbiterCSV :id="user.id" />
+        <BaseButton v-if="isOwnProfile" :type="showCsvImport ? 'primary' : 'default'" :aria-expanded="showCsvImport" :aria-controls="csvPanelId" data-cy="toggle-arbiter-csv" @click="showCsvImport = !showCsvImport">
+            {{ t('local.importCsv') }}
+        </BaseButton>
         <span style="flex: 1" />
         <BaseButton size="small" :loading="loading" data-cy="refresh-videos" @click="refresh">
             {{ t('local.refresh') }}
@@ -9,6 +12,7 @@
             <BaseIconSetting />
         </BaseButton>
     </div>
+    <ArbiterCsvImport v-if="isOwnProfile && showCsvImport" :id="csvPanelId" :enabled="valid && !loading" :reading="csvReading" :has-csv="hasCsv" :filename="csvFilename" :count="localVideos.length" :issues="csvIssues" :failure="csvFailure" @import="importFile" @clear="clearCsv" />
     <p v-if="loading" role="status">
         {{ t('local.loading') }}
     </p>
@@ -25,15 +29,15 @@
                 </select>
             </label>
         </div>
-        <ActivityCalendarAbstract v-if="overview === 'calendar'" :video-list="videos" :options="activityCalendarConfig" selectable :selected-date-key="selection.kind === 'date' ? selection.dateKey : undefined" @select-date="selectDate" />
+        <ActivityCalendarAbstract v-if="overview === 'calendar'" :video-list="displayVideos" :options="activityCalendarConfig" selectable :selected-date-key="selection.kind === 'date' ? selection.dateKey : undefined" @select-date="selectDate" />
         <BaseCardNormal v-else-if="overview === 'bv'" data-cy="video-bv-overview">
             <BBBvSummaryHeader />
             <ElScrollbar aria-orientation="horizontal" :style="{ zoom: BBBvSummaryConfig.zoom }">
-                <BBBvSummary v-for="(level, index) in MS_Levels" :key="level" :level="level" :header="index === 0" :video-list="videos" selectable :selected-b-v="selection.kind === 'bv' && selection.level === level ? selection.bv : undefined" @select-b-v="selectBV" />
+                <BBBvSummary v-for="(level, index) in MS_Levels" :key="level" :level="level" :header="index === 0" :video-list="displayVideos" selectable :selected-b-v="selection.kind === 'bv' && selection.level === level ? selection.bv : undefined" @select-b-v="selectBV" />
             </ElScrollbar>
         </BaseCardNormal>
         <div class="video-controls" data-cy="video-range" aria-live="polite">
-            <span>{{ rangeLabel }} · {{ t('local.count', { selected: selectedVideos.length, filtered: filteredVideos.length }) }}</span>
+            <span>{{ rangeLabel }} · {{ t('local.count', { selected: selectedVideos.length, filtered: filteredVideos.length }) }}<span v-if="localVideos.length"> · {{ t('local.includesLocal') }}</span></span>
             <BaseButton v-if="selection.kind !== 'all'" size="small" text data-cy="clear-video-selection" @click="selection = { kind: 'all' }">
                 {{ t('local.clear') }}
             </BaseButton>
@@ -46,7 +50,7 @@
                 </select>
             </label>
             <SoftwareFilter v-model="filters.software" />
-            <VideoStateFilter v-model="filters.state" class="checkbox-buttons--compact" />
+            <VideoStateFilter v-model="filters.state" :include-local="localVideos.length > 0" class="checkbox-buttons--compact" />
             <label>{{ t('common.prop.level') }}
                 <select v-model="filters.level" data-cy="video-level-filter">
                     <option value="">{{ t('local.all') }}</option>
@@ -92,9 +96,11 @@
 import '@/styles/layout.css';
 // 个人主页的个人所有录像部分
 import { ElDialog, ElOption, ElScrollbar, ElSelect } from 'element-plus';
-import { computed, defineAsyncComponent, ref, watch } from 'vue';
+import { computed, defineAsyncComponent, ref, useId, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import ArbiterCsvImport from './ArbiterCsvImport.vue';
+import { useArbiterCsvDiff } from './useArbiterCsvDiff';
 import { useProfileVideos } from './useProfileVideos';
 import { createProfileVideoFilters, filterProfileVideos, selectProfileVideos } from './videoSelection';
 import type { VideoSelection } from './videoSelection';
@@ -124,6 +130,12 @@ const BBBvSummary = defineAsyncComponent(() => import('@/components/visualizatio
 const BBBvSummaryHeader = defineAsyncComponent(() => import('@/components/visualization/BBBvSummary/Header.vue'));
 const VideoScatter = defineAsyncComponent(() => import('@/components/visualization/VideoScatter/App.vue'));
 const { videos, valid, loading, failed, viewerKey, refresh } = useProfileVideos(user);
+const isOwnProfile = computed(() => store.login_status === LoginStatus.IsLogin && store.user.id === user.value.id);
+const showCsvImport = ref(false);
+const csvPanelId = useId();
+const csvIdentity = computed(() => `${user.value.id}:${viewerKey.value}`);
+const { localVideos, issues: csvIssues, failure: csvFailure, reading: csvReading, filename: csvFilename, hasCsv, importFile, clear: clearCsv } = useArbiterCsvDiff(videos, valid, csvIdentity, isOwnProfile);
+const displayVideos = computed(() => [...videos.value, ...localVideos.value]);
 const overview = ref<'none' | 'calendar' | 'bv'>('none');
 const presentation = ref<'table' | 'scatter'>('table');
 const selection = ref<VideoSelection>({ kind: 'all' });
@@ -132,7 +144,7 @@ const first = ref(0);
 const rows = ref(25);
 const sortField = ref('upload_time');
 const sortOrder = ref<number | undefined>(-1);
-const selectedVideos = computed(() => selectProfileVideos(videos.value, selection.value, activityCalendarConfig.value.useEndTime));
+const selectedVideos = computed(() => selectProfileVideos(displayVideos.value, selection.value, activityCalendarConfig.value.useEndTime));
 const filteredVideos = computed(() => filterProfileVideos(selectedVideos.value, filters.value));
 const rangeLabel = computed(() => {
     const current = selection.value;
@@ -156,12 +168,13 @@ watch(() => activityCalendarConfig.value.useEndTime, () => {
 watch([selection, filters], () => {
     first.value = 0;
 }, { deep: true });
-watch(videos, () => {
+watch(displayVideos, () => {
     if (!valid.value) return;
     if (selection.value.kind === 'bv' && selectedVideos.value.length === 0) selection.value = { kind: 'all' };
     if (first.value >= filteredVideos.value.length) first.value = 0;
 });
 watch([() => user.value.id, viewerKey], () => {
+    showCsvImport.value = false;
     selection.value = { kind: 'all' };
     filters.value = createProfileVideoFilters();
     overview.value = 'none';
@@ -172,7 +185,6 @@ watch([() => user.value.id, viewerKey], () => {
 const showSetting = ref(false);
 const thisColumnChoices = ArrayUtils.sortByReferenceOrder(['bv', 'bvs', 'stnb', 'ces', 'cls', 'corr', 'end_time', 'ioe', 'level', 'state', 'software', 'thrp', 'time', 'upload_time', 'path', 'pluck', 'file_size', 'mode'], ColumnChoices);
 
-const isOwnProfile = computed(() => store.login_status === LoginStatus.IsLogin && store.user.id === user.value.id);
 const dialogVisible = ref(false);
 const selectedVideoId = ref<number>();
 const revealing = ref(false);
@@ -208,6 +220,7 @@ watch([() => user.value.id, viewerKey], () => {
 const i18nMessages = {
     'zh-cn': { local: {
         columns: '选择显示列',
+        importCsv: '导入CSV',
         refresh: '刷新',
         loading: '正在加载录像…',
         failed: '录像加载失败，请点击刷新重试。',
@@ -220,6 +233,7 @@ const i18nMessages = {
         scatter: '散点图',
         all: '全部',
         allVideos: '全部录像',
+        includesLocal: '含本地记录',
         allModes: '全部模式',
         custom: '自定义',
         clear: '清除选择',
@@ -229,6 +243,7 @@ const i18nMessages = {
     } },
     en: { local: {
         columns: 'Select columns',
+        importCsv: 'Import CSV',
         refresh: 'Refresh',
         loading: 'Loading videos…',
         failed: 'Could not load videos. Refresh to retry.',
@@ -241,6 +256,7 @@ const i18nMessages = {
         scatter: 'Scatter plot',
         all: 'All',
         allVideos: 'All videos',
+        includesLocal: 'Includes local records',
         allModes: 'All modes',
         custom: 'Custom',
         clear: 'Clear selection',

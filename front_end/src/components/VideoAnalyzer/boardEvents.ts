@@ -1,6 +1,6 @@
 import { bisector } from 'd3-array';
 
-import type { CustomEventDefinition, PreparedCustomEvent } from './customEvents';
+import type { CustomEventDefinition, EventPulse, EventSpan, PreparedCustomEvent } from './customEvents';
 import type { ReplayMouseTraceEvent } from './mouseTrace';
 
 export interface BoardEventSettings {
@@ -14,14 +14,16 @@ export interface BoardEventSettings {
 
 export interface EventPoint { x: number; y: number }
 export interface EventArrow extends EventPoint { angle: number }
+export interface BoardEventPulse extends EventPoint { pulse: EventPulse }
+export interface BoardEventPath { points: EventPoint[]; span: EventSpan }
 export interface BoardEventGeometry {
     definition: CustomEventDefinition;
-    pulses: EventPoint[];
-    paths: EventPoint[][];
+    pulses: BoardEventPulse[];
+    paths: BoardEventPath[];
 }
 
 export function defaultBoardEventSettings(): BoardEventSettings {
-    return { visible: false, keys: [], timeRange: 'all', arrowSpacing: 32, arrowSize: 8, arrowShape: 'triangle' };
+    return { visible: true, keys: ['pluck'], timeRange: 'all', arrowSpacing: 32, arrowSize: 8, arrowShape: 'triangle' };
 }
 
 const byTime = bisector<ReplayMouseTraceEvent, number>((event) => Math.round(event.timeMs));
@@ -33,12 +35,12 @@ export function boardEventGeometry(definitions: CustomEventDefinition[], prepare
     const position = (event: ReplayMouseTraceEvent): EventPoint => ({ x: event.column, y: event.row });
     return definitions.filter((definition) => keys.includes(definition.key)).map((definition) => {
         const data = prepared.get(definition.key);
-        const pulses: EventPoint[] = [];
-        const paths: EventPoint[][] = [];
+        const pulses: BoardEventPulse[] = [];
+        const paths: BoardEventPath[] = [];
         for (const pulse of data?.pulses ?? []) {
             const index = byIndex.left(mouse, pulse.eventIndex);
             const event = mouse[index];
-            if (pulse.timeMs <= currentMs && index < limit && event.eventIndex === pulse.eventIndex && validPosition(event)) pulses.push(position(event));
+            if (pulse.timeMs <= currentMs && index < limit && event.eventIndex === pulse.eventIndex && validPosition(event)) pulses.push({ ...position(event), pulse });
         }
         for (const span of data?.spans ?? []) {
             // The millisecond snapshot identifies the span, but its trace retains all native mouse points.
@@ -49,11 +51,11 @@ export function boardEventGeometry(definitions: CustomEventDefinition[], prepare
                 const event = mouse[index];
                 if (validPosition(event)) points.push(position(event));
                 else if (points.length > 0) {
-                    paths.push(points);
+                    paths.push({ points, span });
                     points = [];
                 }
             }
-            if (points.length > 0) paths.push(points);
+            if (points.length > 0) paths.push({ points, span });
         }
         return { definition, pulses, paths };
     });

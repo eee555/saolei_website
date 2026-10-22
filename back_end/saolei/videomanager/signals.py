@@ -4,14 +4,12 @@ from django.db.models.signals import post_save, pre_save
 from django.dispatch import receiver
 
 from config.text_choices import MS_TextChoices
-from .cache import freeze_cache, newest_cache, review_cache
+from .cache import newest_cache
 from .models import VideoModel
 
 logger = logging.getLogger('videomanager')
 
 STATE_QUEUE_NAMES = {
-    MS_TextChoices.State.PLAIN: review_cache,
-    MS_TextChoices.State.FROZEN: freeze_cache,
     MS_TextChoices.State.IDENTIFIER: newest_cache,
     MS_TextChoices.State.OFFICIAL: newest_cache,
 }
@@ -27,7 +25,9 @@ CAPTURE_FIELDS = {
     'level',
     'mode',
     'bv',
+    'left_ce',
     'right_ce',
+    'double_ce',
     'left',
     'right',
     'double',
@@ -35,14 +35,8 @@ CAPTURE_FIELDS = {
 }
 
 QUEUE_PAYLOAD_FIELDS = {
-    'software',
     'upload_time',
     'player_id',
-    'level',
-    'mode',
-    'timems',
-    'bv',
-    'right_ce',
 }
 
 

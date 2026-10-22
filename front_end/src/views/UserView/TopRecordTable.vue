@@ -41,7 +41,7 @@ import { useI18n } from 'vue-i18n';
 
 import BaseTable from '@/components/common/BaseTable.vue';
 import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
-import { formatTopValue, missingTopValue, topAxes, topField, topStatNames } from '@/services/topRankingService';
+import { formatTopValue, missingTopValue, topAxes, topField, topMean, topStatNames } from '@/services/topRankingService';
 import type { TopRecords } from '@/services/topRankingService';
 
 const props = defineProps({
@@ -50,7 +50,7 @@ const props = defineProps({
 });
 const rows = computed(() => topAxes.map((axis) => {
     const record = props.records[topField(props.nf, axis.level, axis.stat)];
-    return { ...axis, mean: record?.mean ?? missingTopValue(axis.stat), videos: Array.from({ length: 5 }, (_, position) => record?.videos[position]) };
+    return { ...axis, mean: topMean(record, axis.stat), videos: Array.from({ length: 5 }, (_, position) => record?.videos[position]) };
 }));
 
 const i18nMessages = {

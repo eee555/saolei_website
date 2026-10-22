@@ -30,10 +30,10 @@ const dependencyLicenses = JSON.parse(await readFile(join(output, 'THIRD_PARTY_L
 if (dependencyLicenses.length === 0) throw new Error('Bundled dependency license list is empty');
 const msToollib = dependencyLicenses.find((entry) => entry.name === 'ms-toollib');
 if (msToollib && !msToollib.text) {
-    if (msToollib.version !== '1.5.19') throw new Error('Recheck the ms-toollib license fallback for the new version');
+    if (msToollib.version !== '1.5.20') throw new Error('Recheck the ms-toollib license fallback for the new version');
     msToollib.identifier = 'MIT';
     msToollib.text = (await readFile(join(frontend, 'licenses', 'ms-toollib', 'LICENSE'), 'utf8')).trim();
-    msToollib.source = 'https://github.com/eee555/ms-toollib/blob/main/LICENSE';
+    msToollib.source = 'https://github.com/eee555/ms-toollib/blob/ca1439a08c2e15fa34db7f3e0c9b245fda90ad48/LICENSE';
 }
 for (const entry of dependencyLicenses) {
     if (!entry.text) throw new Error(`Missing bundled license text: ${entry.name}@${entry.version}`);
@@ -51,7 +51,7 @@ for (const [source, destination] of [
 
 const markdown = new MarkdownIt({ html: false, linkify: true });
 for (const language of ['zh', 'en']) {
-    const source = join(frontend, '..', 'vitepress_doc', ...(language === 'en' ? ['en'] : []), 'guide', 'replay-expressions.md');
+    const source = join(frontend, '..', 'vitepress_doc', language, 'guide', 'replay-expressions.md');
     const text = (await readFile(source, 'utf8')).replace(/^---\r?\n[\s\S]*?\r?\n---\r?\n/u, '');
     const help = join(output, 'help', ...(language === 'en' ? ['en'] : []), 'guide', 'replay-expressions.html');
     await mkdir(dirname(help), { recursive: true });

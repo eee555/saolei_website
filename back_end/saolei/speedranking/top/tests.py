@@ -1,17 +1,19 @@
 from io import StringIO
-import json
 from unittest.mock import patch
 
 from django.core.management import call_command
+from django.tasks import TaskContext
 from django.test import override_settings, SimpleTestCase, TestCase
+from django_tasks_db.models import DBTaskResult
 
 from config.text_choices import MS_TextChoices
 from msuser.models import UserMS
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, VideoModel
 from .cache import TopRankingCache
-from .services import write_records
-from .utils import insert_video, MINIMUM_BV, record_field, stat_record
+from .services import rebuild_soft_ranks, write_records
+from .tasks import task_refresh_soft_ranks
+from .utils import insert_video, MINIMUM_BV, RANK_FIELDS, ranking_score, record_field, record_mean, SOFT_FIELDS, soft_values, stat_record
 from ..cache import cache, pipeline
 from ..pb.cache import PBRankingCache
 from ..saolei.cache import SpeedRankingCache
@@ -28,8 +30,19 @@ class TopSelectionTests(SimpleTestCase):
             self.assertEqual([video['value'] for video in videos], [1, 2, 3, 4, 5] if stat == 't' else [6, 5, 4, 3, 2])
             repeated = insert_video(stat, videos, videos[0])
             self.assertEqual({video['video_id'] for video in repeated}, {video['video_id'] for video in videos})
-        self.assertEqual(stat_record('t', [{'value': 1000, 'video_id': 1}])['mean'], (1000 + 4 * 999999) / 5)
-        self.assertEqual(stat_record('s', [{'value': 2, 'video_id': 1}])['mean'], 0.4)
+        self.assertEqual(record_mean('t', stat_record('t', [{'value': 1000, 'video_id': 1}])), (1000 + 4 * 999999) / 5)
+        self.assertEqual(record_mean('s', stat_record('s', [{'value': 2, 'video_id': 1}])), 0.4)
+        records, anchors = {}, {}
+        for field in RANK_FIELDS:
+            value = 1000 if field.endswith('t') else 2
+            records[field] = {'videos': [{'value': value, 'video_id': index} for index in range(1, 6)]}
+            anchors[field] = {'value': value}
+        values = soft_values(records, anchors)
+        for mode in ('std', 'nf'):
+            for level in MINIMUM_BV:
+                self.assertAlmostEqual(values[f'{mode}:{level}'], 100)
+            self.assertAlmostEqual(values[f'{mode}:sum'], 4000)
+        self.assertAlmostEqual(values['lsf'], 4000)
 
 
 @override_settings(RATELIMIT_ENABLE=False)
@@ -94,7 +107,7 @@ class TopRankingTests(TestCase):
         videos = [self.create_video(timems=value * 1000) for value in range(1, 8)]
         record = self.ranking.get_record(self.user.id)
         self.assertEqual([video['video_id'] for video in record['std:bt']['videos']], [video.id for video in videos[:5]])
-        self.assertEqual(record['std:bt']['mean'], 3000)
+        self.assertEqual(record_mean('t', record['std:bt']), 3000)
         other = self.create_user('top-single')
         self.create_video(player=other, timems=500)
         with self.assertNumQueries(0):
@@ -107,10 +120,10 @@ class TopRankingTests(TestCase):
     def test_worsening_deletion_and_player_level_nf_moves(self):
         videos = [self.create_video(timems=value * 1000) for value in range(1, 7)]
         self.save_video(videos[0], timems=7000)
-        self.assertEqual(self.player_records()['std:bt']['mean'], 4000)
+        self.assertEqual(record_mean('t', self.player_records()['std:bt']), 4000)
         with self.captureOnCommitCallbacks(execute=True):
             videos[-1].delete()
-        self.assertEqual(self.player_records()['std:bt']['mean'], 4200)
+        self.assertEqual(record_mean('t', self.player_records()['std:bt']), 4200)
         other = self.create_user('top-moved')
         self.save_video(videos[1], player=other, level='i', bv=30, right_ce=1)
         record = self.ranking.get_record(self.user.id)
@@ -127,7 +140,7 @@ class TopRankingTests(TestCase):
         with self.captureOnCommitCallbacks(execute=True):
             queryset.update(state=MS_TextChoices.State.OFFICIAL)
             add_videos_to_speed_ranks(queryset)
-        self.assertEqual(self.player_records()['std:bt']['mean'], 3000)
+        self.assertEqual(record_mean('t', self.player_records()['std:bt']), 3000)
         removed = queryset.filter(pk__in=[video.pk for video in videos[:2]])
         with self.captureOnCommitCallbacks(execute=True):
             removed.update(ongoing_tournament=True)
@@ -145,7 +158,7 @@ class TopRankingTests(TestCase):
                 call_command('rebuild_top_ranks', stdout=StringIO())
         self.assertEqual(self.ranking.get_record(self.user.id), before)
 
-    def test_anchor_top_twenty_and_live_cache_reads(self):
+    def test_anchor_averages_top_twenty_original_means(self):
         previous = {player_id: {} for player_id in range(1000, 1025)}
         records = {player_id: {'std:bt': stat_record('t', [{'video_id': player_id * 10 + index, 'value': player_id - 999} for index in range(5)])} for player_id in previous}
         with pipeline() as pipe:
@@ -158,8 +171,6 @@ class TopRankingTests(TestCase):
         anchors = response.json()
         self.assertEqual(set(anchors), affected)
         self.assertEqual(anchors['std:bt'], {'value': 10.5, 'sample_count': 20})
-        cache.hset(self.ranking.anchors_key, 'std:bt', json.dumps({'value': 12, 'sample_count': 20}))
-        self.assertEqual(self.client.get('/api/speedranking/top/anchors').json()['std:bt']['value'], 12)
 
     def test_admin_repair_restores_details_score_and_anchor(self):
         video = self.create_video()
@@ -174,6 +185,54 @@ class TopRankingTests(TestCase):
         response = self.client.post(url, payload)
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()['records'][field]['videos'][0]['video_id'], video.id)
-        mean = response.json()['records'][field]['mean']
-        self.assertEqual(cache.zscore(self.ranking.rank_key(field), self.user.id), mean)
-        self.assertEqual(self.ranking.get_anchors()[field]['value'], mean)
+        mean = record_mean('t', response.json()['records'][field])
+        self.assertEqual(cache.zscore(self.ranking.rank_key(field), self.user.id), ranking_score('t', mean))
+        self.assertAlmostEqual(self.ranking.get_anchors()[field]['value'], mean)
+
+    def test_soft_union_local_updates_and_complete_membership(self):
+        self.create_video(right_ce=1)
+        self.assertEqual(rebuild_soft_ranks(), 1)
+        other = self.create_user('soft-other')
+        other_video = self.create_video(player=other, level='e', bv=100, right_ce=1, timems=2000)
+        for field in RANK_FIELDS:
+            self.assertEqual(cache.zcard(self.ranking.rank_key(field)), 2)
+        self.assertEqual(cache.zscore(self.ranking.rank_key('nf:et'), other.id), 1 / 999999)
+        publication = self.ranking.get_publication()
+        expected = soft_values(self.ranking.get_record(other.id), publication['anchors'])
+        for field, value in expected.items():
+            self.assertAlmostEqual(cache.zscore(self.ranking.soft_key(field), other.id), value)
+        self.assertEqual(rebuild_soft_ranks(), 2)
+        publication = self.ranking.get_publication()
+        for player in (self.user, other):
+            values = soft_values(self.ranking.get_record(player.id), publication['anchors'])
+            for field, value in values.items():
+                self.assertAlmostEqual(cache.zscore(self.ranking.soft_key(field), player.id), value)
+        with self.assertNumQueries(0):
+            response = self.client.get('/api/speedranking/top/soft/rank', {'ranking': 'nf:sum'})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()['count'], 2)
+        self.assertEqual(response.json()['players'][0]['records'], self.ranking.get_record(response.json()['players'][0]['player_id']))
+        self.save_video(other_video, state=MS_TextChoices.State.IDENTIFIER)
+        for key in [*[self.ranking.rank_key(field) for field in RANK_FIELDS], *[self.ranking.soft_key(field) for field in SOFT_FIELDS]]:
+            self.assertIsNone(cache.zscore(key, other.id))
+        self.assertTrue(self.ranking.get_record(self.user.id))
+        self.assertEqual(self.ranking.get_record(other.id), {})
+
+    def test_queued_refresh_uses_latest_anchors_and_failure_keeps_published_data(self):
+        self.create_video()
+        tasks = DBTaskResult.objects.filter(task_path='speedranking.top.tasks.task_refresh_soft_ranks')
+        queued = tasks.first().task_result
+        task_refresh_soft_ranks.enqueue()
+        self.assertEqual(task_refresh_soft_ranks.call(TaskContext(task_result=queued)), {'skipped': True})
+        self.assertIsNone(self.ranking.get_publication())
+        tasks.exclude(pk=queued.id).delete()
+        result = task_refresh_soft_ranks.call(TaskContext(task_result=queued))
+        self.assertEqual(result, {'players': 1})
+        published = self.ranking.get_publication()
+        self.assertEqual(published['anchors'], self.ranking.get_anchors())
+        before = cache.zrange(self.ranking.soft_key('lsf'), 0, -1, withscores=True)
+        with patch('redis.client.Pipeline.zunionstore', side_effect=RuntimeError('failed')), self.assertLogs('speedranking', level='ERROR'):
+            with self.assertRaises(RuntimeError):
+                rebuild_soft_ranks()
+        self.assertEqual(self.ranking.get_publication(), published)
+        self.assertEqual(cache.zrange(self.ranking.soft_key('lsf'), 0, -1, withscores=True), before)

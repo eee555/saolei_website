@@ -1,5 +1,5 @@
 <template>
-    <div ref="plot" class="timeline-plot" :class="{ 'timeline-plot--ruler': ruler, 'timeline-plot--pannable': ruler && canDrag }" @pointermove="hoverAt($event.clientX)" @pointerleave="hoverMs = null" @wheel="onWheel">
+    <div ref="plot" class="timeline-plot" :class="{ 'timeline-plot--ruler': ruler, 'timeline-plot--pannable': ruler && canDrag }" @pointermove="hoverAt($event.clientX)" @pointerleave="hoverMs = null; emit('eventLeave')" @wheel="onWheel">
         <TransformGroup :domain="domain" :size="size" :padding="padding">
             <template v-if="ruler">
                 <Axis direction="horizontal" :ticks="rulerTicks" :position="0" :offset="-10" :tick-size="rulerTickSizes">
@@ -14,9 +14,9 @@
             <template v-else-if="eventDefinition && eventData">
                 <Axis class="timeline-plot__event-axis" direction="horizontal" :position="0.5" :stroke-opacity="0.5" />
                 <Line v-for="(span, index) in visibleSpans" :key="index" class="timeline-plot__event-span" :points="[{ x: span.startMs, y: 0.5 }, { x: span.renderEndMs, y: 0.5 }]" :stroke-color="eventDefinition.color" :stroke-width="eventDefinition.line.width" :stroke-opacity="eventDefinition.line.opacity" line-cap="round" :style="{ clipPath: plotClip, strokeDasharray: eventLineDash(eventDefinition.line.style) }" />
-                <Scatter class="timeline-plot__event-pulses" :points="pulsePoints" :style="{ clipPath: plotClip }">
-                    <template #point>
-                        <EventMarker :x="0" :y="0" :color="eventDefinition.color" :marker="eventDefinition.marker" />
+                <Scatter class="timeline-plot__event-pulses" :points="pulsePoints" :style="{ clipPath: plotClip }" interactive>
+                    <template #point="{ point }">
+                        <EventMarker :x="0" :y="0" :color="eventDefinition.color" :marker="{ shape: eventDefinition.marker.shape, opacity: eventDefinition.marker.opacity, size: 8 }" @pointerenter="emit('eventEnter', { key: eventDefinition.key, type: 'pulse', pulse: point.data }, $event)" @pointermove="emit('eventMove', $event)" @pointerleave="emit('eventLeave')" />
                     </template>
                 </Scatter>
             </template>
@@ -26,6 +26,9 @@
                 <Axis class="timeline-plot__y-axis" direction="vertical" :ticks="yTicks" :position="domain.xMin" text-anchor="start" :offset="4" />
             </template>
         </TransformGroup>
+        <svg v-if="eventDefinition && eventData" class="timeline-plot__event-hits" :width="size.width" :height="size.height" :viewBox="`0 0 ${size.width} ${size.height}`" :style="{ clipPath: plotClip }" aria-hidden="true">
+            <line v-for="(span, index) in visibleSpans" :key="index" class="timeline-plot__event-span-hit" :x1="scaleX(span.startMs)" :x2="scaleX(span.renderEndMs)" :y1="scaleY(0.5)" :y2="scaleY(0.5)" :stroke-width="Math.max(8, eventDefinition.line.width)" @pointerenter="emit('eventEnter', { key: eventDefinition.key, type: 'sustained', span }, $event)" @pointermove="emit('eventMove', $event)" @pointerleave="emit('eventLeave')" />
+        </svg>
         <svg class="timeline-plot__overlay" :width="size.width" :height="size.height" :viewBox="`0 0 ${size.width} ${size.height}`" :style="{ clipPath: plotClip }" aria-hidden="true">
             <rect v-if="rangeVisible" class="timeline-plot__range" :x="scaleX(playback.rangeStartMs.value)" :y="area.y" :width="scaleX(playback.rangeEndMs.value) - scaleX(playback.rangeStartMs.value)" :height="area.height" />
             <line v-if="rangeVisible" class="timeline-plot__range-start" :x1="scaleX(playback.rangeStartMs.value)" :x2="scaleX(playback.rangeStartMs.value)" :y1="area.y" :y2="area.y + area.height" />
@@ -46,9 +49,12 @@
 </template>
 
 <script setup lang="ts">
+import '@/styles/cards.css';
+import '@/styles/text.css';
 import '@putianyi888/vue3-plots/style.css';
 import type { DragEvent, PointerEvent as InteractPointerEvent } from '@interactjs/types';
 import { Axis, createLinearScale, formatTick, getNiceTicks, getPlotArea, Grid, Line, Scatter, TransformGroup } from '@putianyi888/vue3-plots';
+import type { PlotPoint } from '@putianyi888/vue3-plots';
 import { useElementSize, useEventListener } from '@vueuse/core';
 import interact from 'interactjs';
 import { computed, useTemplateRef, watch } from 'vue';
@@ -57,10 +63,11 @@ import type { PropType } from 'vue';
 import { counterValue, displayCounter } from './counter';
 import type { PreparedCounter } from './counter';
 import { eventLineDash } from './customEvents';
-import type { CustomEventDefinition, PreparedCustomEvent } from './customEvents';
+import type { CustomEventDefinition, EventPulse, PreparedCustomEvent } from './customEvents';
 import EventMarker from './EventMarker.vue';
 import { panTimeWindow, timeAtPixel, timelinePadding, timelinePoints, timelineYDomain, zoomTimeWindow } from './timeline';
 import type { TimelineTrack, TimeWindow } from './timeline';
+import type { HoveredCustomEvent } from './useEventTooltip';
 import type { PlaybackController } from './usePlayback';
 
 const props = defineProps({
@@ -71,9 +78,10 @@ const props = defineProps({
     eventDefinition: { type: Object as PropType<CustomEventDefinition | null>, default: null },
     eventData: { type: Object as PropType<PreparedCustomEvent | null>, default: null },
 });
+const emit = defineEmits<{ eventEnter: [event: HoveredCustomEvent, pointer: PointerEvent]; eventMove: [pointer: PointerEvent]; eventLeave: [] }>();
 const timeWindow = defineModel<TimeWindow>('window', { required: true });
 const hoverMs = defineModel<number | null>('hoverMs', { default: null });
-const plot = useTemplateRef('plot');
+const plot = useTemplateRef<HTMLDivElement>('plot');
 const { width, height } = useElementSize(plot);
 const size = computed(() => ({ width: width.value, height: height.value }));
 const padding = computed(() => (props.ruler ? { ...timelinePadding, top: 2, bottom: 2 } : timelinePadding));
@@ -89,7 +97,10 @@ const yTicks = computed(() => getNiceTicks(domain.value.yMin, domain.value.yMax,
 const plotClip = computed(() => `inset(${padding.value.top}px ${padding.value.right}px ${padding.value.bottom}px ${padding.value.left}px)`);
 const rangeVisible = computed(() => props.playback.rangeStartMs.value !== 0 || props.playback.rangeEndMs.value !== props.playback.durationMs.value);
 const visibleSpans = computed(() => props.eventData?.spans.filter((span) => span.renderEndMs >= timeWindow.value.startMs && span.startMs <= timeWindow.value.endMs) ?? []);
-const pulsePoints = computed(() => props.eventData?.pulses.filter((pulse) => pulse.timeMs >= timeWindow.value.startMs && pulse.timeMs <= timeWindow.value.endMs).map((pulse) => ({ x: pulse.timeMs, y: 0.5 })) ?? []);
+const pulsePoints = computed<PlotPoint<EventPulse>[]>(() => props.eventData?.pulses.filter((pulse) => pulse.timeMs >= timeWindow.value.startMs && pulse.timeMs <= timeWindow.value.endMs).map((pulse) => ({ x: pulse.timeMs, y: 0.5, data: pulse })) ?? []);
+watch([() => props.eventData, () => props.eventDefinition, () => timeWindow.value.startMs, () => timeWindow.value.endMs, width, height], () => {
+    emit('eventLeave');
+});
 const plottedTracks = computed(() => props.tracks.flatMap((track) => {
     const counter = props.counters.get(track.key);
     return counter === undefined ? [] : [{ ...track, counter, points: timelinePoints(counter, props.playback.durationMs.value) }];
@@ -125,6 +136,7 @@ function hoverAt(clientX: number) {
 }
 
 function onWheel(event: WheelEvent) {
+    emit('eventLeave');
     if (!props.ruler || event.ctrlKey || event.metaKey || dragging || props.playback.durationMs.value <= 0 || area.value.width <= 0) return;
     event.preventDefault();
     const delta = (event.deltaY || event.deltaX) * (event.deltaMode === 1 ? 16 : event.deltaMode === 2 ? area.value.width : 1);
@@ -214,6 +226,19 @@ useEventListener('pointercancel', () => {
     width: 100%;
     height: 100%;
     pointer-events: none;
+}
+
+.timeline-plot__event-hits {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+}
+
+.timeline-plot__event-span-hit {
+    pointer-events: stroke;
+    stroke: transparent;
+    stroke-linecap: round;
+    cursor: help;
 }
 
 .timeline-plot__overlay line {

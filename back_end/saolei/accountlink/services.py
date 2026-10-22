@@ -12,20 +12,49 @@ from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from identifier.models import Identifier
 from msuser.models import UserMS
 from userprofile.models import UserProfile
+from userprofile.services import grant_name_privacy
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
+from utils.ranking_lock import ranking_access
 from utils.saolei import SaoleiUserInfo, SaoleiUtils
 from videomanager.models import VideoModel
-from .models import AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoMSGames, VideoSaolei
+from videomanager.services import set_import_upload_time
+from .models import AccountLinkQueue, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoMSGames, VideoSaolei
 from .msgames.client import download_replay as download_msgames_replay, fetch_profile as fetch_msgames_profile, fetch_replays as fetch_msgames_replays
 from .msgames.utils import upload_date_upper_bound
-from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, update_bilibili_account
+from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, link_account, update_bilibili_account
 from .wom.client import fetch_wom_profile
 
 logger = logging.getLogger('accountlink')
 
 SAOLEI_VIDEO_IMPORT_TASK_PATH = 'accountlink.tasks.task_saolei_video_import'
 SAOLEI_VIDEO_IMPORT_BULK_TASK_PATH = 'accountlink.tasks.task_saolei_video_import_bulk'
+
+
+@transaction.atomic
+def verify_account_link(user_id: int, platform: str, identifier: str, actor_id: int) -> tuple[UserProfile, bool]:
+    user = UserProfile.objects.select_for_update().filter(pk=user_id).first()
+    if user is None:
+        raise ExceptionToResponse('user', 'not_found', status_code=404)
+    if platform == Platform.MINERACER:
+        raise ExceptionToResponse('mineracer', 'manual_link_not_supported', status_code=400)
+    if platform not in Platform.values:
+        raise ExceptionToResponse('platform', 'invalid', status_code=400)
+    links = list(AccountLinkQueue.objects.select_for_update().filter(platform=platform, identifier=identifier).order_by('pk'))
+    for link in links:
+        if link.verified:
+            if link.userprofile_id == user.pk:
+                return user, False
+            raise ExceptionToResponse('accountlink', 'collision', status_code=409)
+    link = next((link for link in links if link.userprofile_id == user.pk), None)
+    if link is None:
+        raise ExceptionToResponse('accountlink', 'not_found', status_code=404)
+    link_account(platform, identifier, user)
+    link.verified = True
+    link.save(update_fields=['verified'])
+    if platform == Platform.MSGAMES:
+        grant_name_privacy(user, f'Staff #{actor_id}, MSGames #{identifier}')
+    return user, True
 
 
 def update_account(platform: Platform, user: UserProfile):
@@ -71,6 +100,7 @@ def update_msgames_video_list(account: AccountMinesweeperGames) -> list[int]:
     return new_ids
 
 
+@ranking_access(operation='accountlink.msgames_import')
 def msgames_video_import_one(source: VideoMSGames):
     if source.import_video_id:
         return source.import_video
@@ -93,9 +123,7 @@ def msgames_video_import_one(source: VideoMSGames):
             except OSError:
                 continue
             if same_file:
-                if source_time and collision.upload_time > source_time:
-                    collision.upload_time = source_time
-                    collision.save(update_fields=['upload_time'])
+                set_import_upload_time(collision, source_time)
                 source.import_video = collision
                 source.save(update_fields=['import_video'])
                 return collision
@@ -105,9 +133,8 @@ def msgames_video_import_one(source: VideoMSGames):
             user.save(update_fields=['userms'])
         if parser.state == MS_TextChoices.State.OFFICIAL and not Identifier.verify(parser.identifier, user.userms):
             parser.state = MS_TextChoices.State.IDENTIFIER
-        video = VideoModel.create_from_parser(parser, user)
-        if source_time:
-            video.upload_time = source_time
+        video = VideoModel.create_from_parser(parser, user, upload_time=source_time)
+        set_import_upload_time(video, source_time, created=True)
         video.update_redis()
         video.save(update_fields=['upload_time', 'ongoing_tournament'])
         source.import_video = video
@@ -243,6 +270,7 @@ def update_saolei_user_video_one_page(account: AccountSaolei, page: int):
 
 
 # 导入一个扫雷网录像
+@ranking_access(operation='accountlink.saolei_import')
 def saolei_video_import_one(saolei_video: VideoSaolei):
     logger.info(f'开始导入扫雷网录像#{saolei_video.id}')
     try:
@@ -265,9 +293,7 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
         collisions = VideoModel.objects.filter(file_size=file_size)
         for collision in collisions:
             if collision.file.read() == response.content:
-                if collision.upload_time > saolei_video.upload_time:
-                    collision.upload_time = saolei_video.upload_time
-                    collision.save(update_fields=['upload_time'])
+                set_import_upload_time(collision, saolei_video.upload_time)
                 saolei_video.import_video = collision
                 saolei_video.save(update_fields=['import_video'])
                 return
@@ -280,8 +306,8 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
         if not Identifier.verify(parser.identifier, user.userms) and parser.state == MS_TextChoices.State.OFFICIAL:
             parser.state = MS_TextChoices.State.IDENTIFIER
 
-        video = VideoModel.create_from_parser(parser, user)
-        video.upload_time = saolei_video.upload_time
+        video = VideoModel.create_from_parser(parser, user, upload_time=saolei_video.upload_time)
+        set_import_upload_time(video, saolei_video.upload_time, created=True)
         video.update_redis()
         video.save(update_fields=['upload_time', 'ongoing_tournament'])
         saolei_video.import_video = video

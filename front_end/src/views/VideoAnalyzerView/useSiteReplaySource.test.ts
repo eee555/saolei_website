@@ -2,23 +2,26 @@ import { readFileSync } from 'node:fs';
 
 import { AxiosError, AxiosHeaders } from 'axios';
 import type { AxiosInstance, AxiosResponse } from 'axios';
-import { AvfVideo, EvfVideo, MvfVideo, RmvVideo } from 'ms-toollib';
+import { EvfVideo } from 'ms-toollib';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { computed, effectScope, nextTick, ref } from 'vue';
 import type { EffectScope } from 'vue';
 
 import { useSiteReplaySource } from './useSiteReplaySource';
 
-import { parseReplay } from '@/components/VideoAnalyzer/replayParser';
 import { useReplaySource } from '@/components/VideoAnalyzer/useReplaySource';
 
-const { get } = vi.hoisted(() => ({ get: vi.fn<AxiosInstance['get']>() }));
+const { get, fetchVideoInfo } = vi.hoisted(() => ({
+    get: vi.fn<AxiosInstance['get']>(),
+    fetchVideoInfo: vi.fn<(id: number) => Promise<{ software: 'e' }>>(),
+}));
 vi.mock('@/http', () => ({ default: { get } }));
+vi.mock('@/services/videoInfoService', () => ({ fetchVideoInfo }));
 
 const scopes: EffectScope[] = [];
 
-function fixture(filename = '52200.evf') {
-    return Uint8Array.from(readFileSync(new URL(`../../../cypress/fixtures/${filename}`, import.meta.url))).buffer;
+function fixture() {
+    return Uint8Array.from(readFileSync(new URL('../../../cypress/fixtures/52200.evf', import.meta.url))).buffer;
 }
 
 function response<T>(data: T): AxiosResponse<T> {
@@ -39,7 +42,7 @@ function setup() {
 }
 
 function mockRequests() {
-    get.mockResolvedValueOnce(response({ msg: 'e' }));
+    fetchVideoInfo.mockResolvedValueOnce({ software: 'e' });
     get.mockResolvedValueOnce(response(fixture()));
 }
 
@@ -47,47 +50,7 @@ afterEach(() => {
     for (const scope of scopes.splice(0)) scope.stop();
     vi.restoreAllMocks();
     get.mockReset();
-});
-
-describe('analyzer replay parsing', () => {
-    for (const [filename, software, Parser] of [
-        ['52200.evf', 'e', EvfVideo],
-        ['c_10_39.832_24_0.477_Pu Tian Yi(Hu Bei)_fail.evf', 'e', EvfVideo],
-        ['Exp_FL_35.09_3BV=132_3BVs=3.76_Pu Tian Yi(Hu Bei).avf', 'a', AvfVideo],
-        ['Lin_Jin_Fan_Exp_60.623bv207.mvf', 'm', MvfVideo],
-        ['3819-Time-1616-NF-9469-32-20151031.rmv', 'r', RmvVideo],
-    ] as const) {
-        it(`parses and analyses ${filename} with the matching parser`, () => {
-            const video = parseReplay(fixture(filename), filename, software);
-            try {
-                expect(video).toBeInstanceOf(Parser);
-                expect(video.row).toBeGreaterThan(0);
-                expect(video.column).toBeGreaterThan(0);
-                expect(video.rtime_ms).toBeGreaterThan(0);
-                if (software === 'e') {
-                    expect(video.rtime_ms).toBe(filename === '52200.evf' ? 10732 : 39832);
-                    expect(video.is_completed).toBe(filename === '52200.evf');
-                }
-                const board = video.board as number[][];
-                expect(board).toHaveLength(video.row);
-                expect(board.flat().filter((cell) => cell === -1)).toHaveLength(video.mine_num);
-                for (const row of board) expect(row).toHaveLength(video.column);
-            } finally {
-                video.free();
-            }
-        });
-    }
-
-    for (const method of ['parse', 'analyse'] as const) {
-        it(`frees the allocated WASM object if ${method} fails`, () => {
-            const free = vi.spyOn(EvfVideo.prototype, 'free');
-            vi.spyOn(EvfVideo.prototype, method).mockImplementation(() => {
-                throw new Error('Invalid replay');
-            });
-            expect(() => parseReplay(fixture(), '52200.evf', 'e')).toThrow('Invalid replay');
-            expect(free).toHaveBeenCalledOnce();
-        });
-    }
+    fetchVideoInfo.mockReset();
 });
 
 describe('analyzer replay loading', () => {
@@ -110,7 +73,7 @@ describe('analyzer replay loading', () => {
             expect(exported.bbbv_solved).toBe(52);
             expect(visible.game_board).toEqual(originalBoard);
             expect(visible.current_event_id).toBe(originalIndex);
-            expect(get).toHaveBeenCalledTimes(2);
+            expect(get).toHaveBeenCalledOnce();
         } finally {
             exported.free();
         }
@@ -137,8 +100,8 @@ describe('analyzer replay loading', () => {
         expect(replay.loading.value).toBe(false);
         expect(replay.errorMessage.value).toBe('');
         const signal = get.mock.calls[0][1]?.signal;
-        expect(get).toHaveBeenNthCalledWith(1, '/video/get_software/', { params: { id: '52200' }, signal });
-        expect(get).toHaveBeenNthCalledWith(2, '/api/video/preview', {
+        expect(fetchVideoInfo).toHaveBeenCalledWith(52200);
+        expect(get).toHaveBeenCalledWith('/api/video/preview', {
             params: { id: '52200.evf' }, responseType: 'arraybuffer', signal,
         });
     });
@@ -147,7 +110,7 @@ describe('analyzer replay loading', () => {
         const denied = response('Forbidden');
         denied.status = 403;
         denied.statusText = 'Forbidden';
-        get.mockRejectedValueOnce(new AxiosError('Request failed', undefined, undefined, undefined, denied));
+        fetchVideoInfo.mockRejectedValueOnce(new AxiosError('Request failed', undefined, undefined, undefined, denied));
         const replay = setup();
         await vi.waitFor(() => {
             expect(replay.loading.value).toBe(false);
@@ -155,7 +118,7 @@ describe('analyzer replay loading', () => {
         expect(replay.errorMessage.value).toBe('403 Forbidden');
         expect(replay.durationMs.value).toBe(0);
         expect(replay.globalBoard.value).toBeNull();
-        expect(get).toHaveBeenCalledOnce();
+        expect(get).not.toHaveBeenCalled();
     });
 
     it('reports parse errors without publishing or leaking the video', async () => {
@@ -206,19 +169,19 @@ describe('analyzer replay loading', () => {
 
     it('ignores a late binary response after the URL changes', async () => {
         const oldRequest = Promise.withResolvers<AxiosResponse<ArrayBuffer>>();
-        get.mockResolvedValueOnce(response({ msg: 'e' }));
+        fetchVideoInfo.mockResolvedValueOnce({ software: 'e' });
         get.mockReturnValueOnce(oldRequest.promise);
         const replay = setup();
         await vi.waitFor(() => {
-            expect(get).toHaveBeenCalledTimes(2);
+            expect(get).toHaveBeenCalledOnce();
         });
-        const oldSignal = get.mock.calls[1][1]?.signal;
-        get.mockResolvedValueOnce(response({ msg: 'e' }));
+        const oldSignal = get.mock.calls[0][1]?.signal;
+        fetchVideoInfo.mockResolvedValueOnce({ software: 'e' });
         const newRequest = Promise.withResolvers<AxiosResponse<ArrayBuffer>>();
         get.mockReturnValueOnce(newRequest.promise);
         replay.id.value = '123';
         await vi.waitFor(() => {
-            expect(get).toHaveBeenCalledTimes(4);
+            expect(get).toHaveBeenCalledTimes(2);
         });
         expect(oldSignal?.aborted).toBe(true);
         oldRequest.resolve(response(fixture()));

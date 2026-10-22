@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     'article',
     'customranking',
     'speedranking',
+    'effranking',
     'identifier',
     'accountlink',
     'tournament',
@@ -81,6 +82,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     # 'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'utils.ranking_lock.TopRankingWriteMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'django_ratelimit.middleware.RatelimitMiddleware',
@@ -264,6 +266,8 @@ else:
         r'api/video/preview/?',
         r'api/video/infobulk/?',
         r'api/video/detailbulk/?',
+        r'api/video/info/batch/?',
+        r'api/video/metadata/?',
     ]
     CORS_URLS_REGEX = rf'^/({"|".join(CORS_PATHS)})$'
 

@@ -20,7 +20,7 @@ class TestDeleteParticipant(TournamentTestCaseBase):
         self.participant = self.create_cached_gsc_participant()
         self.url = f'/api/tournament/participant/{self.participant.pk}'
 
-    def test_host_deletes_cancelled_gsc_participant_but_preserves_videos(self):
+    def test_host_cannot_delete_cancelled_gsc_participant_with_any_video(self):
         video = self.create_video()
         self.assertTrue(self.tournament.videos.filter(pk=video.pk).exists())
         self.tournament.state = Tournament_TextChoices.State.CANCELLED
@@ -31,9 +31,8 @@ class TestDeleteParticipant(TournamentTestCaseBase):
         with self.captureOnCommitCallbacks(execute=True):
             response = self.client.delete(self.url)
 
-        self.assertEqual(response.status_code, 204)
-        self.assertFalse(TournamentParticipant.objects.filter(pk=self.participant.pk).exists())
-        self.assertFalse(GSCParticipant.objects.filter(pk=self.participant.pk).exists())
+        self.assertEqual(response.status_code, 409)
+        self.assertTrue(GSCParticipant.objects.filter(pk=self.participant.pk).exists())
         self.assertEqual(self.tournament_cache.get_participant_list(self.user.id), [])
         self.assertTrue(TournamentUser.objects.filter(user=self.user).exists())
         self.assertTrue(VideoModel.objects.filter(pk=video.pk).exists())

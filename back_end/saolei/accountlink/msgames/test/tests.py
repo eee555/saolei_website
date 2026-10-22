@@ -8,7 +8,7 @@ from django.core.files.base import ContentFile
 from django.db import IntegrityError
 from django.test import override_settings, SimpleTestCase, TestCase
 import httpx
-from msgames_api import AccessDeniedError, ParseError, RecordMetric, RequestError
+from msgames_api import AccessDeniedError, Client as MSGamesClient, ParseError, RecordMetric, RequestError
 from msgames_api.parsers import parse_profile, parse_records
 
 from accountlink.models import AccountLinkQueue, AccountMinesweeperGames, Platform, VideoMSGames
@@ -92,13 +92,20 @@ class MSGamesMappingTests(SimpleTestCase):
             upload_date_upper_bound(date.max)
 
     @patch('accountlink.msgames.client.Client')
-    def test_client_reads_all_five_record_categories(self, factory):
-        client = factory.return_value.__enter__.return_value
-        client.get_records.side_effect = lambda player_id, metric: records(metric)
-        self.assertEqual(len(fetch_replays(42)), 2)
-        self.assertEqual([value.args[1] for value in client.get_records.call_args_list], list(RecordMetric))
-        client.get_ranking.assert_not_called()
-        client.get_world_records.assert_not_called()
+    def test_client_reads_all_five_categories_with_empty_problems(self, factory):
+        requested = []
+
+        def respond(request):
+            self.assertEqual(request.url.path, '/profile.php')
+            self.assertEqual(request.url.params['pid'], '42')
+            metric = RecordMetric(int(request.url.params['menu']))
+            requested.append(metric)
+            return httpx.Response(200, text=fixture('empty_records.html' if metric == RecordMetric.PROBLEMS else 'records.html'))
+
+        with httpx.Client(transport=httpx.MockTransport(respond)) as http_client:
+            factory.return_value = MSGamesClient(http_client=http_client, min_interval=0)
+            self.assertEqual(len(fetch_replays(42)), 2)
+        self.assertEqual(requested, list(RecordMetric))
 
     @patch('accountlink.msgames.client.Client')
     def test_client_error_mapping_and_release(self, factory):

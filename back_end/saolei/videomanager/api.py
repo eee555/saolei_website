@@ -1,25 +1,92 @@
+import json
 from urllib.parse import quote
 
 from django.conf import settings
 from django.core.files.storage import default_storage
 from django.core.paginator import Paginator
-from django.db.models import F
+from django.db.models import F, Q
 from django.http import FileResponse, HttpRequest, HttpResponse
 from django.shortcuts import get_object_or_404
 from django_ratelimit.decorators import ratelimit
-from ninja import Query, Router
+from ninja import Form, Query, Router
 from ninja.decorators import decorate_view
 from ninja.errors import HttpError
 from ninja.orm import create_schema
 
 from config.text_choices import MS_TextChoices
+from userprofile.decorators import staff_required
 from userprofile.models import UserProfile
-from .models import STNB_COEFFICIENTS, VideoModel
-from .schema import VideoBaseOut
+from .cache import cache, newest_cache
+from .models import ExpandVideoModel, STNB_COEFFICIENTS, VideoModel
+from .schema import ParsedVideoOut, VIDEO_INFO_BATCH_LIMIT, VIDEO_METADATA_FIELDS, VideoBaseOut, VideoMetadataOut
 from .view_utils import video_all_fields
 
 router = Router()
 VIDEO_ACCEL_REDIRECT_PREFIX = '/internal-media/'
+
+
+def _parse_video_ids(ids: str):
+    parts = ids.split(',')
+    if len(parts) > VIDEO_INFO_BATCH_LIMIT or not parts or any(len(part) > 19 or not part.isascii() or not part.isdecimal() or int(part) < 1 or int(part) > 2**63 - 1 for part in parts):
+        raise HttpError(400, f'Expected 1 to {VIDEO_INFO_BATCH_LIMIT} positive video IDs.')
+    return list(dict.fromkeys(map(int, parts)))
+
+
+def _visible_video_info(request, ids: str):
+    videos = VideoModel.objects.filter(id__in=_parse_video_ids(ids))
+    if request.user.is_authenticated:
+        return videos.filter(Q(ongoing_tournament=False) | Q(player_id=request.user.pk))
+    return videos.filter(ongoing_tournament=False)
+
+
+@router.get('/info/batch', response=list[ParsedVideoOut])
+@decorate_view(ratelimit(key='ip', rate='5/s'))
+def get_parsed_video_info(request, ids: str):
+    """
+    - ratelimit(key='ip', rate='5/s')
+
+    Stable file-derived fields. Unpublished videos are only returned to their owner, including for staff requests.
+    """
+    return _visible_video_info(request, ids).select_related('video')
+
+
+@router.get('/metadata', response=list[VideoMetadataOut])
+@decorate_view(ratelimit(key='ip', rate='5/s'))
+def get_video_metadata(request, ids: str):
+    """
+    - ratelimit(key='ip', rate='5/s')
+
+    Current website fields and visibility for callers that only have video IDs.
+    """
+    return _visible_video_info(request, ids).only(*VIDEO_METADATA_FIELDS)
+
+
+@router.get('/newest_queue', response=list[VideoMetadataOut])
+@decorate_view(ratelimit(key='ip', rate='5/s'))
+def get_newest_queue(request):
+    """
+    - ratelimit(key='ip', rate='5/s')
+
+    Read public queue metadata directly from the cached snapshot, without querying videos.
+    """
+    videos = []
+    for video_id, raw in cache.hgetall(newest_cache.key).items():
+        cached = json.loads(raw)
+        videos.append({
+            'id': int(video_id), 'player_id': cached['player_id'], 'upload_time': cached['time'],
+            'state': cached['state'], 'ongoing_tournament': False,
+        })
+    return videos
+
+
+@router.post('/newest_queue/remove', response={204: None})
+@decorate_view(staff_required)
+def remove_newest_queue_video(request, video_id: int = Form(..., alias='id')):  # noqa: B008
+    """
+    - staff_required
+    """
+    cache.hdel(newest_cache.key, video_id)
+    return 204, None
 
 
 @router.get('/query')
@@ -28,7 +95,7 @@ def video_query(request, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode,
     """
     - ratelimit(key='ip', rate='60/m')
     """
-    if o not in video_all_fields and o != 'stnb':
+    if o == 'player__realname' or (o not in video_all_fields and o != 'stnb'):
         raise HttpError(400, 'Invalid sort field.')
     videos = VideoModel.objects.filter(level=level, mode=mode, bv__range=(bmin, bmax))
     if nf:
@@ -40,9 +107,27 @@ def video_query(request, level: MS_TextChoices.Level, mode: MS_TextChoices.Mode,
     videos = videos.annotate(stnb=F('iqg') * STNB_COEFFICIENTS.get(level))
     order = ('-' if r else '') + o
     orderby = (order,) if o == 'timems' else (order, 'timems')
-    videos = videos.order_by(*orderby).values(*video_all_fields, 'stnb')
+    videos = videos.order_by(*orderby).values('id', 'upload_time', 'state', 'ongoing_tournament', 'player__id')
     paginator = Paginator(videos, max(1, min(ps, 100)))
-    return {'count': paginator.count, 'videos': list(paginator.get_page(page))}
+    rows = list(paginator.get_page(page))
+    players = UserProfile.objects.in_bulk({row['player__id'] for row in rows})
+    for row in rows:
+        row['player__realname'] = players[row['player__id']].realname
+    return {'count': paginator.count, 'videos': rows}
+
+
+@router.get('/admin/detail/{video_id}')
+@decorate_view(staff_required)
+def get_video_admin(request, video_id: int):
+    """
+    - staff_required
+    """
+    fields = ['player', 'upload_time', 'state', 'software', 'level', 'mode', 'right_ce', 'timems', 'bv', 'bvs', 'ongoing_tournament']
+    fields.extend('video__' + field.name for field in ExpandVideoModel._meta.get_fields())
+    row = VideoModel.objects.filter(pk=video_id).values(*fields, player__realname=F('player___realname')).first()
+    if row is None:
+        raise HttpError(404, 'Video not found.')
+    return row
 
 
 @router.get('/query_by_id')
@@ -55,6 +140,7 @@ def video_query_by_id(request, user_id: int = Query(..., alias='id')):  # noqa: 
     videos = VideoModel.objects.filter(player=user)
     if request.user != user:
         videos = videos.filter(ongoing_tournament=False)
+    # Self-contained export endpoint, also used outside the website.
     return list(videos.values(
         'id', 'upload_time', 'end_time', 'level', 'mode', 'timems', 'bv', 'bvs', 'state', 'video__identifier',
         'software', 'right_ce', 'flag', 'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8', 'left', 'right', 'double', 'op', 'isl', 'path', 'pluck',
@@ -131,7 +217,7 @@ def video_download(request: HttpRequest, video_id: int):
     return _video_file_response(request, video_id)
 
 
-@router.get('/review_queue', response=list[VideoBaseOut])
+@router.get('/review_queue', response=list[VideoMetadataOut])
 @decorate_view(ratelimit(key='ip', rate='1/s'))
 def get_review_queue(request):
     """
@@ -141,7 +227,7 @@ def get_review_queue(request):
     if not request.user.is_staff:
         videos = videos.filter(ongoing_tournament=False)
 
-    return videos
+    return videos.only(*VIDEO_METADATA_FIELDS)
 
 
 @router.get('/infobulk', response=list[VideoBaseOut])

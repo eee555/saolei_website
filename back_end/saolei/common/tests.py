@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import datetime, timedelta, timezone as datetime_timezone
 import json
 import os
 from pathlib import Path
@@ -58,8 +58,40 @@ class APSchedulerRegistrationTests(TestCase):
                 'delete_old_job_executions',
                 'delete_overdue_captcha',
                 'delete_overdue_emailverifyrecord',
+                'delete_overdue_tasks',
+                'refresh_tournament_score_reference',
             },
         )
+
+    def test_task_cleanup_runs_weekly_in_scheduler_timezone(self):
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from common.apscheduler import delete_overdue_tasks, register_jobs
+
+        scheduler = BackgroundScheduler(timezone=datetime_timezone(timedelta(hours=8)))
+        register_jobs(scheduler)
+        job = scheduler.get_job('delete_overdue_tasks')
+        monday = datetime(2026, 10, 19, 1, 10, tzinfo=scheduler.timezone)
+
+        self.assertEqual(job.func, delete_overdue_tasks)
+        self.assertEqual(job.max_instances, 1)
+        self.assertEqual(job.trigger.get_next_fire_time(None, monday), monday)
+        self.assertEqual(job.trigger.get_next_fire_time(monday, monday), monday + timedelta(days=7))
+
+    def test_newest_queue_cleanup_runs_daily_at_original_time(self):
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from common.apscheduler import register_jobs
+        from videomanager.services import delete_newest_queue
+
+        scheduler = BackgroundScheduler(timezone=datetime_timezone.utc)
+        register_jobs(scheduler)
+        job = scheduler.get_job('delete_newest_queue')
+        now = datetime(2026, 10, 22, 1, 7, tzinfo=job.trigger.timezone)
+        first_run = job.trigger.get_next_fire_time(None, now)
+
+        self.assertEqual(job.func, delete_newest_queue)
+        self.assertEqual(job.max_instances, 1)
+        self.assertEqual(first_run, now.replace(minute=8))
+        self.assertEqual(job.trigger.get_next_fire_time(first_run, first_run), first_run + timedelta(days=1))
 
     def test_registration_removes_only_retired_monitor_job(self):
         from apscheduler.schedulers.background import BackgroundScheduler
@@ -72,6 +104,22 @@ class APSchedulerRegistrationTests(TestCase):
 
         self.assertFalse(DjangoJob.objects.filter(id='refresh_state_always').exists())
         self.assertTrue(DjangoJob.objects.filter(id='delete_newest_queue').exists())
+
+    def test_score_reference_job_runs_annually_in_utc_and_checks_on_startup(self):
+        from apscheduler.schedulers.background import BackgroundScheduler
+        from common.apscheduler import register_jobs, refresh_tournament_score_reference
+
+        scheduler = BackgroundScheduler()
+        now = datetime(2026, 12, 31, 23, 59, 59, tzinfo=datetime_timezone.utc)
+        with patch('common.apscheduler.django_timezone.now', return_value=now):
+            register_jobs(scheduler)
+        job = scheduler.get_job('refresh_tournament_score_reference')
+        self.assertEqual(job.func, refresh_tournament_score_reference)
+        self.assertEqual(job.next_run_time, now)
+        self.assertIsNone(job.misfire_grace_time)
+        self.assertTrue(job.coalesce)
+        self.assertEqual(job.max_instances, 1)
+        self.assertEqual(job.trigger.get_next_fire_time(now, now), datetime(2027, 1, 1, tzinfo=datetime_timezone.utc))
 
 
 class LogPollTests(TestCase):
@@ -254,7 +302,7 @@ class TaskDeletionTests(TestCase):
                 finished_at=old_finished_at,
             )
 
-        with patch.object(common_api, 'TASK_CLEANUP_BATCH_SIZE', 2):
+        with patch('common.services.TASK_CLEANUP_BATCH_SIZE', 2):
             deleted_count = common_api.cleanup_tasks(SimpleNamespace(user=self.staff))
 
         self.assertEqual(deleted_count, 2)
@@ -265,6 +313,30 @@ class TaskDeletionTests(TestCase):
             ).count(),
             1,
         )
+
+    def test_scheduled_cleanup_deletes_all_batches_and_preserves_ineligible_tasks(self):
+        from common.apscheduler import delete_overdue_tasks
+
+        for config in TASK_CLEANUP_CONFIGS:
+            for _ in range(3):
+                self.create_task(
+                    status=TaskResultStatus.SUCCESSFUL,
+                    task_path=config['task_path'],
+                    finished_at=timezone.now() - config['expires'] - timedelta(days=1),
+                )
+        old_finished_at = timezone.now() - timedelta(days=365)
+        retained_tasks = [
+            self.create_task(status=TaskResultStatus.SUCCESSFUL, finished_at=timezone.now()),
+            self.create_task(status=TaskResultStatus.FAILED, finished_at=old_finished_at),
+            self.create_task(status=TaskResultStatus.RUNNING),
+            self.create_task(status=TaskResultStatus.READY),
+            self.create_task(status=TaskResultStatus.SUCCESSFUL, task_path='unknown.task', finished_at=old_finished_at),
+        ]
+
+        with patch('common.services.TASK_CLEANUP_BATCH_SIZE', 2), patch('django_apscheduler.util.db.close_old_connections'):
+            delete_overdue_tasks()
+
+        self.assertSetEqual(set(DBTaskResult.objects.values_list('id', flat=True)), {task.id for task in retained_tasks})
 
     def test_running_task_health_marks_stale_unknown_worker_as_probably_orphaned(self):
         started_at = timezone.now() - timedelta(minutes=10)
@@ -735,7 +807,9 @@ class VideoUploadRankingIntegrationTest(TestCase):
         self.assertEqual(rank['count'], 1)
         self.assertEqual(rank['players'][0]['video_id'], video.id)
         self.assertAlmostEqual(rank['players'][0]['pluck'], CUSTOM_PLUCK_FIXTURE_PLUCK, places=12)
-        self.assertEqual(rank['players'][0]['timems'], video.timems)
+        response = self.client.get('/api/video/info/batch', {'ids': rank['players'][0]['video_id']})
+        self.assertEqual(response.status_code, 200, response.content)
+        self.assertEqual(response.json()[0]['timems'], video.timems)
 
     def test_identifier_bind_and_unbind_refreshes_custom_pluck_record(self):
         parser = self.parse_fixture(self.fixture_path('custom_pluck.evf'))

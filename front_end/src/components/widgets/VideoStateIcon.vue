@@ -1,5 +1,8 @@
 <template>
-    <span v-if="state == MS_State.Identifier" :title="t('common.state.d')">
+    <span v-if="state === MS_State.Local" class="text text-info" :title="t('common.state.l')" :aria-label="t('common.state.l')" data-cy="local-video-state">
+        <i class="pi pi-desktop" aria-hidden="true" />
+    </span>
+    <span v-else-if="state == MS_State.Identifier" :title="t('common.state.d')">
         <ElIcon>
             <BaseIconIdentifier style="color: var(--ui-color-warning)" />
         </ElIcon>
@@ -23,6 +26,7 @@
 
 <script setup lang="ts">
 import '@/styles/text.css';
+import 'primeicons/primeicons.css';
 import { ElIcon } from 'element-plus';
 import type { PropType } from 'vue';
 import { useI18n } from 'vue-i18n';

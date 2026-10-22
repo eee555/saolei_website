@@ -44,6 +44,7 @@ function weeklyParticipant(init: Partial<TournamentParticipantResponse> = {}): T
         end_time: '2026-01-01T10:00:00+08:00',
         rank: null,
         rank_score: 0,
+        has_videos: false,
         ...init,
     };
 }
@@ -110,7 +111,7 @@ describe('<Weekly App />', () => {
 
     it('hides real-time score for anonymous users during ongoing tournament', () => {
         mountWeekly({ loginStatus: LoginStatus.NotLogin, registered: false });
-        cy.get('a.link[href$="/en/guide/weekly-tournament"]').should('be.visible');
+        cy.get('a.link[href$="/guide/weekly-tournament"]').should('be.visible');
 
         cy.contains('Ongoing').should('be.visible');
         cy.contains('Real-Time Score').should('not.exist');
@@ -252,6 +253,12 @@ describe('<Weekly App />', () => {
             cy.then(() => expect(requestCounts.participantList).to.equal(1));
         });
     }
+
+    it('hides deletion for participants who already have tournament videos', () => {
+        mountWeekly({ loginStatus: LoginStatus.IsLogin, registered: false, isStaff: true, participants: [weeklyParticipant({ user_id: 101, has_videos: true })] });
+        cy.get(participantTable).should('be.visible');
+        cy.get('[data-cy=delete-participant]').should('not.exist');
+    });
 
     it('keeps the participant and displays an error when deletion fails', () => {
         mountWeekly({ loginStatus: LoginStatus.IsLogin, registered: true, isStaff: true });

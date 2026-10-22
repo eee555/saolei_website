@@ -1,6 +1,9 @@
 import json
+import uuid
 
-from .utils import ANCHOR_SIZE, parse_field, RANK_FIELDS, score
+from django.utils import timezone
+
+from .utils import ANCHOR_SIZE, LEVEL_WEIGHTS, MINIMUM_BV, original_value, parse_field, RANK_FIELDS, soft_coefficients, SOFT_FIELDS
 from ..cache import cache, pipeline
 
 
@@ -9,13 +12,17 @@ class TopRankingCache:
         self.prefix = f'{namespace}:top'
         self.detail_key = f'{self.prefix}:records'
         self.anchors_key = f'{self.prefix}:anchors'
+        self.publication_key = f'{self.prefix}:soft:published'
 
     def rank_key(self, field: str) -> str:
         return f'{self.prefix}:{field}'
 
+    def soft_key(self, field: str) -> str:
+        return f'{self.prefix}:soft:{field}'
+
     @property
     def keys(self):
-        return [self.detail_key, self.anchors_key, *[self.rank_key(field) for field in RANK_FIELDS]]
+        return [self.detail_key, self.anchors_key, self.publication_key, *[self.rank_key(field) for field in RANK_FIELDS], *[self.soft_key(field) for field in SOFT_FIELDS]]
 
     def read_records(self, pipe, player_ids):
         """将用户明细批量读取加入共享 pipeline。"""
@@ -30,7 +37,7 @@ class TopRankingCache:
         return json.loads(raw) if raw else {}
 
     def write_record(self, pipe, player_id: int, record: dict):
-        """保存用户原始均值与前五明细，空纪录删除。"""
+        """保存用户真实前五明细，空纪录删除。"""
         if record:
             pipe.hset(self.detail_key, player_id, json.dumps(record, allow_nan=False))
         else:
@@ -42,12 +49,13 @@ class TopRankingCache:
         else:
             pipe.zadd(self.rank_key(field), {str(player_id): value})
 
-    def get_range(self, field: str, start: int, end: int):
+    def get_range(self, field: str, start: int, end: int, *, soft=False):
         """按小榜索引取用户，返回该页各用户的完整 hash 纪录，不回源。"""
         with pipeline() as pipe:
-            pipe.zcard(self.rank_key(field))
+            key = self.soft_key(field) if soft else self.rank_key(field)
+            pipe.zcard(key)
             if end > start:
-                pipe.zrange(self.rank_key(field), start, end - 1)
+                pipe.zrevrange(key, start, end - 1)
             results = pipe.execute()
         player_ids = [int(member) for member in results[1]] if end > start else []
         rows = cache.hmget(self.detail_key, player_ids) if player_ids else []
@@ -60,18 +68,59 @@ class TopRankingCache:
     def refresh_anchors(self, fields: set[str]):
         """每个变动小榜最多读取二十个 score，批量更新锚点。"""
         if not fields:
-            return
+            return False
         fields = sorted(fields)
         with pipeline() as pipe:
             for field in fields:
-                pipe.zrange(self.rank_key(field), 0, ANCHOR_SIZE - 1, withscores=True)
+                pipe.zrevrange(self.rank_key(field), 0, ANCHOR_SIZE - 1, withscores=True)
+            pipe.hmget(self.anchors_key, fields)
             rows = pipe.execute()
         anchors = {}
-        for field, entries in zip(fields, rows):
+        changed = False
+        for field, entries, previous in zip(fields, rows[:-1], rows[-1]):
             stat = parse_field(field)[2]
-            value = sum(score(stat, value) for member, value in entries) / len(entries) if entries else 0
+            value = sum(original_value(stat, value) for member, value in entries) / len(entries) if entries else 0
+            changed |= previous is None or json.loads(previous)['value'] != value
             anchors[field] = json.dumps({'value': value, 'sample_count': len(entries)}, allow_nan=False)
         cache.hset(self.anchors_key, mapping=anchors)
+        return changed
+
+    def get_publication(self):
+        """读取正式软实力索引采用的锚点快照。"""
+        raw = cache.get(self.publication_key)
+        return json.loads(raw) if raw else None
+
+    def rebuild_soft(self):
+        """九次加权合并构建临时派生榜，成功后统一发布。"""
+        anchors = self.get_anchors()
+        prefix = f'{self.prefix}:soft:build:{uuid.uuid4().hex}'
+        temporary = {field: f'{prefix}:{field}' for field in SOFT_FIELDS}
+        try:
+            with pipeline() as pipe:
+                for mode in ('std', 'nf'):
+                    for level in MINIMUM_BV:
+                        coefficients = soft_coefficients(anchors, mode, level)
+                        sources = {self.rank_key(f'{mode}:{level}{stat}'): weight for stat, weight in coefficients.items()}
+                        pipe.zunionstore(temporary[f'{mode}:{level}'], sources)
+                    pipe.zunionstore(temporary[f'{mode}:sum'], {temporary[f'{mode}:{level}']: weight for level, weight in LEVEL_WEIGHTS.items()})
+                pipe.zunionstore(temporary['lsf'], {temporary['std:sum']: 0.97, temporary['nf:sum']: 0.03})
+                pipe.execute()
+            publication = {'anchors': anchors, 'version': uuid.uuid4().hex, 'updated_at': timezone.now().isoformat()}
+            existing = cache.exists(*temporary.values())
+            # 所有派生榜成员相同，因此要么全部为空，要么全部存在。
+            if existing not in (0, len(SOFT_FIELDS)):
+                raise RuntimeError('Incomplete temporary top soft rankings')
+            with pipeline() as pipe:
+                for field, source in temporary.items():
+                    if existing:
+                        pipe.rename(source, self.soft_key(field))
+                    else:
+                        pipe.delete(self.soft_key(field))
+                pipe.set(self.publication_key, json.dumps(publication, allow_nan=False))
+                pipe.execute()
+            return cache.zcard(self.soft_key('lsf'))
+        finally:
+            cache.delete(*temporary.values())
 
     def get_anchors(self):
         """一次读取完整锚点 hash，不筛选字段或补齐缺项。"""

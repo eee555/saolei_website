@@ -1,6 +1,7 @@
 <template>
     <div class="user-record-view">
         <SaoleiCard :user-id="store.player.id" />
+        <ThrpCard :user-id="store.player.id" />
         <ElSkeleton v-show="loading" animated style="margin-top: 0px;" :rows="8" />
         <PLuckCard :records="pluckRecords" />
     </div>
@@ -14,6 +15,7 @@ import { nextTick, ref } from 'vue';
 
 import PLuckCard from './PLuckCard.vue';
 import SaoleiCard from './SaoleiCard.vue';
+import ThrpCard from './ThrpCard.vue';
 
 import type { CustomPluckRecord } from '@/services/msuserService';
 import { fetchCustomPluckPlayerRecords } from '@/services/msuserService';

@@ -19,14 +19,15 @@ import $axios from '@/http';
 import i18n from '@/i18n';
 import { videoPlayerConfig } from '@/store';
 import { hashRouter, installHashHistoryCleanup } from '@cy/support/hashHistory';
+import { mockVideoInfo } from '@cy/support/videoInfo';
 
 type Layout = 'counter-left' | 'counter-right' | 'counter-top' | 'board-top';
 
 function mountAnalyzer(width = 1100, fixture: { filename: string; durationMs: number; software?: string } = { filename: 'c_10_129.073_24_0.186_Pu Tian Yi(Hu Bei).evf', durationMs: 129073 }, info?: () => VNode[]) {
     cy.viewport(1280, 800);
     cy.mockPlayerNameFallback();
-    cy.intercept('GET', '**/api/common/video/123/analyzer-info', { body: { video: { id: 123, player: 7, upload_time: '2026-10-12T10:00:00Z' }, expanded_video: {}, tournament_ids: [], filename: fixture.filename, rankings: [] } }).as('getWebsiteInfo');
-    cy.intercept('GET', '**/video/get_software/**', { body: { msg: fixture.software ?? 'e' } }).as('getSoftware');
+    const metadata = mockVideoInfo([{ id: 123, software: fixture.software ?? 'e', upload_time: '2026-10-12T10:00:00Z' }], 'getSoftware');
+    cy.intercept('GET', '**/api/common/video/123/analyzer-info', { body: { video: metadata[0], tournament_ids: [], filename: fixture.filename, rankings: [] } }).as('getWebsiteInfo');
     cy.intercept('GET', '**/api/video/preview**', {
         headers: { 'content-type': 'application/octet-stream' },
         fixture: `${fixture.filename},null`,
@@ -37,7 +38,7 @@ function mountAnalyzer(width = 1100, fixture: { filename: string; durationMs: nu
     }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } }, stubs: { transition: false } } }).then(({ wrapper }) => {
         cy.wrap(wrapper).as('analyzer');
     });
-    cy.wait('@getSoftware').its('request.query.id').should('eq', '123');
+    cy.wait('@getSoftware').its('request.query.ids').should('eq', '123');
     cy.wait('@getReplay').its('request.query.id').should('eq', `123.${fixture.filename.split('.').pop()}`);
     cy.get('.analyzer-progress-bar__slider', { timeout: 10000 }).should('have.attr', 'max', String(fixture.durationMs)).and('not.be.disabled');
 }
@@ -155,7 +156,7 @@ describe('<VideoAnalyzerView />', () => {
     it('sends counter keys to slots, shares prepared data, and preserves tracks and the time window across layouts', () => {
         mountAnalyzer();
         cy.get('.timeline-event-row__key').should(($keys) => {
-            expect([...$keys].map((key) => key.textContent)).to.deep.eq(['left', 'right']);
+            expect([...$keys].map((key) => key.textContent)).to.deep.eq(['left', 'right', 'pluck']);
         });
         cy.get('.video-analyzer-counter__label > span:last-child').should(($labels) => {
             expect([...$labels].map((label) => label.textContent?.trim())).to.deep.eq(['Bvs', 'Ces', 'Mov']);
@@ -506,7 +507,7 @@ describe('<VideoAnalyzerView />', () => {
 
     it('reports backend errors and keeps playback disabled', () => {
         cy.intercept('GET', '**/api/common/video/999999/analyzer-info', { statusCode: 404, body: '' });
-        cy.intercept('GET', '**/video/get_software/**', { statusCode: 404, body: '' }).as('getSoftware');
+        cy.intercept('GET', '**/api/video/metadata*', { statusCode: 404, body: '' }).as('getSoftware');
         cy.intercept('GET', '**/api/video/preview**', { body: '' }).as('getReplay');
         cy.mount(defineComponent({ expose: [], render: () => h(App, { id: '999999' }) }), { global: { plugins: [i18n, hashRouter()], config: { globalProperties: { $axios } } } });
         cy.wait('@getSoftware');
@@ -689,6 +690,7 @@ describe('<VideoAnalyzerView />', () => {
         cy.get('.mouse-trace-settings__line-width').type('0.2');
         cy.get('.mouse-trace-settings__line-width').blur();
         cy.get('.mouse-trace-settings__marker--lc summary').click();
+        cy.get('.mouse-trace-settings__marker--lc .mouse-trace-settings__enabled').should('not.be.checked').check();
         cy.get('.mouse-trace-settings__marker--lc .mouse-trace-settings__shape').select('square');
         cy.get('.mouse-trace-settings__marker--lc .mouse-trace-settings__size').clear();
         cy.get('.mouse-trace-settings__marker--lc .mouse-trace-settings__size').type('0.8');
@@ -735,11 +737,15 @@ describe('<VideoAnalyzerView />', () => {
 
     it('selects board events, persists layer settings, and follows timeline rename, style and deletion', () => {
         mountAnalyzer(1100, { filename: '52200.evf', durationMs: 10732 });
-        cy.get('.video-analyzer-board__event-toggle').should('have.attr', 'aria-pressed', 'false');
+        cy.get('.video-analyzer-board__event-toggle').should('have.attr', 'aria-pressed', 'true');
+        cy.get('.board-event-layer__event').should('have.attr', 'data-event-key', 'pluck');
+        cy.get('.board-event-layer__pulse').should('exist');
+        cy.get('.video-analyzer-board__event-toggle').click();
         cy.get('.board-event-layer').should('not.exist');
         cy.get('.video-analyzer-board__event-toggle').click();
-        cy.get('.board-event-layer__event').should('not.exist');
+        cy.get('.board-event-layer__event').should('have.attr', 'data-event-key', 'pluck');
         cy.get('.video-analyzer-board__event-control .board-settings-control__handle').click();
+        cy.get('.board-event-settings__key[value="pluck"]').uncheck();
         cy.get('.board-event-settings__key[value="left"]').check();
         cy.get('.board-event-settings__range').should('have.value', 'all');
         cy.get('.board-event-settings__spacing').clear();

@@ -112,6 +112,7 @@ export default defineConfig({
                 'eslint.config.js',
                 'vite.config.ts',
                 'vite.offline.config.ts',
+                'scripts/cdn-styles.ts',
             ],
             optionalDependencies: false,
             peerDependencies: false,

@@ -28,12 +28,20 @@ export function baseErrorNotification(title: string, message: string): void {
 }
 
 export function httpErrorNotification(error: unknown): void {
+    if (isRankingRefreshError(error)) {
+        baseErrorNotification(t('msg.actionFail'), t('ranking.refreshBusy'));
+        return;
+    }
     const status = isAxiosError(error) ? error.response?.status : undefined;
     if (status !== undefined && status in notificationMessage) {
         baseErrorNotification(t('msg.actionFail'), t(notificationMessage[status]));
     } else {
         unknownErrorNotification(error);
     }
+}
+
+export function isRankingRefreshError(error: unknown): boolean {
+    return isAxiosError<{ object?: string; category?: string }>(error) && error.response?.status === 503 && error.response.data?.object === 'top' && error.response.data?.category === 'refreshing';
 }
 
 export function actionSuccessNotification(): void {

@@ -350,9 +350,11 @@ describe('<TimelinePanel />', () => {
         cy.get('.custom-event-editor__key').type('bvs');
         cy.get('.custom-event-editor__expression').type('d(left) > 0');
         cy.get('.custom-event-editor__shape').select('diamond');
+        cy.get('.custom-event-editor__marker-size').clear();
+        cy.get('.custom-event-editor__marker-size').type('24');
         cy.get('.custom-event-editor__preview').should('contain.text', '3');
         cy.get('.custom-event-editor .counter-expression-help__link').should('be.visible').and('have.attr', 'target', '_blank');
-        cy.get('.custom-event-editor .counter-expression-help__link').should('have.attr', 'href').and('match', /\/en\/guide\/replay-expressions$/);
+        cy.get('.custom-event-editor .counter-expression-help__link').should('have.attr', 'href').and('match', /\/docs\/guide\/replay-expressions$/);
         cy.get('.custom-event-editor__save').click();
         cy.get('.timeline-event-row__key').should('have.text', 'bvs');
         cy.get('.timeline-plot__event-pulses .plot-scatter__point').should('have.length', 3);
@@ -365,8 +367,13 @@ describe('<TimelinePanel />', () => {
         cy.get('.timeline-event-row__settings').click();
         cy.get('.custom-event-editor__key').clear();
         cy.get('.custom-event-editor__key').type('renamed');
+        cy.get('.custom-event-editor__marker-size').clear();
+        cy.get('.custom-event-editor__marker-size').type('40');
         cy.get('.custom-event-editor__save').click();
         cy.get('.timeline-event-row__key').should('have.text', 'renamed');
+        cy.get('.timeline-plot__event-pulses polygon').should('have.attr', 'points', '0,-4 4,0 0,4 -4,0').and(() => {
+            expect(customEvents.value[0].marker.size).to.eq(40);
+        });
         cy.get('.video-analyzer-timeline__add-event').click();
         cy.get('.custom-event-editor__key').type('renamed');
         cy.get('.custom-event-editor__expression').type('true');
@@ -394,6 +401,61 @@ describe('<TimelinePanel />', () => {
             expect(customEvents.value.map((event) => event.key)).to.deep.eq(['renamed']);
             expect(stored.value.slots).to.deep.eq([[], []]);
         });
+    });
+
+    it('shares one board-style Tippy across event axes, omits native titles and booleans and shows full span times', () => {
+        const definitions: CustomEventDefinition[] = [
+            { ...defaultCustomEvent(), key: 'numeric', expression: 'd(left)' },
+            { ...defaultCustomEvent(), key: 'boolean', expression: 'd(left) > 0' },
+            { ...defaultCustomEvent(), key: 'string', expression: 'd(left) > 0 ? "<b>text</b>" : ""' },
+            { ...defaultCustomEvent(), key: 'held', expression: 'left > 0 and left < 4', type: 'sustained' },
+        ];
+        const { timeWindow } = mountTimeline(emptyTimelineConfig(), 600, definitions);
+        let instance: unknown;
+        cy.get<HTMLElement & { _tippy?: unknown }>('.video-analyzer-timeline').then(($timeline) => {
+            instance = $timeline[0]._tippy;
+            expect(instance).to.exist;
+        });
+        cy.get('.timeline-event-row__key').should('not.have.attr', 'title');
+        cy.get('.timeline-event-row__plot title').should('not.exist');
+        const point = (index: number) => cy.get('.timeline-event-row').eq(index).find('.plot-scatter__point').first();
+        point(0).realHover();
+        cy.get('.timeline-event-tooltip:visible').should('have.length', 1);
+        cy.get('.event-tooltip__time:visible').should('have.text', 'Time: 5.000 s');
+        cy.get('.event-tooltip__value:visible').should('have.text', 'Value: 2');
+        point(1).realHover();
+        cy.get('.event-tooltip__time:visible').should('have.text', 'Time: 5.000 s');
+        cy.get('.event-tooltip__value:visible').should('not.exist');
+        point(2).realHover();
+        cy.get('.event-tooltip__value:visible').should('have.text', 'Value: <b>text</b>');
+        cy.get('.event-tooltip__value:visible b').should('not.exist');
+        cy.get('.timeline-plot__event-span-hit').realHover();
+        cy.get('.timeline-event-tooltip:visible').should('have.length', 1).within(() => {
+            cy.get('strong').should('have.text', 'held');
+            cy.get('.event-tooltip__start').should('have.text', 'Start: 5.000 s');
+            cy.get('.event-tooltip__end').should('have.text', 'End: 10.000 s');
+            cy.get('.event-tooltip__duration').should('have.text', 'Duration: 5.000 s');
+        });
+        cy.then(() => {
+            timeWindow.value = { startMs: 6000, endMs: 8000 };
+        });
+        cy.get('.timeline-event-tooltip:visible').should('not.exist');
+        cy.get('.video-analyzer-timeline__ruler').realHover();
+        cy.get('.timeline-plot__event-span-hit').realHover();
+        cy.get('.event-tooltip__start:visible').should('have.text', 'Start: 5.000 s');
+        cy.get('.event-tooltip__end:visible').should('have.text', 'End: 10.000 s');
+        cy.get('.event-tooltip__duration:visible').should('have.text', 'Duration: 5.000 s');
+        cy.get<HTMLElement & { _tippy?: unknown }>('.video-analyzer-timeline').should(($timeline) => {
+            expect($timeline[0]._tippy).to.eq(instance);
+        });
+        cy.then(() => {
+            timeWindow.value = { startMs: 10000, endMs: 20000 };
+        });
+        cy.get('.timeline-event-tooltip:visible').should('not.exist');
+        point(0).realHover();
+        cy.get('.event-tooltip__time:visible').should('have.text', 'Time: 10.000 s');
+        cy.get('.video-analyzer-timeline__ruler').realHover();
+        cy.get('.timeline-event-tooltip:visible').should('not.exist');
     });
 
     it('aligns custom event marks with the shared time window, hover and playback position', () => {

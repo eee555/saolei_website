@@ -13,9 +13,10 @@
 
 主要入口：
 
-- `common.utils.new_video_by_file`
+- `common.services.new_video_by_file`（普通上传的解析、标识校验、查重和创建）
 - `VideoModel.create_from_parser`
 - `accountlink.services.saolei_video_import_one`
+- `tournament.gsc.services.upload_gsc_history_video`（独立编排历史代传，直接调用 `create_from_parser` 并显式关联历史比赛，不依赖普通上传业务）
 - 管理命令或测试中直接 `VideoModel.objects.create`
 
 创建前通常需要完成：
@@ -24,11 +25,14 @@
 - `identifier` 检查标识安全性和归属。如果录像本身合法但标识不属于用户，状态应降为 `IDENTIFIER`。
 - 文件重复检查。
 
+导入传给 `create_from_parser(..., upload_time=...)` 的时间在创建信号中参与 check-in 判断，避免历史文件按当前时间误入正在进行的比赛。由于 `auto_now_add`，创建后仍通过 `videomanager.services.set_import_upload_time` 显式保存来源时间；复用文件只在指定时间更早时保存，继续触发队列和排行信号。
+
 创建时需要触发：
 
 - `tournament`：`pre_save(VideoModel)` 根据 `ExpandVideoModel.identifier` / `ExpandVideoModel.tournament_identifier` 执行比赛 check-in，并可能设置 `ongoing_tournament=True`，同时暂存命中的比赛；`post_save(VideoModel)` 在录像获得主键后消费该临时结果，写入比赛的 `videos` 多对多关系。
 - `videomanager`：创建后需要进入对应审核队列或最新队列；队列副作用应由 `videomanager.signals` 统一处理。
 - `msuser`：创建时按普通录像计数，并按符合条件的高级成绩提升上传额度。旧竞速纪录信号已移除。
+- `effranking`：提交后读取数据库生成的 Thrp，尝试刷新对应级别的个人最佳及 sum；录像须为 STD、OFFICIAL、非隐藏比赛录像。
 - `customranking`：自定义 pluck 排行需要录像满足 `OFFICIAL`、非比赛、合法自定义配置、`pluck is not None`。当前通过 `VideoModel` 保存后的信号维护 `CustomPluckRecord`。
 - `utils.parser.MSVideoParser`：标准三等级和当前支持的自定义 `pluck` 场景都会在解析时前台计算，保存 `VideoModel` 后触发 `customranking`。
 - `videomanager.tasks`：`task_video_pluck` 入口保留，供未来重新需要后台计算时复用。
@@ -43,6 +47,7 @@
 - `msuser`：符合条件的高级标准录像转为官方状态时，可提升上传额度。
 - `customranking`：如果自定义 pluck 录像变为 `OFFICIAL`，可尝试加入排行；如果变为不可排行状态，需要移除该录像影响。
 - `identifier`：标识绑定/解绑会间接修改录像 `state`。
+- `effranking`：官方资格改变时尝试加入，或为由该录像保持的 Thrp 纪录补位。
 
 推荐写法：
 
@@ -60,6 +65,7 @@ video.save(update_fields=['state'])
 - `videomanager`：比赛录像不应进入缓存队列。
 - `msuser`：比赛录像创建时不计入普通录像数量；公开时不追加计数。
 - `customranking`：比赛录像不进入纪录。
+- `effranking`：隐藏比赛录像不进入 Thrp 榜，公开后可尝试加入。
 - `tournament`：该字段由比赛 check-in 逻辑设置，表示录像属于进行中的比赛。比赛结束后，应将 `ongoing_tournament` 设置为 `False`。
 
 推荐写法：
@@ -89,6 +95,8 @@ video.save(update_fields=['pluck'])
 
 `customranking` 的数据库个人最佳纪录仍按 `pluck`、`timems`、`upload_time` 比较；Redis 使用简化 score 保存全榜。
 
+`effranking` 使用数据库生成的 `thrp = bv / (left_ce + right_ce + double_ce)`。`CAPTURE_FIELDS` 已包含 `bv` 和三个有效点击数字段；其中 `right_ce` 在效率榜中参与分母计算，不用于区分 NF。保存后先判断影响范围，提交后再读取持久化的 Thrp，避免使用实例上的旧派生值。原纪录变差或失效时只查询受影响玩家、级别的补位。
+
 ### 文件和解析字段
 
 `refresh_video(video)` 会重新解析文件并刷新所有文件包含的数据。
@@ -112,6 +120,7 @@ video.save(update_fields=['pluck'])
 
 - `identifier.services` 批量更新匹配录像状态，并显式更新已有队列项、上传额度和 pluck 纪录。批量更新不触发录像保存信号。
 - 竞速纪录由 `speedranking` 的批量服务在事务提交后更新或补位，仅处理这些录像保持的单项。
+- 效率纪录同样显式调用 `effranking.services` 的批量加入/移除服务，不能依赖被批量更新绕过的保存信号。
 
 ### `tournament`
 
@@ -126,6 +135,7 @@ video.save(update_fields=['pluck'])
 
 - `VideoModel.create_from_parser` 将 parser 的 `tournament_identifier` 列表写入 `ExpandVideoModel`。比赛 check-in 直接读取 `video.video.tournament_identifier`，不再在 `VideoModel` 实例上暂存比赛 token 临时状态；`tournament` 仍会在 `pre_save` 到 `post_save` 之间短暂保存已命中的比赛对象，用于创建后写入 M2M。
 - `tournament.signals` 在 `pre_save` / `post_save` 中完成 check-in。
+- `reveal_videos_for_tournament` 在批量公开后调用竞速、效率和 pluck 的批量服务，不逐条保存录像。
 
 ### `msuser`
 
@@ -135,6 +145,12 @@ video.save(update_fields=['pluck'])
 - `pre_delete(VideoModel)` 在删除普通录像时减少计数，删除录像不回退额度。
 - 已移除经典纪录字段、纪录刷新信号、UserMS 新闻信号及旧 Redis 排行读写。
 - 新竞速榜的保存/删除信号和跨 app 批处理由 `speedranking` 负责，见 `../speedranking/README.md`。
+
+### `effranking`
+
+- `post_save(VideoModel)` 和 `post_delete(VideoModel)` 在事务提交后更新 Thrp 纪录及四个排序索引；事务回滚不写缓存。
+- 绑定/解绑标识及比赛公开分别由业务入口显式调用批量服务。
+- 纪录和索引均在 Redis，读接口不回源；全量重建使用 `rebuild_eff_ranks`。规则、错误日志与并发限制见 `../effranking/README.md`。
 
 ### `customranking`
 
@@ -179,11 +195,11 @@ video.save(update_fields=['pluck'])
   - `video_num_limit` 只会在符合条件的高级标准官方录像保存后提升，删除录像不会回退上限。
   - 后续若要处理状态回退、模式/级别变化，应先明确统计口径，再扩展 `msuser.signals`。
 - `videomanager.signals` 是 `_old_values` 的统一来源，新增依赖旧值的 app 时应先扩展 `CAPTURE_FIELDS`。
-  - 当前用于队列和 custom pluck 排行；原经典排行需要的字段捕获仍保留，供后续新榜使用。
+  - 当前用于队列、custom pluck、竞速和效率排行；效率榜额外依赖 `left_ce`、`double_ce`。
   - 如果未来新增依赖 `file_size`、`end_time`、`cell*`、`flag/op/isl` 等字段的副作用，需要同步补充。
 - 批量修改仍不能依赖普通 `save()` 信号。
-  - `identifier` 已批量更新状态并显式补偿队列、上传额度和 pluck 排行。
-  - 比赛结束批量设置 `ongoing_tournament=False`、数据迁移批量修改 `state/level/mode/player/timems` 时，需要专门批处理逻辑或 `django-bulk-tracker`，否则排行和队列不会自动保持一致。
+  - `identifier` 已批量更新状态并显式补偿队列、上传额度、pluck、竞速和效率排行；比赛公开也已接入对应批量服务。
+  - 其他数据迁移批量修改 `state/level/mode/player/timems` 或有效点击数时，需要显式批处理逻辑，否则排行和队列不会自动保持一致。
 - `update_fields` 仍是信号正确判断影响范围的关键。
   - 不带 `update_fields` 的保存会让接收器按更宽的字段集合工作。
   - 后续可以用 lint 或测试约束重要路径的 `save(update_fields=[...])` 写法。
@@ -192,7 +208,7 @@ video.save(update_fields=['pluck'])
   - 当前支持的自定义录像也在 parser 中前台即时计算，并通过保存 `pluck` 触发 `customranking`。
   - `task_video_pluck` 仍保留为后台入口；未来如果重新出现耗时过长的场景，可切回任务队列。
   - 如果未来增加新的自定义配置或更昂贵的指标，应先评估是否需要进入后台任务。
-- 旧 `refresh_stnb` 的录像重解析入口由 `refresh_videos` 替代；经典纪录全量重建已移除。新榜仍需要自己的重建命令和批量更新入口，见 `../msuser/refactor.md`。
+- 旧 `refresh_stnb` 的录像重解析入口由 `refresh_videos` 替代；经典纪录全量重建已移除。竞速和效率榜已有各自的重建命令和批量服务，刷新录像不能替代完整建榜。
 - `iqg` 使用数据库 `GeneratedField` 和 `Power` 表达式。
   - 本地测试库已经覆盖基本创建和查询路径。
   - 生产部署前仍需要在同版本数据库环境做迁移预演，确认生成列表达式兼容。

@@ -1,8 +1,8 @@
 <template>
-    <RefreshableCard data-statistic="top-anchors" class="statistics-card" :title="t('local.title')" :loading="loading" @refresh="refresh">
-        <p v-if="failed" role="alert" class="text-danger">
-            {{ t('statistics.requestFailed') }} <span v-if="data">{{ t('statistics.previous') }}</span>
-        </p>
+    <BaseCardNormal data-statistic="top-anchors" class="statistics-card">
+        <h2 class="anchor-title">
+            {{ t('local.title') }}
+        </h2>
         <p v-if="loading && !data" role="status">
             {{ t('statistics.loading') }}
         </p>
@@ -36,7 +36,10 @@
                 </tr>
             </BaseTable>
         </template>
-    </RefreshableCard>
+        <p v-else-if="!loading" role="status">
+            {{ t('statistics.unavailable') }}
+        </p>
+    </BaseCardNormal>
 </template>
 
 <script setup lang="ts">
@@ -47,15 +50,15 @@ import { VueUiXy } from 'vue-data-ui';
 import type { VueUiXyConfig, VueUiXyDatasetItem } from 'vue-data-ui';
 import { useI18n } from 'vue-i18n';
 
-import { useStatistic } from './useStatistic';
-
+import BaseCardNormal from '@/components/common/BaseCardNormal.vue';
 import BaseTable from '@/components/common/BaseTable.vue';
-import RefreshableCard from '@/components/common/RefreshableCard.vue';
 import { formatTopValue, topAxes, topDisplayValue, topField, topLevels, topStatNames, topStats } from '@/services/topRankingService';
-import type { TopAnchors, TopStat } from '@/services/topRankingService';
-import { local } from '@/store';
+import type { TopStat } from '@/services/topRankingService';
+import { local, store } from '@/store';
+import { LoginStatus } from '@/utils/common/structInterface';
 
-const { data, loading, failed, refresh } = useStatistic<TopAnchors>('/api/speedranking/top/anchors');
+const data = computed(() => store.topAnchors);
+const loading = computed(() => store.login_status === LoginStatus.Undefined);
 function dataset(stat: TopStat): VueUiXyDatasetItem[] {
     return [false, true].map((nf) => ({
         name: nf ? 'NF top' : 'top',
@@ -96,6 +99,10 @@ const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style scoped>
+.anchor-title {
+    margin: 0;
+    font-size: var(--ui-font-size-medium);
+}
 .anchor-panel {
     min-width: 0;
 }

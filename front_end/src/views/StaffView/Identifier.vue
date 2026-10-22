@@ -3,16 +3,13 @@
     <BaseButton @click="handleGet">
         {{ t('common.button.query') }}
     </BaseButton>
-    <BaseButton v-if="safe != 'unknown'" @click="handleDelete">
-        {{ t('common.button.delete') }}
-    </BaseButton>
     <BaseButton v-if="safe == 'false'" @click="handleApprove">
         {{ t('common.button.approve') }}
     </BaseButton>
-    <template v-if="userid === 0 && identifier !== ''">
+    <template v-if="identifier !== ''">
         <br>&nbsp;
         {{ t('local.linkUserId') }}
-        <ElInputNumber v-model="newUserid" />
+        <ElInputNumber v-model="newUserid" :min="0" :precision="0" />
         <BaseButton @click="handleAdd">
             {{ t('common.button.link') }}
         </BaseButton>
@@ -41,24 +38,13 @@ function handleGet() {
     proxy.$axios.get('identifier/get/staff/', { params: { identifier: identifier.value } }).then(
         function (response) {
             safe.value = (response.data.safe as boolean).toString();
-            userid.value = response.data.user;
-        },
-    ).catch(httpErrorNotification);
-}
-
-function handleDelete() {
-    proxy.$axios.post('identifier/del/staff/', { identifier: identifier.value }).then(
-        function (response) {
-            identifier.value = '';
-            safe.value = 'unknown';
-            userid.value = 0;
-            successNotification(response);
+            userid.value = response.data.user ?? 0;
         },
     ).catch(httpErrorNotification);
 }
 
 function handleApprove() {
-    proxy.$axios.post('identifier/approve/staff/', { identifier: identifier.value }).then(
+    proxy.$axios.post('/api/identifier/safe', { identifier: identifier.value, safe: true }).then(
         function (response) {
             safe.value = 'true';
             successNotification(response);
@@ -67,10 +53,10 @@ function handleApprove() {
 }
 
 function handleAdd() {
-    proxy.$axios.post('identifier/add/staff/', { identifier: identifier.value, userid: newUserid.value }).then(
+    proxy.$axios.post<{ safe: boolean; user_id: number | null }>('/api/identifier/bind', { identifier: identifier.value, id: newUserid.value }).then(
         function (response) {
-            safe.value = 'true';
-            userid.value = newUserid.value;
+            safe.value = response.data.safe.toString();
+            userid.value = response.data.user_id ?? 0;
             successNotification(response);
         },
     ).catch(httpErrorNotification);
@@ -78,14 +64,14 @@ function handleAdd() {
 
 const i18nMessages = {
     'zh-cn': { local: {
-        linkUserId: '绑定用户 ID',
+        linkUserId: '绑定用户 ID（0 表示解绑）',
         summary: '用户 ID：{userId}，状态：{status}',
         unknown: '未知',
         true: '已通过审核',
         false: '待审核',
     } },
     en: { local: {
-        linkUserId: 'Link to user ID',
+        linkUserId: 'Link to user ID (0 to unbind)',
         summary: 'User ID: {userId}, status: {status}',
         unknown: 'Unknown',
         true: 'Approved',
