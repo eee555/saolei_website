@@ -33,10 +33,14 @@ describe('rankings backed by dangerzone fixtures', () => {
         cy.bindIdentifier(user.id, identifier, 1);
 
         cy.reload();
-        cy.wait('@pluckRank').its('response.body.count').should('eq', 1);
-        cy.contains('a', user.username).should('have.attr', 'href', `#/player/${user.id}`);
-        cy.contains('0.123456').should('be.visible');
-        cy.contains('10.000').should('be.visible');
-        cy.contains('40').should('be.visible');
+        cy.wait('@pluckRank').its('response.body').should('include', { count: 1 })
+            .its('players.0.player_id').should('eq', user.id);
+        // PlayerName loads separately; identify the ranking row by its profile link.
+        cy.get(`.ranking-table .player-name a[href="#/player/${user.id}"]`)
+            .should('be.visible').closest('tr').within(() => {
+                cy.contains('0.123456').should('be.visible');
+                cy.contains('10.000').should('be.visible');
+                cy.contains('td', /^40$/).should('be.visible');
+            });
     });
 });
