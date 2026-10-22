@@ -503,7 +503,6 @@ digraph cache {
     userprofile_db -> video_query_by_id;
     video_db -> video_query_by_id;
     newest_cache -> newest_queue;
-    video_db -> newest_queue [label="metadata"];
 
     // videomanager signals
     video_db -> capture_video_update [label="pre_save"];
@@ -622,7 +621,7 @@ digraph cache {
 
 | 所属 app | key | Redis 类型 | 数据结构 |
 | --- | --- | --- | --- |
-| `videomanager` | `newest_queue` | hash | `field = video_id`；JSON 仅包含 `state`、`time`、`player_id`。解析字段由浏览器录像缓存补全；后台任务每 5 分钟按 `time` 保留最新 1000 条，时间相同时保留 ID 较大的录像，不再按天数过期。写入时不裁剪，允许暂时超过上限；裁剪使用 Python 排序和普通 Redis 删除操作，管理命令复用同一逻辑。`freeze_queue`、`review_queue` 已停止维护，遗留 key 由升级命令删除。 |
+| `videomanager` | `newest_queue` | hash | `field = video_id`；JSON 仅包含 `state`、`time`、`player_id`。最新录像接口直接读取 Hash 快照并转换成元信息数组，不查询数据库；队列只写入公开录像，因此响应的 `ongoing_tournament` 为 `false`。解析字段由浏览器录像缓存补全；后台任务每天 01:08 按 `time` 保留最新 1000 条，时间相同时保留 ID 较大的录像，不再按天数过期。写入时不裁剪，允许暂时超过上限；裁剪使用 Python 排序和普通 Redis 删除操作，管理命令复用同一逻辑。`freeze_queue`、`review_queue` 已停止维护，遗留 key 由升级命令删除。 |
 | `effranking` | `effranking:thrp:records` | hash | `field = player_id`；完整 `b/i/e` 原始纪录 JSON，每项为 `null` 或包含 `value`、`video_id`、`upload_time` 的对象。sum 不重复存储。 |
 | `effranking` | `effranking:thrp:{stat}` | zset | `stat = b/i/e/sum`；`member = player_id`，score 为六位小数成绩和分钟级达成时间的排序编码，升序读取，不用于恢复成绩。 |
 | `customranking` | `customranking:pluck:{level}:rank` | zset | `member = player_id`；`score = pluck`，当 `pluck == 0` 时使用 `timems - MAX_TIMEMS` 降低 0 碰撞风险。 |

@@ -1,3 +1,4 @@
+import json
 from urllib.parse import quote
 
 from django.conf import settings
@@ -66,12 +67,16 @@ def get_newest_queue(request):
     """
     - ratelimit(key='ip', rate='5/s')
 
-    Queue membership is preserved; read current website metadata in one query.
+    Read public queue metadata directly from the cached snapshot, without querying videos.
     """
-    ids = [int(value) for value in cache.hkeys(newest_cache.key)]
-    videos = VideoModel.objects.filter(id__in=ids, ongoing_tournament=False).only(*VIDEO_METADATA_FIELDS)
-    by_id = {video.id: video for video in videos}
-    return [by_id[video_id] for video_id in ids if video_id in by_id]
+    videos = []
+    for video_id, raw in cache.hgetall(newest_cache.key).items():
+        cached = json.loads(raw)
+        videos.append({
+            'id': int(video_id), 'player_id': cached['player_id'], 'upload_time': cached['time'],
+            'state': cached['state'], 'ongoing_tournament': False,
+        })
+    return videos
 
 
 @router.post('/newest_queue/remove', response={204: None})

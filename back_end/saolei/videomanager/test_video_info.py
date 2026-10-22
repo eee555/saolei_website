@@ -1,3 +1,4 @@
+from datetime import datetime
 from io import StringIO
 import json
 from unittest.mock import patch
@@ -74,19 +75,32 @@ class VideoInfoTests(TestCase):
             data = [ParsedVideoOut.model_validate(video).model_dump() for video in get_parsed_video_info(request, f'{self.video.id},{self.private.id}')]
         self.assertEqual(len(data), 2)
 
-    def test_queue_arrays_filter_unpublished_and_missing_entries(self):
+    def test_newest_queue_returns_cached_snapshot_without_database_queries(self):
+        # Deliberately disagree with database state, owner and visibility; the queue is a cached snapshot.
+        VideoModel.objects.filter(pk=self.video.pk).update(state='a', ongoing_tournament=True)
+        payload = {'state': 'd', 'time': '2026-10-01T12:00:00Z', 'player_id': self.other.pk}
+        entries = {str(self.video.pk).encode(): json.dumps(payload), b'99999999': json.dumps(payload)}
+        with patch('videomanager.api.cache.hgetall', return_value=entries), self.assertNumQueries(0):
+            response = self.client.get('/api/video/newest_queue')
+        self.assertEqual(response.status_code, 200, response.content)
+        rows = response.json()
+        self.assertEqual([row['id'] for row in rows], [self.video.pk, 99999999])
+        for row in rows:
+            self.assertEqual(set(row), set(VIDEO_METADATA_FIELDS))
+            self.assertEqual(row['player'], self.other.pk)
+            self.assertEqual(row['state'], payload['state'])
+            self.assertFalse(row['ongoing_tournament'])
+            self.assertEqual(datetime.fromisoformat(row['upload_time']), datetime.fromisoformat(payload['time']))
+
+    def test_review_queue_filters_unpublished_and_missing_entries(self):
         VideoModel.objects.filter(pk__in=[self.video.pk, self.private.pk]).update(state='a')
-        with patch('videomanager.api.cache.hkeys', return_value=[str(self.private.id).encode(), b'99999999', str(self.video.id).encode()]):
-            for endpoint in ('newest_queue', 'review_queue'):
-                with self.subTest(endpoint=endpoint):
-                    response = self.client.get(f'/api/video/{endpoint}', {'ids': f'{self.private.id},{self.video.id},99999999'})
-                    self.assertEqual(response.status_code, 200, response.content)
-                    rows = response.json()
-                    self.assertEqual([row['id'] for row in rows], [self.video.id])
-                    self.assertEqual(set(rows[0]), set(VIDEO_METADATA_FIELDS))
-                    VideoModel.objects.filter(pk=self.video.pk).update(ongoing_tournament=True)
-                    self.assertEqual(self.client.get(f'/api/video/{endpoint}', {'ids': self.video.id}).json(), [])
-                    VideoModel.objects.filter(pk=self.video.pk).update(ongoing_tournament=False)
+        response = self.client.get('/api/video/review_queue', {'ids': f'{self.private.id},{self.video.id},99999999'})
+        self.assertEqual(response.status_code, 200, response.content)
+        rows = response.json()
+        self.assertEqual([row['id'] for row in rows], [self.video.id])
+        self.assertEqual(set(rows[0]), set(VIDEO_METADATA_FIELDS))
+        VideoModel.objects.filter(pk=self.video.pk).update(ongoing_tournament=True)
+        self.assertEqual(self.client.get('/api/video/review_queue', {'ids': self.video.id}).json(), [])
 
     def test_queue_compaction_preserves_membership_and_cleanup_time(self):
         cache = get_redis_connection('saolei_website')
