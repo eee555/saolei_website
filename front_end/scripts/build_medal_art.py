@@ -1,6 +1,8 @@
 """用勋章模板生成各级、各档的透明 WebP。
 
 初级偏铜，中级偏银，高级保持金色。档位数字印在图上，文件名用库存的整数档。
+发布文件固定为72x72透明WebP、单张不超过4KiB。新增模板或档位后必须运行test_medal_art.py；
+完整生成规则和整页资源预算见docs/medal/软件架构.md的“勋章图片生成与资源预算”。
 运行：back_end/saolei/.venv/Scripts/python.exe front_end/scripts/build_medal_art.py
 """
 from collections import deque
@@ -13,6 +15,9 @@ ROOT = Path(__file__).resolve().parents[1]
 TEMPLATE_DIR = ROOT / 'src' / 'assets' / 'medal-templates'
 OUTPUT_DIR = ROOT / 'public' / 'assets' / 'medals'
 SIZE = 320
+# 页面最大显示72px；先在320px画数字，再缩小导出，避免发送原始大图。
+EXPORT_SIZE = 72
+MAX_IMAGE_BYTES = 4 * 1024
 BVS_SCALE = 10000
 THRP_SCALE = 100000
 TIME = {
@@ -186,6 +191,13 @@ def stamp(base, text, metal, badge):
     return image
 
 
+def save_art(image, path):
+    image.resize((EXPORT_SIZE, EXPORT_SIZE), Image.Resampling.LANCZOS).save(path, format='WEBP', quality=60, alpha_quality=50, method=6)
+    size = path.stat().st_size
+    if size > MAX_IMAGE_BYTES:
+        raise ValueError(f'{path.relative_to(ROOT)} is {size} bytes; medal images must not exceed {MAX_IMAGE_BYTES} bytes')
+
+
 def write_levels(base, folder, kind, table, badge):
     for metal, values in table.items():
         colored = recolor(base, metal)
@@ -193,7 +205,7 @@ def write_levels(base, folder, kind, table, badge):
             units, label = stage_units(kind, value)
             path = OUTPUT_DIR / folder / metal / f'{units}.webp'
             path.parent.mkdir(parents=True, exist_ok=True)
-            stamp(colored, label, metal, badge).save(path, format='WEBP', quality=78, method=4)
+            save_art(stamp(colored, label, metal, badge), path)
 
 
 def write_shareholder(base):
@@ -201,7 +213,7 @@ def write_shareholder(base):
     for stage, metal in ((100000, 'b'), (10000, 'i'), (1000, 'e')):
         path = OUTPUT_DIR / 'shareholder' / f'{stage}.webp'
         path.parent.mkdir(parents=True, exist_ok=True)
-        recolor(base, metal).save(path, format='WEBP', quality=78, method=4)
+        save_art(recolor(base, metal), path)
 
 
 def write_flat(base, folder, kind, values, badge):
@@ -210,7 +222,7 @@ def write_flat(base, folder, kind, values, badge):
         units, label = stage_units(kind, value)
         path = OUTPUT_DIR / folder / f'{units}.webp'
         path.parent.mkdir(parents=True, exist_ok=True)
-        stamp(colored, label, 'e', badge).save(path, format='WEBP', quality=78, method=4)
+        save_art(stamp(colored, label, 'e', badge), path)
 
 
 def main():
@@ -253,7 +265,7 @@ def main():
             continue
         destination = OUTPUT_DIR / folder / '1.webp'
         destination.parent.mkdir(parents=True, exist_ok=True)
-        prepare(path, background).save(destination, format='WEBP', quality=78, method=4)
+        save_art(prepare(path, background), destination)
         count += 1
         print(folder, count)
     shareholder = TEMPLATE_DIR / 'shareholder.png'

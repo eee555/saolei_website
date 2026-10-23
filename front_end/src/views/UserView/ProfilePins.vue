@@ -1,7 +1,7 @@
 <template>
     <div v-show="pins.length" class="pins">
         <div v-for="pin in pins" :key="pin.grant_id ?? pin.code" class="pin" :class="{ 'pin-ring': showRing(pin) }">
-            <img v-if="artOf(pin)" class="pin-art" alt="" :src="artOf(pin)">
+            <img v-if="artOf(pin)" class="pin-art" alt="" :src="artOf(pin)" width="48" height="48" loading="lazy" decoding="async">
             <span class="series">{{ seriesLabel(pin.series) }}</span>
             <span class="stage">{{ stageLabel(pin) }}</span>
             <span v-if="showRing(pin)" class="count">{{ pin.current_value }}</span>

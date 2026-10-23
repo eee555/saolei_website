@@ -159,4 +159,6 @@ GSC 历史补录沿用默认 TournamentUser 创建和 best 保存信号，允许
 
 `medal.signals.invalidate_medal_catalog` 监听 `MedalDefinition` 的保存和删除，删掉图鉴缓存 `medal:catalog`。`medal.signals.enqueue_medal_refresh_on_video` 监听 `VideoModel` 的保存和删除，事务提交后为当前玩家入队 `task_refresh_player_medals`。保存时如果录像上已经记下旧的 `player_id`，旧玩家也入队。`medal.signals.enqueue_medal_refresh_on_profile` 检查实际模型字段 `_realname`，资料保存且实名可能变化时入队。`medal.signals.enqueue_medal_refresh_on_saolei_link` 在扫雷网平台绑定保存或删除时入队；其他平台不入队。接收器不直接评估勋章，也不在 `userprofile` 或 `accountlink` 里引用勋章。
 
+`medal.signals.invalidate_summary_on_evidence_delete`监听`VideoModel`及`TournamentParticipant`的`pre_delete`。在授予证据外键被`SET_NULL`前查询受影响玩家，按主键顺序取得玩家锁，并在同一删除事务内删除对应`PlayerMedalSummary`。下次摘要读取补齐已置空的证据链接；删除事务回滚时摘要删除也回滚。自然进度和授予资格继续由既有后台评估处理。
+
 标识绑定、解绑和比赛录像公开保留 `QuerySet.update()`，它们不会触发 `post_save`。业务入口通过 `videomanager.events.videos_bulk_changed` 发送受影响的 `player_ids`，由勋章接收器去重，并为每名玩家注册独立的 `transaction.on_commit(..., robust=True)` 回调；事务回滚不入队，单名玩家入队失败会记录错误日志，不阻断其他玩家或缓存更新。比赛批量公开的最新队列及各排行也分别使用独立的 robust 提交回调，缓存与勋章入队互不依赖成功；这些回调暂不自动重试。入队函数在同一事务锁定玩家行，并在数据库按任务路径、`READY` 状态和玩家参数判断是否已有任务，不读取全队列 JSON。`on_commit()` 回调仍同步执行，不能据此认定请求没有入队开销。

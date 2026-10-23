@@ -12,7 +12,7 @@ from userprofile.models import UserProfile
 from videomanager.models import VideoModel
 from . import services, tests
 from .models import MedalDefinition, MedalGrant, MedalOverride, MedalOverrideLog, PlayerProgress
-from .services import ensure_basic_definitions, evaluate_player, grant_manual, MedalError, revoke_manual, set_player_override, write_stage
+from .services import ensure_basic_definitions, evaluate_player, grant_manual, MedalError, player_summary, revoke_manual, set_player_override, write_stage
 from .utils import DIRECTION_ASC, KIND_MANUAL, NOVICE_REALNAME
 
 
@@ -235,6 +235,8 @@ class MedalOverrideConcurrencyTests(OverrideFixture, TransactionTestCase):
         self.assertEqual(self.grant().stage, 1000)
         self.assertEqual(self.progress().current_stage, 20000)
         self.assertEqual(MedalOverride.objects.filter(user=self.user).count(), 1)
+        item = next(item for group in player_summary(self.user.id)['series'] for item in group['items'] if item['code'] == 'ability.time.b')
+        self.assertEqual(item['stage'], 1000)
 
     @skipUnlessDBFeature('has_select_for_update')
     def test_evaluation_started_during_manual_decision_keeps_forced_stage(self):
@@ -262,3 +264,5 @@ class MedalOverrideConcurrencyTests(OverrideFixture, TransactionTestCase):
         self.assertEqual(self.grant().stage, 1000)
         self.assertEqual(self.progress().current_stage, 20000)
         self.assertEqual(MedalOverrideLog.objects.filter(user=self.user, action='grant').count(), 1)
+        item = next(item for group in player_summary(self.user.id)['series'] for item in group['items'] if item['code'] == 'ability.time.b')
+        self.assertEqual(item['stage'], 1000)

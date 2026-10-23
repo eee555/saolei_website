@@ -1,13 +1,14 @@
 from django.db import transaction
-from django.db.models.signals import post_delete, post_save
+from django.db.models.signals import post_delete, post_save, pre_delete
 from django.dispatch import receiver
 
 from accountlink.models import AccountLinkQueue, Platform
+from tournament.models import TournamentParticipant
 from userprofile.models import UserProfile
 from videomanager.events import videos_bulk_changed
 from videomanager.models import VideoModel
 from .cache import invalidate_catalog
-from .models import MedalDefinition
+from .models import MedalDefinition, MedalGrant, PlayerMedalSummary
 from .tasks import enqueue_player_refresh
 
 
@@ -15,6 +16,17 @@ from .tasks import enqueue_player_refresh
 @receiver(post_delete, sender=MedalDefinition)
 def invalidate_medal_catalog(sender, **kwargs):
     invalidate_catalog()
+
+
+@receiver(pre_delete, sender=VideoModel, dispatch_uid='medal.invalidate_summary_on_video_delete')
+@receiver(pre_delete, sender=TournamentParticipant, dispatch_uid='medal.invalidate_summary_on_participant_delete')
+@transaction.atomic
+def invalidate_summary_on_evidence_delete(sender, instance, **kwargs):
+    # SET_NULL 不触发授予的 save；删除前仍能按外键找到受影响的摘要。
+    field = 'video' if sender is VideoModel else 'participant'
+    player_ids = MedalGrant.objects.filter(**{field: instance}).values_list('user_id', flat=True)
+    locked_ids = list(UserProfile.objects.select_for_update().filter(pk__in=player_ids).order_by('pk').values_list('pk', flat=True))
+    PlayerMedalSummary.objects.filter(user_id__in=locked_ids).delete()
 
 
 def _enqueue_video_players(instance):

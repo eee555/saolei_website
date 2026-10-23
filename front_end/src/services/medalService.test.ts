@@ -19,6 +19,16 @@ function deferred() {
     return { promise, resolve, reject };
 }
 
+describe('compact medal image URLs', () => {
+    it('uses a cache version for level and unlevelled images', async () => {
+        const { medalArtUrl } = await import('./medalService');
+        expect(medalArtUrl('神速', 'ability.bvs.e', 50000)).toBe('/assets/medals/speed/e/50000.webp?v=2');
+        expect(medalArtUrl('实名在册', 'novice.realname', 1)).toBe('/assets/medals/registered/1.webp?v=2');
+        expect(medalArtUrl('神速', 'ability.bvs.e', null)).toBeUndefined();
+        expect(medalArtUrl('unknown', 'unknown', 1)).toBeUndefined();
+    });
+});
+
 describe('shared player medal summaries', () => {
     beforeEach(() => {
         vi.useFakeTimers();

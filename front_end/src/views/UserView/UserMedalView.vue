@@ -34,7 +34,7 @@
                                     :aria-label="canEdit ? titleOf(item) : undefined"
                                     @click="onPick(item)" @keydown.enter.prevent="onPick(item)" @keydown.space.prevent="onPick(item)"
                                 >
-                                    <img class="medal-art" alt="" :src="artSrc(item)" @error="usePlaceholder">
+                                    <img class="medal-art" alt="" :src="artSrc(item)" width="72" height="72" loading="lazy" decoding="async" @error="usePlaceholder">
                                 </div>
                                 <template #content>
                                     <div class="tip-title">

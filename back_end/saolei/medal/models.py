@@ -100,6 +100,13 @@ class MedalScan(models.Model):
     scanned_at = models.DateTimeField()
 
 
+class PlayerMedalSummary(models.Model):
+    """按玩家保存读模型。与评估、人工决定和佩戴在同一事务内更新。"""
+
+    user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, primary_key=True, related_name='medal_summary')
+    data = models.JSONField(default=dict)
+
+
 class MedalOverride(models.Model):
     """管理员锁定同一授予身份，直到明确恢复自动判定。"""
 

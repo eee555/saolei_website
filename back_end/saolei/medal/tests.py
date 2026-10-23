@@ -57,10 +57,10 @@ class MedalShellTests(MedalShellFixture):
         with self.assertNumQueries(0):
             self.assertEqual(active_definitions(), expected)
 
-    def test_warm_summary_uses_five_queries_without_definition_reads(self):
+    def test_warm_summary_uses_one_query_without_definition_reads(self):
         MedalScan.objects.create(user=self.user, scanned_at=timezone.now())
-        active_definitions()
-        with self.assertNumQueries(5):
+        player_summary(self.user.id)
+        with self.assertNumQueries(1):
             summary = player_summary(self.user.id)
         self.assertFalse(summary['scan_pending'])
 

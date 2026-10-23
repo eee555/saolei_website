@@ -219,5 +219,6 @@ export function medalArtUrl(series: string, code: string, stage: number | null):
     if (!folder || stage == null) return undefined;
     const level = medalLevel(code);
     const file = level ? `${level}/${stage}.webp` : `${stage}.webp`;
-    return `${import.meta.env.BASE_URL}assets/medals/${folder}/${file}`;
+    // Bust cached 320px assets after switching to the bandwidth-limited 72px export.
+    return `${import.meta.env.BASE_URL}assets/medals/${folder}/${file}?v=2`;
 }

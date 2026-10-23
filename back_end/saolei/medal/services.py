@@ -7,7 +7,7 @@ from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
 from videomanager.models import STNB_COEFFICIENTS, VideoModel
 from .cache import invalidate_catalog, read_catalog, write_catalog
-from .models import MedalDefinition, MedalGrant, MedalOverride, MedalOverrideLog, MedalPins, MedalScan, PlayerProgress
+from .models import MedalDefinition, MedalGrant, MedalOverride, MedalOverrideLog, MedalPins, MedalScan, PlayerMedalSummary, PlayerProgress
 from .utils import basic_definitions, BVS_SCALE, DIRECTION_DESC, KIND_COMPOSITE, KIND_EVENT_PLACE, KIND_GSC_PLACE, KIND_GSC_STAT, KIND_MANUAL, KIND_MIN_VIDEO_ID, KIND_ONCE, KIND_PB, MAX_PINS, next_threshold, NOVICE_LEVELS, NOVICE_LEVELS_NF, NOVICE_MODES, NOVICE_REALNAME, NOVICE_REVIEW, NOVICE_SAOLEI, open_modes, reached_asc_stage, reached_desc_stage, scale_units, SHAREHOLDER_CODE, SHAREHOLDER_THRESHOLDS, STANDARD_LEVELS, STYLE_FL, STYLE_NF, threshold_index, THRP_SCALE
 
 
@@ -126,7 +126,8 @@ class _EvaluationState:
 
     def __init__(self, user):
         self.progress = {row.code: row for row in PlayerProgress.objects.filter(user=user).select_related('best_video')}
-        self.grants = {row.definition_code: row for row in MedalGrant.objects.filter(user=user, scope_key='').select_related('video')}
+        self.all_grants = {(row.definition_code, row.scope_key): row for row in MedalGrant.objects.filter(user=user).select_related('video', 'participant')}
+        self.grants = {row.definition_code: row for row in self.all_grants.values() if not row.scope_key}
         self.overrides = {(row.definition_code, row.scope_key): row for row in MedalOverride.objects.filter(user=user)}
         self.changed = {}
 
@@ -202,9 +203,13 @@ def write_stage(user, definition, scope_key='', stage=0, current_value=UNSET, gr
     # 整轮评估已经持有事务与玩家锁，无需为每枚勋章创建数据库保存点。
     with transaction.atomic(savepoint=state is None):
         if state is None:
-            if not UserProfile.objects.select_for_update().filter(pk=user.pk).first():
+            user = _lock_summary_user(user.pk)
+            if user is None:
                 raise MedalError('user')
-        return _write_stage(user, definition, scope_key, stage, current_value, granted_at, video, participant, evidence, best_video, extra, keep_evidence, state)
+        grant = _write_stage(user, definition, scope_key, stage, current_value, granted_at, video, participant, evidence, best_video, extra, keep_evidence, state)
+        if state is None:
+            _publish_summary(user)
+        return grant
 
 
 def _write_stage(user, definition, scope_key, stage, current_value, granted_at, video, participant, evidence, best_video, extra, keep_evidence, state):
@@ -215,7 +220,7 @@ def _write_stage(user, definition, scope_key, stage, current_value, granted_at, 
 
     stage_value = stage if new_rank >= 0 else 0
     _save_progress(user, definition, stage_value, current_value, extra, best_video, state)
-    grant = state.grants.get(definition.code) if state is not None and not scope_key else MedalGrant.objects.select_for_update().filter(user=user, definition_code=definition.code, scope_key=scope_key).first()
+    grant = state.all_grants.get((definition.code, scope_key)) if state is not None else MedalGrant.objects.select_for_update().filter(user=user, definition_code=definition.code, scope_key=scope_key).first()
     override = state.overrides.get((definition.code, scope_key)) if state is not None else MedalOverride.objects.filter(user=user, definition_code=definition.code, scope_key=scope_key).first()
     if override is not None:
         return grant
@@ -236,8 +241,10 @@ def _write_stage(user, definition, scope_key, stage, current_value, granted_at, 
             video=None if video is UNSET else video, participant=None if participant is UNSET else participant,
             evidence=evidence_value, granted_at=logged_at,
         )
-        if state is not None and not scope_key:
-            state.grants[definition.code] = grant
+        if state is not None:
+            state.all_grants[(definition.code, scope_key)] = grant
+            if not scope_key:
+                state.grants[definition.code] = grant
         return grant
 
     old_rank = threshold_index(definition.thresholds, grant.stage)
@@ -252,19 +259,24 @@ def _write_stage(user, definition, scope_key, stage, current_value, granted_at, 
     return grant
 
 
-def _medal_item(definition, grant, progress):
-    thresholds = definition['thresholds']
-    stage = grant.stage if grant is not None else None
-    value = None
-    if progress is not None and (grant is None or grant.scope_key == ''):
-        value = progress.current_value
-    evidence = grant.evidence if grant is not None and isinstance(grant.evidence, dict) else {}
+def _summary_grant(grant):
+    evidence = grant.evidence if isinstance(grant.evidence, dict) else {}
     rank = evidence.get('rank') if isinstance(evidence.get('rank'), int) else None
     tournament_id = None
-    if grant is not None and grant.participant_id:
+    if grant.participant_id:
         tournament_id = grant.participant.tournament_id
     elif isinstance(evidence.get('tournament_id'), int):
         tournament_id = evidence['tournament_id']
+    return {
+        'id': grant.id, 'code': grant.definition_code, 'stage': grant.stage, 'scope_key': grant.scope_key,
+        'granted_at': grant.granted_at.isoformat(), 'video_id': grant.video_id, 'tournament_id': tournament_id, 'rank': rank,
+    }
+
+
+def _medal_item(definition, grant, progress):
+    thresholds = definition['thresholds']
+    stage = grant['stage'] if grant is not None else None
+    value = progress if grant is None or grant['scope_key'] == '' else None
     index = threshold_index(thresholds, stage) if stage else -1
     scores = definition['score_by_stage']
     score = 0
@@ -274,12 +286,56 @@ def _medal_item(definition, grant, progress):
         'code': definition['code'], 'series': definition['series'], 'subseries': definition['subseries'],
         'kind': definition['kind'], 'stage': stage, 'stage_count': len(thresholds), 'direction': definition['direction'],
         'current_value': value, 'next_threshold': next_threshold(thresholds, stage or 0),
-        'granted_at': grant.granted_at if grant is not None else None,
-        'video_id': grant.video_id if grant is not None else None, 'tournament_id': tournament_id, 'rank': rank,
+        'granted_at': grant['granted_at'] if grant is not None else None,
+        'video_id': grant['video_id'] if grant is not None else None,
+        'tournament_id': grant['tournament_id'] if grant is not None else None, 'rank': grant['rank'] if grant is not None else None,
         'hidden': definition['hidden'], 'annotation': definition['annotation'] if definition['hidden'] and grant is not None else '',
-        'score': score, 'grant_id': grant.id if grant is not None else None,
-        'scope_key': grant.scope_key if grant is not None else '', 'thresholds': thresholds,
+        'score': score, 'grant_id': grant['id'] if grant is not None else None,
+        'scope_key': grant['scope_key'] if grant is not None else '', 'thresholds': thresholds,
     }
+
+
+def _lock_summary_user(user_id):
+    return UserProfile.objects.select_for_update().select_related('medal_summary', 'medal_pins', 'medal_scan').filter(pk=user_id).first()
+
+
+def _publish_summary(user, state=None):
+    """调用者持有玩家锁；只保存玩家数据，定义、可见性和计分仍使用当前图鉴。"""
+    if state is None:
+        grants = MedalGrant.objects.filter(user=user, revoked_at__isnull=True).select_related('participant')
+        progress = dict(PlayerProgress.objects.filter(user=user).values_list('code', 'current_value'))
+    else:
+        grants = [grant for grant in state.all_grants.values() if grant.revoked_at is None]
+        progress = {code: row.current_value for code, row in state.progress.items()}
+    pins = getattr(user, 'medal_pins', None)
+    data = {
+        'scan_pending': getattr(user, 'medal_scan', None) is None,
+        'grants': [_summary_grant(grant) for grant in sorted(grants, key=lambda grant: (grant.scope_key, grant.id))],
+        'progress': progress,
+        'pin_ids': pins.grant_ids if pins is not None and isinstance(pins.grant_ids, list) else [],
+    }
+    summary = getattr(user, 'medal_summary', None)
+    if summary is None:
+        user.medal_summary = PlayerMedalSummary.objects.create(user=user, data=data)
+    elif summary.data != data:
+        summary.data = data
+        summary.save(update_fields=['data'])
+    return data
+
+
+def _read_summary(user_id):
+    row = UserProfile.objects.filter(pk=user_id).values('id', 'medal_summary__data').first()
+    if row is None:
+        raise MedalError('user')
+    if row['medal_summary__data'] is not None:
+        return row['medal_summary__data']
+    # 旧玩家首次读取时从现有勋章表补齐，不重新聚合录像。与写入使用同一把玩家锁。
+    with transaction.atomic():
+        user = _lock_summary_user(user_id)
+        if user is None:
+            raise MedalError('user')
+        existing = getattr(user, 'medal_summary', None)
+        return existing.data if existing is not None else _publish_summary(user)
 
 
 def _require_user(user_id):
@@ -288,14 +344,12 @@ def _require_user(user_id):
 
 
 def player_summary(user_id):
-    _require_user(user_id)
-    scan_pending = not MedalScan.objects.filter(user_id=user_id).exists()
+    data = _read_summary(user_id)
     definitions = active_definitions()
-    grants = list(MedalGrant.objects.filter(user_id=user_id, revoked_at__isnull=True).select_related('participant').order_by('scope_key', 'id'))
     grants_by_code = {}
-    for grant in grants:
-        grants_by_code.setdefault(grant.definition_code, []).append(grant)
-    progress_by_code = {row.code: row for row in PlayerProgress.objects.filter(user_id=user_id)}
+    for grant in data['grants']:
+        grants_by_code.setdefault(grant['code'], []).append(grant)
+    progress_by_code = data['progress']
     series = []
     index_by_name = {}
     items_by_grant = {}
@@ -320,13 +374,10 @@ def player_summary(user_id):
         else:
             add(_medal_item(definition, None, progress))
 
-    stored = []
-    pins_row = MedalPins.objects.filter(user_id=user_id).first()
-    if pins_row and isinstance(pins_row.grant_ids, list):
-        stored = [item for item in pins_row.grant_ids if isinstance(item, int)]
+    stored = [item for item in data['pin_ids'] if isinstance(item, int)]
     pin_items = [items_by_grant[item] for item in stored if item in items_by_grant][:MAX_PINS]
     return {
-        'scan_pending': scan_pending,
+        'scan_pending': data['scan_pending'],
         'score': sum(item['score'] for group in series for item in group['items']),
         'max_pins': MAX_PINS,
         'pin_ids': [item['grant_id'] for item in pin_items],
@@ -342,20 +393,25 @@ def list_grants(user_id, page, page_size):
     count = queryset.count()
     start = (page - 1) * page_size
     rows = list(queryset[start:start + page_size])
-    progress_by_code = {row.code: row for row in PlayerProgress.objects.filter(user_id=user_id, code__in=[row.definition_code for row in rows])}
-    items = [_medal_item(definitions[row.definition_code], row, progress_by_code.get(row.definition_code)) for row in rows]
+    progress_by_code = dict(PlayerProgress.objects.filter(user_id=user_id, code__in=[row.definition_code for row in rows]).values_list('code', 'current_value'))
+    items = [_medal_item(definitions[row.definition_code], _summary_grant(row), progress_by_code.get(row.definition_code)) for row in rows]
     return {'count': count, 'page': page, 'page_size': page_size, 'items': items}
 
 
+@transaction.atomic
 def replace_pins(user, grant_ids):
     if len(grant_ids) > MAX_PINS:
         raise MedalError('too_many')
     if len(set(grant_ids)) != len(grant_ids):
         raise MedalError('duplicate')
+    user = _lock_summary_user(user.pk)
+    if user is None:
+        raise MedalError('user')
     owned = set(MedalGrant.objects.filter(user=user, revoked_at__isnull=True, id__in=grant_ids).values_list('id', flat=True))
     if owned != set(grant_ids):
         raise MedalError('unavailable')
-    MedalPins.objects.update_or_create(user=user, defaults={'grant_ids': list(grant_ids)})
+    user.medal_pins, _created = MedalPins.objects.update_or_create(user=user, defaults={'grant_ids': list(grant_ids)})
+    _publish_summary(user)
     return list(grant_ids)
 
 
@@ -373,7 +429,7 @@ def grant_manual(actor, code, user_id, reason, granted_at, stage=None, scope_key
 @transaction.atomic
 def evaluate_player(user_id):
     """重算该玩家已经接上的勋章。用户不存在时直接返回。跑完才记下 MedalScan。"""
-    user = UserProfile.objects.select_for_update().filter(pk=user_id).first()
+    user = _lock_summary_user(user_id)
     if user is None:
         return
     ensure_basic_definitions()
@@ -383,7 +439,8 @@ def evaluate_player(user_id):
     evaluate_pb(user, state)
     evaluate_composite(user, state)
     state.flush()
-    MedalScan.objects.get_or_create(user=user, defaults={'scanned_at': timezone.now()})
+    user.medal_scan, _created = MedalScan.objects.get_or_create(user=user, defaults={'scanned_at': timezone.now()})
+    _publish_summary(user, state)
 
 
 def evaluate_min_video_id(user, state=None):
@@ -899,7 +956,7 @@ def _validate_override(actor, code, scope_key, mode, reason):
 def set_player_override(actor, user_id, code, scope_key, mode, reason, stage=None, granted_at=None):
     """锁定人工结果或恢复自动；自然进度始终由评估器维护，服务不负责入队。"""
     reason = _validate_override(actor, code, scope_key, mode, reason)
-    user = UserProfile.objects.select_for_update().filter(pk=user_id).first()
+    user = _lock_summary_user(user_id)
     if user is None:
         raise MedalError('user')
     definition = MedalDefinition.objects.filter(pk=code).first()
@@ -960,4 +1017,5 @@ def set_player_override(actor, user_id, code, scope_key, mode, reason, stage=Non
     MedalOverrideLog.objects.create(
         **identity, action=mode, stage=logged_stage, granted_at=logged_granted_at, reason=reason, actor=actor,
     )
+    _publish_summary(user)
     return grant
