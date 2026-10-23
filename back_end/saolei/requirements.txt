@@ -21,8 +21,8 @@ pyo3_runtime==0.0.1
 redis==8.1.0
 requests==2.34.2
 websocket-client==1.9.2
-wom-api[system-certs]==0.1.0
-msgames-api==0.1.1
+https://github.com/putianyi889/wom-api/releases/download/v0.1.0/wom_api-0.1.0-py3-none-any.whl
+https://github.com/putianyi889/msgames-api/releases/download/v0.1.1/msgames_api-0.1.1-py3-none-any.whl
 cryptography==50.0.2
 timeout-decorator==0.5.0
 dataclasses_json==0.6.7
