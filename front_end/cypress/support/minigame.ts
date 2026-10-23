@@ -22,7 +22,9 @@ export function mouseAt(row: number, column: number, type: 'mousedown' | 'mouseu
     cy.get('[data-cy="minigame-board"]').scrollIntoView({ duration: 0 });
     cy.get('[data-cy="minigame-board"]').then(($board) => {
         const rect = $board[0].getBoundingClientRect();
-        cy.wrap($board).trigger(type, { eventConstructor: 'MouseEvent', button, buttons, clientX: rect.left + column * size + size / 2, clientY: rect.top + row * size + size / 2 });
+        const x = (column + 0.5) * size;
+        const y = (row + 0.5) * size;
+        cy.wrap($board).trigger(type, x, y, { eventConstructor: 'MouseEvent', button, buttons, clientX: rect.left + x, clientY: rect.top + y, scrollBehavior: false });
     });
 }
 

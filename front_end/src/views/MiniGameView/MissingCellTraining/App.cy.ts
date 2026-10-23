@@ -60,7 +60,7 @@ describe('missing cell training', () => {
             cy.get<ComponentWrapper<typeof App>>('@vue').then((wrapper) => {
                 times = wrapper.findComponent<typeof TrainingResults>('[data-cy="missing-cell-results"]').props('timesMs');
                 expect(times).to.have.length(10);
-                expect((times.reduce((total, time) => total + time, 0) / 1000).toFixed(3)).to.eq(result);
+                expect((times.reduce((total, time) => total + time, 0) / 1000).toFixed(3).padStart(7, '0')).to.eq(result);
             });
             cy.clock();
             for (const index of [0, 9]) {

@@ -68,6 +68,7 @@ describe('minigame rankings', () => {
     });
 
     it('discards a stale response and recovers from a failed refresh', () => {
+        const oldRequested = cy.spy().as('oldRequested');
         let release!: () => void;
         const delayed = new Promise<void>((resolve) => {
             release = resolve;
@@ -75,6 +76,7 @@ describe('minigame rankings', () => {
         cy.intercept({ method: 'GET', pathname: '/api/minigame/flag-chord/rank' }, async (request) => {
             if (request.query.sort === 'flag-chord-b-v1') {
                 request.alias = 'oldRank';
+                oldRequested();
                 await delayed;
                 request.reply({ count: 99, players: [] });
             } else {
@@ -82,8 +84,10 @@ describe('minigame rankings', () => {
                 request.reply({ count: 0, players: [] });
             }
         });
-        mountRanking('/ranking/minigame/flag-chord');
-        cy.get('.minigame-ranking-table .stat-header').contains('Intermediate').click();
+        const router = mountRanking('/ranking/minigame/flag-chord');
+        cy.get('@oldRequested').should('have.been.calledOnce');
+        // URL navigation remains available while the old request covers the table with its loading mask.
+        cy.then(() => router.push({ query: { sort: 'flag-chord-i-v1' } }));
         cy.wait('@newRank').then(() => {
             release();
         });
