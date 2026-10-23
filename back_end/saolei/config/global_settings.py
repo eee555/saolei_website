@@ -1,6 +1,9 @@
 # 全局设置，约定不可变
 # 全局可变量写在settings.py的GLOBAL_VARIABLES
 
+# IEEE 754 双精度浮点数的最大安全整数，与 JavaScript Number.MAX_SAFE_INTEGER 一致。
+MAX_SAFE_INTEGER = 2 ** 53 - 1
+
 
 # 数据大小限制
 class MinSizes:

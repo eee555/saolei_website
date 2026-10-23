@@ -45,6 +45,16 @@ const routes: RouteRecordRaw[] = [
         component: () => import('../views/ServerView/App.vue'),
     },
     {
+        path: '/minigame',
+        component: () => import('../views/MiniGameView/App.vue'),
+        redirect: '/minigame/left-click',
+        children: [
+            { path: 'left-click', name: 'minigame-left-click', component: () => import('../views/MiniGameView/LeftClickTraining/App.vue') },
+            { path: 'flag-chord', name: 'minigame-flag-chord', component: () => import('../views/MiniGameView/FlagChordTraining/App.vue') },
+            { path: 'missing-cell', name: 'minigame-missing-cell', component: () => import('../views/MiniGameView/MissingCellTraining/App.vue') },
+        ],
+    },
+    {
         path: '/settings',
         name: 'settings',
         component: () => import('../views/SettingView/App.vue'),

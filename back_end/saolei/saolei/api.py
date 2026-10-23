@@ -1,3 +1,4 @@
+from django.http import JsonResponse
 from ninja import NinjaAPI, Redoc
 
 from accountlink.api import router as accountlink_router
@@ -6,6 +7,8 @@ from common.api import router as common_router
 from customranking.api import router as customranking_router
 from effranking.api import router as effranking_router
 from identifier.api import router as identifier_router
+from minigame.api import router as minigame_router
+from minigame.utils import MiniGameError
 from monitor.api import router as monitor_router
 from msuser.api import router as msuser_router
 from speedranking.api import router as speedranking_router
@@ -29,6 +32,7 @@ api.add_router('/identifier/', identifier_router)
 api.add_router('/msuser/', msuser_router)
 api.add_router('/speedranking/', speedranking_router)
 api.add_router('/effranking/', effranking_router)
+api.add_router('/minigame/', minigame_router)
 api.add_router('/tournament/', tournament_router)
 api.add_router('/tournament/gsc/', tournament_gsc_router)
 api.add_router('/tournament/weekly/', tournament_weekly_router)
@@ -37,3 +41,8 @@ api.add_router('/tournament/weekly/', tournament_weekly_router)
 @api.exception_handler(ExceptionToResponse)
 def general_exception(request, exc: ExceptionToResponse):
     return exc.response()
+
+
+@api.exception_handler(MiniGameError)
+def minigame_exception(request, exc: MiniGameError):
+    return JsonResponse({'code': exc.code, 'detail': exc.detail}, status=exc.status)

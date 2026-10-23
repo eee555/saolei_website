@@ -28,7 +28,7 @@ Redis 分类只读取业务代码直接确定的 DB 0 key，不执行 `SCAN`、`
 | 分类 | key 来源 |
 | --- | --- |
 | PB 榜 | `PBRankingCache.counts_key`；固定 hash 的 `HKEYS` 经校验后构造小榜 key；从 `UserProfile` 主键顺序每批最多 1,000 个 ID 构造用户 hash key。元数据缺失不发现 key、不触发重建。 |
-| 其他排行榜 | `SpeedRankingCache(name, stats=RANK_STATS).keys`、`TopRankingCache().keys`、`ThrpRankingCache().keys`、四种自定义 pluck 配置的 rank/detail key、比赛用户榜 key 和积分时间 key；当前共 69 个 key。 |
+| 其他排行榜 | `SpeedRankingCache(name, stats=RANK_STATS).keys`、`TopRankingCache().keys`、`ThrpRankingCache().keys`、`MiniGameRankingCache().keys`、四种自定义 pluck 配置的 rank/detail key、比赛用户榜 key 和积分时间 key；当前共 111 个 key。 |
 | 最新录像 | `newest_cache.key`（`newest_queue`）。 |
 | 其他 | `INFO memory.used_memory` 减去前三类；包含其他业务、会话、同实例 DB 1 通用缓存、孤立/历史/临时 key 和 Redis 开销，不枚举 DB 1。 |
 
@@ -37,6 +37,14 @@ Redis 分类只读取业务代码直接确定的 DB 0 key，不执行 `SCAN`、`
 进程采集中退出的 PID 跳过；存活进程权限不足时整块不可用，并通过 `memory.unreadable_processes` 记录数量，不能当作零。不可用块的时间、总量和分类为 `null`，另一块可独立成功；完整结果仍缓存 300 秒，避免重复失败采集。缓存后端本身出错则请求失败，不绕过缓存继续采集。日志仅记录安全原因、耗时和数量，不记录 PID、命令行、key 名或业务值。上线需以实际 API 用户验证 Linux `/proc` 权限，并抽查冷缓存耗时、Redis 计量结果及缓存 TTL。前端可保留当前页面上次成功的图，明确标注旧数据及原采集时间。
 
 ## 总览
+
+### 小游戏 `minigame`
+
+每个白名单榜单使用 `minigame:rank:v1:{ranking_key}` ZSET（玩家 ID → 原始整数毫秒）、`minigame:detail:v1:{ranking_key}` Hash（玩家 ID → `{score, achieved_at}` JSON）及 `minigame:ready:v1:{ranking_key}` String（`1` 表示整榜初始化完成）。14 榜共 42 个固定键，均无 TTL，计入服务器内存统计的其他排行榜。
+
+分类请求一次返回左键 9 列、标双 2 列或漏雷 3 列，以组内任一列排序。已初始化时用两轮 pipeline 读取标记、人数、页内玩家和全部列明细，不查询成绩表。空榜也保存初始化标记；单条上传不设置标记。未初始化时从数据库加载完整榜单；Redis 故障时整次请求批量回源数据库。
+
+成绩创建或严格改善后通过 `on_commit` 写 ZSET 和 Hash，删除后移除成员并保留初始化标记。接受并发和重建的偶发覆盖；运行 `manage.py rebuild_minigame_ranks [--ranking-key key]` 可恢复缓存，不改数据库成绩。完整接口与取舍见 `back_end/saolei/minigame/README.md`。
 
 ### 用户姓名与隐私
 
@@ -115,6 +123,8 @@ digraph cache {
         memory_usage [label="/api/monitor/memoryusage"];
         video_upload [label="/common/uploadvideo/"];
         pluck_rank [label="/api/customranking/pluck"];
+        minigame_score [label="POST /api/minigame/{ranking_key}/score"];
+        minigame_rank [label="/api/minigame/{game}/rank\n/api/minigame/{game}/player/{id}"];
         player_pluck_records [label="/api/customranking/pluck/player"]
         add_identifier [label="/identifier/add/"];
         del_identifier [label="/identifier/del/"];
@@ -168,6 +178,7 @@ digraph cache {
         accountlinkplatform_db [label="AccountSaolei\nAccountMinesweeperGames\nAccountBilibili\nAccountWorldOfMinesweeper\nAccountQQ", width=3.0, height=1.4];
         videosaolei_db [label="VideoSaolei"];
         custom_pluck_db [label="CustomPluckRecord"];
+        minigame_db [label="MiniGameBestScore"];
         identifier_db [label="Identifier"];
         userms_db [label="UserMS", width=3, height=3, fontsize=30];
         tournament_db [label="Tournament\nGSCTournament\nWeeklyTournament", width=2.5, height=1.1];
@@ -186,6 +197,7 @@ digraph cache {
         memory_usage_cache [label="api:monitor/memoryusage\nTTL 300s"];
         pluck_rank_cache [label="customranking:pluck:{level}:rank\nzset"];
         pluck_detail_cache [label="customranking:pluck:{level}:detail\nhash"];
+        minigame_cache [label="minigame:{rank|detail|ready}:v1:{ranking_key}\nzset / hash / string"];
         newest_cache [label="newest_queue\nhash"];
         tournament_cache [label="tournament:normal\nhash\nsubclass + data", width=2.6, height=1.0];
         participant_cache [label="tournament:normal:participants\nhash", width=3.2, height=0.9];
@@ -193,6 +205,11 @@ digraph cache {
         tournament_user_score_time_cache [label="tournament:user:score_current:last_updated\nstring\n年度锚点：1 月 1 日 UTC", width=4.2, height=1.0];
         monitor_summary_cache [label="api:monitor/*\nTTL 300s"];
     }
+
+    minigame_score -> minigame_db [label="保存最佳成绩"];
+    minigame_db -> minigame_cache [label="on_commit 更新 / 删除；重建"];
+    minigame_cache -> minigame_rank [label="分组批量读"];
+    minigame_db -> minigame_rank [label="Redis 故障降级"];
 
     subgraph file_nodes {
         node [shape=folder, fillcolor="${#e0f2fe|#0f172a}"];
@@ -621,6 +638,9 @@ digraph cache {
 
 | 所属 app | key | Redis 类型 | 数据结构 |
 | --- | --- | --- | --- |
+| `minigame` | `minigame:rank:v1:{ranking_key}` | zset | `member = player_id`，score 为原始整数毫秒。 |
+| `minigame` | `minigame:detail:v1:{ranking_key}` | hash | `field = player_id`，value 为 `{score, achieved_at}` JSON。 |
+| `minigame` | `minigame:ready:v1:{ranking_key}` | string | `1` 表示整榜已初始化；空榜也保留，无 TTL。 |
 | `videomanager` | `newest_queue` | hash | `field = video_id`；JSON 仅包含 `state`、`time`、`player_id`。最新录像接口直接读取 Hash 快照并转换成元信息数组，不查询数据库；队列只写入公开录像，因此响应的 `ongoing_tournament` 为 `false`。解析字段由浏览器录像缓存补全；后台任务每天 01:08 按 `time` 保留最新 1000 条，时间相同时保留 ID 较大的录像，不再按天数过期。写入时不裁剪，允许暂时超过上限；裁剪使用 Python 排序和普通 Redis 删除操作，管理命令复用同一逻辑。`freeze_queue`、`review_queue` 已停止维护，遗留 key 由升级命令删除。 |
 | `effranking` | `effranking:thrp:records` | hash | `field = player_id`；完整 `b/i/e` 原始纪录 JSON，每项为 `null` 或包含 `value`、`video_id`、`upload_time` 的对象。sum 不重复存储。 |
 | `effranking` | `effranking:thrp:{stat}` | zset | `stat = b/i/e/sum`；`member = player_id`，score 为六位小数成绩和分钟级达成时间的排序编码，升序读取，不用于恢复成绩。 |

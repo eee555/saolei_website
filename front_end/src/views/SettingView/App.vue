@@ -12,6 +12,7 @@
             </label>
         </section>
         <Visualization />
+        <MiniGame />
         <section v-experimental class="card">
             <h2 class="card-title">
                 {{ t('local.stnbConst') }}
@@ -56,6 +57,7 @@ import { useI18n } from 'vue-i18n';
 
 import Appearance from './Appearance.vue';
 import IDB from './IDB.vue';
+import MiniGame from './MiniGame.vue';
 import PlayerBadgeSettings from './PlayerBadge.vue';
 import Visualization from './Visualization.vue';
 
