@@ -58,9 +58,9 @@
                 :label="t(`common.prop.${key}`)" sortable="custom"
                 :sort-orders="indexTags[key].reverse ? (['descending', 'ascending']) : (['ascending', 'descending'])"
             >
-                <VideoPreviewLink :id="scope.row.id" :software="scope.row.software" class="nobr">
+                <span class="nobr">
                     {{ columnFormatter(key, scope.row[indexTags[key].key]) }}
-                </VideoPreviewLink>
+                </span>
             </ElTableColumn>
         </ElTable>
     </div>
@@ -85,7 +85,6 @@ import VideoStateFilter from '@/components/Filters/VideoStateFilter.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import VideoViewRealname from '@/components/tableColumns/VideoViewRealname.vue';
 import VideoViewState from '@/components/tableColumns/VideoViewState.vue';
-import VideoPreviewLink from '@/components/VideoPreviewLink.vue';
 import { fetchVideoInfos, videoDisplayFields } from '@/services/videoInfoService';
 import type { VideoMetadata } from '@/services/videoInfoService';
 import { videofilter } from '@/store';
