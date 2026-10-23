@@ -24,18 +24,38 @@
             </template>
             <AnalyzerHelper />
         </ElTabPane>
+        <ElTabPane name="yuanshen-toolbox" :label="t('local.yuanshenToolbox')">
+            <template #label>
+                <img :src="yuanshenToolboxIcon" :alt="t('local.yuanshenToolbox')" :title="t('local.yuanshenToolbox')" width="16" height="16">
+            </template>
+            <YuanshenToolboxHelper />
+        </ElTabPane>
     </ElTabs>
 </template>
 
 <script lang="ts" setup>
 import { ElTabPane, ElTabs } from 'element-plus';
+import { useI18n } from 'vue-i18n';
 
 import analyzerIcon from '@/assets/video-analyzer.svg';
+import yuanshenToolboxIcon from '@/assets/img/yuanshen-toolbox.png';
 import AnalyzerHelper from '@/components/dialogs/AnalyzerHelper.vue';
 import ArbiterHelper from '@/components/dialogs/ArbiterHelper.vue';
 import MetasweeperHelper from '@/components/dialogs/MetasweeperHelper.vue';
 import ViennaSweeperHelper from '@/components/dialogs/ViennaSweeperHelper.vue';
+import YuanshenToolboxHelper from '@/components/dialogs/YuanshenToolboxHelper.vue';
 import SoftwareIcon from '@/components/widgets/SoftwareIcon.vue';
+
+const i18nMessages = {
+    'zh-cn': { local: {
+        yuanshenToolbox: '元神工具箱',
+    } },
+    en: { local: {
+        yuanshenToolbox: 'Yuanshen Toolbox',
+    } },
+};
+
+const { t } = useI18n({ messages: i18nMessages });
 </script>
 
 <style lang="less" scoped>
