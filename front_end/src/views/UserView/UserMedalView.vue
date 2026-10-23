@@ -5,9 +5,15 @@
         </p>
         <template v-else>
             <p class="score">
-                {{ t('local.score') }} {{ score }}
+                {{ t('local.score', { value: score }) }}
             </p>
-            <p v-if="categories.length === 0" class="empty">
+            <p v-if="summary?.scan_pending" class="scan-pending">
+                {{ t('local.scanPending') }}
+                <BaseButton @click="refreshPlayerMedals(store.player.id)">
+                    {{ t('local.retry') }}
+                </BaseButton>
+            </p>
+            <p v-else-if="categories.length === 0" class="empty">
                 {{ t('local.empty') }}
             </p>
             <section v-for="category in categories" :key="category.id" class="category">
@@ -54,7 +60,7 @@
 </template>
 
 <script setup lang="ts">
-import { computed, onActivated, ref, watch } from 'vue';
+import { computed, onActivated, onDeactivated, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
 import BaseButton from '@/components/common/BaseButton.vue';
@@ -62,7 +68,7 @@ import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import en from '@/i18n/locales/en';
 import zhCn from '@/i18n/locales/zh-cn';
 import type { MedalItem, PlayerMedals } from '@/services/medalService';
-import { fetchPlayerMedals, medalArtUrl, medalLevel, medalSeriesLabel, medalStageLabel, saveMedalPins } from '@/services/medalService';
+import { medalArtUrl, medalLevel, medalSeriesLabel, medalStageLabel, refreshPlayerMedals, saveMedalPins, subscribePlayerMedals } from '@/services/medalService';
 import { store } from '@/store';
 
 const medalPlaceholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
@@ -138,8 +144,6 @@ function usePlaceholder(event: Event) {
     if (target instanceof HTMLImageElement && !target.src.startsWith('data:')) target.src = medalPlaceholder;
 }
 
-const spacedSeries = new Set(['盲扫破境', '盲扫神速', '盲扫通明', '盲扫·精工', '标旗·精工']);
-
 function seriesLabel(name: string) {
     return medalSeriesLabel(name, locale.value);
 }
@@ -158,7 +162,7 @@ function titleOf(item: MedalItem) {
     const level = levelWord(chinese ? zhCn.common.level : en.common.level, item.code);
     if (item.series.startsWith('三阶') || !level) return chinese ? `${seriesName}·${stage}` : `${seriesName} · ${stage}`;
     if (!chinese) return `${level} ${seriesName} · ${stage}`;
-    return spacedSeries.has(item.series) ? `${level} ${seriesName}·${stage}` : `${level}${seriesName}·${stage}`;
+    return `${level}${seriesName}·${stage}`;
 }
 
 function plainStage(item: MedalItem) {
@@ -212,8 +216,8 @@ function detailLines(item: MedalItem) {
     if (flavor) lines.push({ text: flavor, flavor: true });
     if (meaning) lines.push({ text: meaning, flavor: false });
     if (item.annotation) lines.push({ text: item.annotation, flavor: false });
-    if (item.stage_count > 1 && item.next_threshold != null) lines.push({ text: `${t('local.next')} ${medalStageLabel(item.series, item.next_threshold)}`, flavor: false });
-    if (item.score > 0) lines.push({ text: `${t('local.points')} ${item.score}`, flavor: false });
+    if (item.stage_count > 1 && item.next_threshold != null) lines.push({ text: t('local.next', { value: medalStageLabel(item.series, item.next_threshold) }), flavor: false });
+    if (item.score > 0) lines.push({ text: t('local.points', { value: item.score }), flavor: false });
     return lines;
 }
 
@@ -240,95 +244,87 @@ function toggle(grantId: number, checked: boolean) {
     selected.value = next;
 }
 
-let requestNumber = 0;
 const loadedFor = ref(0);
 
-async function load() {
-    const request = ++requestNumber;
-    const playerId = store.player.id;
-    if (!playerId) {
-        summary.value = null;
-        selected.value = [];
-        loadedFor.value = 0;
-        return;
-    }
-    const first = summary.value === null || loadedFor.value !== playerId;
-    if (first) loading.value = true;
-    message.value = '';
-    try {
-        const data = await fetchPlayerMedals(playerId);
-        if (request !== requestNumber) return;
-        const dirty = !first && summary.value !== null && !sameIds(selected.value, summary.value.pin_ids);
-        summary.value = data;
-        loadedFor.value = playerId;
-        if (!dirty) selected.value = data.pin_ids.slice();
-        else {
-            const owned = new Set(data.series.flatMap((group) => group.items.flatMap((item) => (item.grant_id === null ? [] : [item.grant_id]))));
-            selected.value = selected.value.filter((id) => owned.has(id));
-        }
-    } catch {
-        if (request !== requestNumber) return;
-        if (first) {
-            summary.value = null;
-            selected.value = [];
-            loadedFor.value = 0;
-        }
-        message.value = t('local.loadFailed');
-    } finally {
-        if (request === requestNumber) loading.value = false;
-    }
-}
-
 async function save() {
+    const playerId = store.player.id;
     saving.value = true;
     message.value = '';
     try {
-        await saveMedalPins(selected.value);
+        await saveMedalPins(selected.value, playerId);
     } catch {
-        message.value = t('local.saveFailed');
+        if (viewing.value && store.player.id === playerId) message.value = t('local.saveFailed');
     } finally {
         saving.value = false;
     }
 }
 
-const viewing = ref(false);
+const viewing = ref(true);
 onActivated(() => {
     viewing.value = true;
-    void load();
 });
-watch(() => store.player.id, () => {
-    if (viewing.value) void load();
+onDeactivated(() => {
+    viewing.value = false;
 });
+watch(() => [store.player.id, viewing.value], (_, __, onCleanup) => {
+    const playerId = store.player.id;
+    message.value = '';
+    if (loadedFor.value !== playerId) {
+        summary.value = null;
+        selected.value = [];
+        loadedFor.value = 0;
+    }
+    loading.value = false;
+    if (!viewing.value || !playerId) return;
+    loading.value = summary.value === null;
+    onCleanup(subscribePlayerMedals(playerId, (data) => {
+        const dirty = summary.value !== null && !sameIds(selected.value, summary.value.pin_ids);
+        summary.value = data;
+        loadedFor.value = playerId;
+        loading.value = false;
+        message.value = '';
+        if (!dirty) selected.value = data.pin_ids.slice();
+        else {
+            const owned = new Set(data.series.flatMap((group) => group.items.flatMap((item) => (item.grant_id === null ? [] : [item.grant_id]))));
+            selected.value = selected.value.filter((id) => owned.has(id));
+        }
+    }, () => {
+        loading.value = false;
+        message.value = t('local.loadFailed');
+    }));
+}, { immediate: true });
 
 const i18nMessages = {
     'zh-cn': { local: {
         loading: '加载中',
         empty: '还没有勋章',
-        score: '总分',
-        points: '分数',
-        next: '下一档',
+        scanPending: '历史勋章正在补发。若未自动更新，请稍后重试。',
+        retry: '重新加载',
+        score: '总分{value}',
+        points: '分数{value}',
+        next: '下一档{value}',
         save: '保存佩戴',
         saveFailed: '佩戴没有保存',
         loadFailed: '勋章没有加载出来',
         category: { ability: '能力称号', novice: '新手称号', practice: '历练称号', contest: '比赛称号', contribution: '贡献称号', other: '其他称号' },
         meaning: {
-            time: '{level}最快时间达到 {value} 秒。',
-            timeNf: '{level}盲扫最快时间达到 {value} 秒。',
-            speed: '{level}最高3BV/s达到 {value}。',
-            speedNf: '{level}盲扫最高3BV/s达到 {value}。',
-            mastery: '{level}最高STNB达到 {value}。',
-            masteryNf: '{level}盲扫最高STNB达到 {value}。',
-            precisionNf: '{level}盲扫最高thrp达到 {value}。',
-            precisionFl: '{level}标雷最高thrp达到 {value}。',
-            threeNf: '三级别盲扫thrp达到 {value}。',
-            threeFl: '三级别thrp达到 {value}。',
+            time: '{level}最快时间达到{value}秒。',
+            timeNf: '{level}盲扫最快时间达到{value}秒。',
+            speed: '{level}最高3BV/s达到{value}。',
+            speedNf: '{level}盲扫最高3BV/s达到{value}。',
+            mastery: '{level}最高STNB达到{value}。',
+            masteryNf: '{level}盲扫最高STNB达到{value}。',
+            precisionNf: '{level}盲扫最高thrp达到{value}。',
+            precisionFl: '{level}标雷最高thrp达到{value}。',
+            threeNf: '三级别盲扫thrp达到{value}。',
+            threeFl: '三级别thrp达到{value}。',
             registered: '已实名。',
             reviewed: '至少一条录像过审。',
             levels: '初级、中级、高级各有过审录像。',
             levelsNf: '三个级别各有过审盲扫。',
             modes: '每种开放模式都有过审录像。',
             saolei: '导入过一条扫雷网录像。',
-            shareholder: '名下最小录像编号低于 {value}。',
+            shareholder: '名下最小录像编号低于{value}。',
         },
         flavor: {
             registered: '你的名字是...',
@@ -343,9 +339,11 @@ const i18nMessages = {
     en: { local: {
         loading: 'Loading',
         empty: 'No medals yet',
-        score: 'Score',
-        points: 'Points',
-        next: 'Next',
+        scanPending: 'Historical medals are being awarded. If they do not update automatically, try again shortly.',
+        retry: 'Reload',
+        score: 'Score {value}',
+        points: 'Points {value}',
+        next: 'Next {value}',
         save: 'Save pins',
         saveFailed: 'Could not save pins',
         loadFailed: 'Could not load medals',

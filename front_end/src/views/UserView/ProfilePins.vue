@@ -10,12 +10,12 @@
 </template>
 
 <script setup lang="ts">
-import { onMounted, onUnmounted, ref, watch } from 'vue';
+import { onActivated, onDeactivated, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
 import type { MedalItem } from '@/services/medalService';
-import { fetchPlayerMedals, medalArtUrl, medalSeriesLabel, medalStageLabel, subscribeMedalPins } from '@/services/medalService';
+import { fetchPlayerMedals, medalArtUrl, medalSeriesLabel, medalStageLabel, subscribePlayerMedals } from '@/services/medalService';
 
 const props = defineProps({
     userId: { type: Number, required: true },
@@ -24,7 +24,7 @@ const props = defineProps({
 const { locale } = useI18n({ useScope: 'global' });
 const route = useRoute();
 const pins = ref<MedalItem[]>([]);
-let stopListening: () => void = () => undefined;
+const viewing = ref(true);
 
 function seriesLabel(series: string) {
     return medalSeriesLabel(series, locale.value);
@@ -42,29 +42,24 @@ function showRing(pin: MedalItem) {
     return pin.kind === 'count' && pin.direction === 'asc' && pin.next_threshold === null && pin.stage !== null && pin.current_value !== null && pin.current_value > pin.stage;
 }
 
-async function load() {
-    if (!props.userId) {
-        pins.value = [];
-        return;
-    }
-    try {
-        const summary = await fetchPlayerMedals(props.userId);
+watch(() => [props.userId, viewing.value], (_, __, onCleanup) => {
+    pins.value = [];
+    if (!viewing.value || !props.userId) return;
+    // Removing the old subscription guards both late successes and late failures.
+    onCleanup(subscribePlayerMedals(props.userId, (summary) => {
         pins.value = summary.pins;
-    } catch {
+    }, () => {
         pins.value = [];
-    }
-}
-
-watch(() => [props.userId, route.name], () => {
-    void load();
+    }));
 }, { immediate: true });
-onMounted(() => {
-    stopListening = subscribeMedalPins(() => {
-        void load();
-    });
+watch(() => route.name, () => {
+    if (viewing.value && props.userId) void fetchPlayerMedals(props.userId).catch(() => undefined);
 });
-onUnmounted(() => {
-    stopListening();
+onActivated(() => {
+    viewing.value = true;
+});
+onDeactivated(() => {
+    viewing.value = false;
 });
 </script>
 

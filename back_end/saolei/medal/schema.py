@@ -1,6 +1,11 @@
 from datetime import date, datetime
+from typing import Literal
 
 from ninja import Schema
+from ninja.orm import create_schema
+from pydantic import Field, StrictInt
+
+from .models import MedalDefinition, MedalGrant, MedalOverride, MedalOverrideLog
 
 
 class CatalogItemOut(Schema):
@@ -45,6 +50,7 @@ class SeriesOut(Schema):
 
 
 class PlayerMedalOut(Schema):
+    scan_pending: bool
     score: int
     max_pins: int
     pin_ids: list[int]
@@ -68,10 +74,12 @@ class PinsOut(Schema):
 
 
 class StaffGrantIn(Schema):
-    code: str
+    code: str = Field(min_length=1, max_length=64)
     user_id: int
-    reason: str
+    reason: str = Field(min_length=1, max_length=255)
     granted_on: date
+    stage: StrictInt | None = Field(default=None, ge=1)
+    scope_key: str = Field(default='', max_length=128)
 
 
 class GrantIdOut(Schema):
@@ -79,7 +87,7 @@ class GrantIdOut(Schema):
 
 
 class RevokeIn(Schema):
-    reason: str
+    reason: str = Field(min_length=1, max_length=255)
 
 
 class RebuildIn(Schema):
@@ -87,4 +95,49 @@ class RebuildIn(Schema):
 
 
 class EnqueuedOut(Schema):
+    enqueued: bool
+
+
+StaffCatalogItemOut = create_schema(
+    MedalDefinition, name='StaffCatalogItemOut',
+    fields=['code', 'series', 'subseries', 'kind', 'metric', 'direction', 'level', 'style', 'thresholds', 'active', 'hidden'],
+    custom_fields=[('thresholds', list[int], ...)],
+)
+StaffMedalGrantOut = create_schema(
+    MedalGrant, name='StaffMedalGrantOut',
+    fields=['id', 'definition_code', 'scope_key', 'stage', 'granted_at', 'revoked_at', 'revoke_reason'],
+)
+StaffMedalOverrideOut = create_schema(
+    MedalOverride, name='StaffMedalOverrideOut',
+    fields=['id', 'definition_code', 'scope_key', 'mode', 'stage', 'reason', 'updated_at'],
+    custom_fields=[('actor_id', int | None, None)],
+)
+StaffMedalHistoryOut = create_schema(
+    MedalOverrideLog, name='StaffMedalHistoryOut',
+    fields=['id', 'definition_code', 'scope_key', 'action', 'stage', 'reason', 'created_at'],
+    custom_fields=[('actor_id', int | None, None)],
+)
+
+
+class StaffPlayerMedalsOut(Schema):
+    user_id: int
+    username: str
+    grants: list[StaffMedalGrantOut]
+    overrides: list[StaffMedalOverrideOut]
+    history: list[StaffMedalHistoryOut]
+
+
+class StaffOverrideIn(Schema):
+    user_id: int
+    code: str = Field(min_length=1, max_length=64)
+    scope_key: str = Field(default='', max_length=128)
+    mode: Literal['grant', 'revoke', 'auto']
+    reason: str = Field(min_length=1, max_length=255)
+    stage: StrictInt | None = Field(default=None, ge=1)
+    granted_on: date | None = None
+
+
+class StaffOverrideOut(Schema):
+    grant_id: int | None
+    mode: Literal['grant', 'revoke', 'auto']
     enqueued: bool

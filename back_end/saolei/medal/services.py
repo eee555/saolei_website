@@ -7,9 +7,8 @@ from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
 from videomanager.models import STNB_COEFFICIENTS, VideoModel
 from .cache import invalidate_catalog, read_catalog, write_catalog
-from .models import MedalDefinition, MedalGrant, MedalPins, MedalScan, PlayerProgress
-from .tasks import enqueue_player_backfill, enqueue_player_refresh
-from .utils import basic_definitions, BVS_SCALE, DIRECTION_DESC, KIND_COMPOSITE, KIND_MANUAL, KIND_MIN_VIDEO_ID, KIND_ONCE, KIND_PB, MAX_PINS, next_threshold, NOVICE_LEVELS, NOVICE_LEVELS_NF, NOVICE_MODES, NOVICE_REALNAME, NOVICE_REVIEW, NOVICE_SAOLEI, open_modes, reached_asc_stage, reached_desc_stage, scale_units, SHAREHOLDER_CODE, SHAREHOLDER_THRESHOLDS, STANDARD_LEVELS, STYLE_FL, STYLE_NF, threshold_index, THRP_SCALE
+from .models import MedalDefinition, MedalGrant, MedalOverride, MedalOverrideLog, MedalPins, MedalScan, PlayerProgress
+from .utils import basic_definitions, BVS_SCALE, DIRECTION_DESC, KIND_COMPOSITE, KIND_EVENT_PLACE, KIND_GSC_PLACE, KIND_GSC_STAT, KIND_MANUAL, KIND_MIN_VIDEO_ID, KIND_ONCE, KIND_PB, MAX_PINS, next_threshold, NOVICE_LEVELS, NOVICE_LEVELS_NF, NOVICE_MODES, NOVICE_REALNAME, NOVICE_REVIEW, NOVICE_SAOLEI, open_modes, reached_asc_stage, reached_desc_stage, scale_units, SHAREHOLDER_CODE, SHAREHOLDER_THRESHOLDS, STANDARD_LEVELS, STYLE_FL, STYLE_NF, threshold_index, THRP_SCALE
 
 
 class MedalError(Exception):
@@ -70,11 +69,11 @@ def ensure_basic_definitions():
 
 
 def active_definitions():
-    ensure_shareholder_definition()
-    ensure_basic_definitions()
     cached = read_catalog()
     if cached is not None:
         return cached
+    ensure_shareholder_definition()
+    ensure_basic_definitions()
     rows = [definition_payload(item) for item in MedalDefinition.objects.filter(active=True).order_by('series', 'subseries', 'code')]
     write_catalog(rows)
     return rows
@@ -122,34 +121,63 @@ def _append_log(grant, stage, at, evidence_id):
     return log
 
 
-def _save_progress(user, definition, stage_value, current_value, extra, best_video):
-    progress = PlayerProgress.objects.filter(user=user, code=definition.code).first()
+class _EvaluationState:
+    """一次评估共用已读状态，进度只在最后集中写入有变化的行。"""
+
+    def __init__(self, user):
+        self.progress = {row.code: row for row in PlayerProgress.objects.filter(user=user).select_related('best_video')}
+        self.grants = {row.definition_code: row for row in MedalGrant.objects.filter(user=user, scope_key='').select_related('video')}
+        self.overrides = {(row.definition_code, row.scope_key): row for row in MedalOverride.objects.filter(user=user)}
+        self.changed = {}
+
+    def flush(self):
+        new = [row for row in self.changed.values() if row.pk is None]
+        changed = [row for row in self.changed.values() if row.pk is not None]
+        if new:
+            PlayerProgress.objects.bulk_create(new)
+        if changed:
+            PlayerProgress.objects.bulk_update(changed, ['definition', 'current_stage', 'current_value', 'extra', 'best_video'])
+
+
+def _save_progress(user, definition, stage_value, current_value, extra, best_video, state=None):
+    progress = state.progress.get(definition.code) if state is not None else PlayerProgress.objects.filter(user=user, code=definition.code).first()
     if progress is None:
-        return PlayerProgress.objects.create(
+        progress = PlayerProgress(
             user=user, definition=definition, code=definition.code, current_stage=stage_value,
             current_value=None if current_value is UNSET else current_value,
             extra=None if extra is UNSET else extra,
             best_video=None if best_video is UNSET else best_video,
         )
-    progress.definition = definition
-    progress.current_stage = stage_value
-    fields = ['definition', 'current_stage']
-    if current_value is not UNSET:
-        progress.current_value = current_value
-        fields.append('current_value')
-    if extra is not UNSET:
-        progress.extra = extra
-        fields.append('extra')
+        if state is None:
+            progress.save(update_fields=None)
+        else:
+            state.progress[definition.code] = progress
+            state.changed[definition.code] = progress
+        return progress
+    values = {'definition_id': definition.pk, 'current_stage': stage_value, 'current_value': current_value, 'extra': extra}
+    if best_video is not UNSET:
+        values['best_video_id'] = None if best_video is None else best_video.pk
+    fields = []
+    for field, value in values.items():
+        if value is not UNSET and getattr(progress, field) != value:
+            setattr(progress, field, value)
+            fields.append(field)
     if best_video is not UNSET:
         progress.best_video = best_video
-        fields.append('best_video')
-    progress.save(update_fields=fields)
+    if fields:
+        if state is None:
+            progress.save(update_fields=fields)
+        else:
+            state.changed[definition.code] = progress
     return progress
 
 
-def _apply_grant_fields(grant, stage, video, participant, evidence, logged_at, append_log, clear_revoke):
+def _apply_grant_fields(grant, stage, video, participant, evidence, logged_at, append_log, clear_revoke, reset_granted_at=False):
     grant.stage = stage
     fields = ['stage']
+    if reset_granted_at:
+        grant.granted_at = logged_at
+        fields.append('granted_at')
     if video is not UNSET:
         grant.video = video
         fields.append('video')
@@ -170,16 +198,27 @@ def _apply_grant_fields(grant, stage, video, participant, evidence, logged_at, a
     return grant
 
 
-@transaction.atomic
-def write_stage(user, definition, scope_key='', stage=0, current_value=UNSET, granted_at=None, video=UNSET, participant=UNSET, evidence=UNSET, best_video=UNSET, extra=UNSET, keep_evidence=True):
+def write_stage(user, definition, scope_key='', stage=0, current_value=UNSET, granted_at=None, video=UNSET, participant=UNSET, evidence=UNSET, best_video=UNSET, extra=UNSET, keep_evidence=True, state=None):
+    # 整轮评估已经持有事务与玩家锁，无需为每枚勋章创建数据库保存点。
+    with transaction.atomic(savepoint=state is None):
+        if state is None:
+            if not UserProfile.objects.select_for_update().filter(pk=user.pk).first():
+                raise MedalError('user')
+        return _write_stage(user, definition, scope_key, stage, current_value, granted_at, video, participant, evidence, best_video, extra, keep_evidence, state)
+
+
+def _write_stage(user, definition, scope_key, stage, current_value, granted_at, video, participant, evidence, best_video, extra, keep_evidence, state):
     """按当前阶段改写同一枚授予。0 表示一档都不够，撤销这一行。人工纪念不在这里撤销。"""
     new_rank = threshold_index(definition.thresholds, stage)
     if definition.kind == KIND_MANUAL and new_rank < 0:
         return MedalGrant.objects.filter(user=user, definition_code=definition.code, scope_key=scope_key).first()
 
     stage_value = stage if new_rank >= 0 else 0
-    _save_progress(user, definition, stage_value, current_value, extra, best_video)
-    grant = MedalGrant.objects.select_for_update().filter(user=user, definition_code=definition.code, scope_key=scope_key).first()
+    _save_progress(user, definition, stage_value, current_value, extra, best_video, state)
+    grant = state.grants.get(definition.code) if state is not None and not scope_key else MedalGrant.objects.select_for_update().filter(user=user, definition_code=definition.code, scope_key=scope_key).first()
+    override = state.overrides.get((definition.code, scope_key)) if state is not None else MedalOverride.objects.filter(user=user, definition_code=definition.code, scope_key=scope_key).first()
+    if override is not None:
+        return grant
     logged_at = granted_at or timezone.now()
 
     if new_rank < 0:
@@ -191,12 +230,15 @@ def write_stage(user, definition, scope_key='', stage=0, current_value=UNSET, gr
 
     if grant is None:
         evidence_value = {} if evidence is UNSET else evidence
-        return MedalGrant.objects.create(
+        grant = MedalGrant.objects.create(
             user=user, definition_code=definition.code, stage=stage, scope_key=scope_key,
             stage_log=[{'stage': stage, 'at': logged_at.isoformat(), 'evidence_id': _evidence_id(video, participant, evidence_value)}],
             video=None if video is UNSET else video, participant=None if participant is UNSET else participant,
             evidence=evidence_value, granted_at=logged_at,
         )
+        if state is not None and not scope_key:
+            state.grants[definition.code] = grant
+        return grant
 
     old_rank = threshold_index(definition.thresholds, grant.stage)
     if grant.revoked_at is not None or new_rank != old_rank or not keep_evidence:
@@ -205,6 +247,7 @@ def write_stage(user, definition, scope_key='', stage=0, current_value=UNSET, gr
             grant, stage, video, participant, evidence, logged_at,
             append_log=not same_evidence and (grant.revoked_at is not None or new_rank != old_rank),
             clear_revoke=grant.revoked_at is not None,
+            reset_granted_at=isinstance(grant.evidence, dict) and grant.evidence.get('override') is True,
         )
     return grant
 
@@ -246,8 +289,7 @@ def _require_user(user_id):
 
 def player_summary(user_id):
     _require_user(user_id)
-    if not MedalScan.objects.filter(user_id=user_id).exists():
-        enqueue_player_backfill(user_id)
+    scan_pending = not MedalScan.objects.filter(user_id=user_id).exists()
     definitions = active_definitions()
     grants = list(MedalGrant.objects.filter(user_id=user_id, revoked_at__isnull=True).select_related('participant').order_by('scope_key', 'id'))
     grants_by_code = {}
@@ -284,6 +326,7 @@ def player_summary(user_id):
         stored = [item for item in pins_row.grant_ids if isinstance(item, int)]
     pin_items = [items_by_grant[item] for item in stored if item in items_by_grant][:MAX_PINS]
     return {
+        'scan_pending': scan_pending,
         'score': sum(item['score'] for group in series for item in group['items']),
         'max_pins': MAX_PINS,
         'pin_ids': [item['grant_id'] for item in pin_items],
@@ -316,64 +359,50 @@ def replace_pins(user, grant_ids):
     return list(grant_ids)
 
 
-def refresh_player(user_id):
-    _require_user(user_id)
-    enqueue_player_refresh(user_id)
-
-
-def backfill_player(user_id):
-    """历史补发。低优先级，按这一名玩家重算，不在页面请求里扫表。"""
-    _require_user(user_id)
-    enqueue_player_backfill(user_id)
-
-
-def grant_manual(actor, code, user_id, reason, granted_at):
-    if not str(reason or '').strip():
-        raise MedalError('reason')
-    user = UserProfile.objects.filter(pk=user_id).first()
-    if user is None:
-        raise MedalError('user')
+def grant_manual(actor, code, user_id, reason, granted_at, stage=None, scope_key=''):
     definition = MedalDefinition.objects.filter(pk=code).first()
     if definition is None:
         raise MedalError('definition')
-    if not definition.active or definition.kind != KIND_MANUAL:
-        raise MedalError('not_manual')
-    return write_stage(
-        user, definition, stage=definition.thresholds[0] if definition.thresholds else 1, current_value=1,
-        granted_at=granted_at, evidence={'reason': reason.strip(), 'actor_id': actor.id}, keep_evidence=False,
+    if stage is None and definition.kind == KIND_MANUAL:
+        stage = definition.thresholds[0] if definition.thresholds else 1
+    return set_player_override(
+        actor, user_id, code, scope_key, 'grant', reason, stage=stage, granted_at=granted_at,
     )
 
 
+@transaction.atomic
 def evaluate_player(user_id):
     """重算该玩家已经接上的勋章。用户不存在时直接返回。跑完才记下 MedalScan。"""
-    user = UserProfile.objects.filter(pk=user_id).first()
+    user = UserProfile.objects.select_for_update().filter(pk=user_id).first()
     if user is None:
         return
     ensure_basic_definitions()
-    evaluate_min_video_id(user)
-    evaluate_once(user)
-    evaluate_pb(user)
-    evaluate_composite(user)
-    MedalScan.objects.update_or_create(user=user, defaults={'scanned_at': timezone.now()})
+    state = _EvaluationState(user)
+    evaluate_min_video_id(user, state)
+    evaluate_once(user, state)
+    evaluate_pb(user, state)
+    evaluate_composite(user, state)
+    state.flush()
+    MedalScan.objects.get_or_create(user=user, defaults={'scanned_at': timezone.now()})
 
 
-def evaluate_min_video_id(user):
+def evaluate_min_video_id(user, state=None):
     """按该玩家仍在库里的最小录像 id 改写原始股东。不看出审、模式和难度。"""
     definition = ensure_shareholder_definition()
     if not definition.active:
         return None
     video = VideoModel.objects.filter(player_id=user.id).order_by('id').first()
     if video is None:
-        return write_stage(user, definition, stage=0, current_value=None, best_video=None)
+        return write_stage(user, definition, stage=0, current_value=None, best_video=None, state=state)
     stage = reached_desc_stage(definition.thresholds, video.id)
-    existing = MedalGrant.objects.filter(user=user, definition_code=definition.code, scope_key='').first()
+    existing = state.grants.get(definition.code) if state is not None else MedalGrant.objects.filter(user=user, definition_code=definition.code, scope_key='').select_related('video').first()
     evidence_remains = (
         existing is not None and existing.revoked_at is None and existing.stage == stage and existing.video_id is not None
-        and VideoModel.objects.filter(pk=existing.video_id, player_id=user.id).exists()
+        and existing.video.player_id == user.id
     )
     return write_stage(
         user, definition, stage=stage, current_value=video.id, granted_at=video.upload_time,
-        video=video, best_video=video, evidence={'video_id': video.id}, keep_evidence=evidence_remains,
+        video=video, best_video=video, evidence={'video_id': video.id}, keep_evidence=evidence_remains, state=state,
     )
 
 
@@ -520,25 +549,37 @@ def _matches_any_video(clause):
     return not clause.children and clause.connector == Q.AND
 
 
-def _level_needs_aggregate(user, level, definitions, progress):
+def _level_needs_aggregate(user, level, definitions, progress, grants, overrides):
     missing = []
     better = None
     for definition in definitions:
         row = progress.get(definition.code)
+        grant = grants.get(definition.code)
+        overridden = (definition.code, '') in overrides
         video = None if row is None else row.best_video
         qualified = video is not None and _video_qualifies(video, definition, user.id)
         if row is not None and row.current_stage > 0 and not qualified:
             return True
         if row is not None and video is not None and not qualified:
             return True
+        if row is not None and video is None and row.current_value is not None:
+            return True
         if qualified:
-            fresh = _units_of(definition, _raw_value(video, definition))
-            if fresh != row.current_value:
+            raw = _raw_value(video, definition)
+            fresh = _units_of(definition, raw)
+            stage = _stage_of(definition, raw)
+            if fresh != row.current_value or stage != row.current_stage:
+                return True
+            if not overridden and stage > 0 and not _evidence_stands(grant, definition, stage, user.id):
+                return True
+            if not overridden and stage == 0 and grant is not None and grant.revoked_at is None:
                 return True
             clause = _better_filter(definition, video)
             if clause is not None:
                 better = clause if better is None else better | clause
             continue
+        if not overridden and grant is not None and grant.revoked_at is None:
+            return True
         missing.append(definition)
     if missing:
         wanted = None
@@ -584,17 +625,29 @@ def _aggregate_raw(stats, definition):
     return None
 
 
-def _ordered_best(user, definition):
-    queryset = _qualified(user, definition)
-    if definition.metric == 'timems':
-        ordering = ('timems', 'upload_time', 'id')
-    elif definition.metric == 'stnb':
-        ordering = ('-iqg', 'upload_time', 'id')
-    elif definition.metric == 'bvs':
-        ordering = ('-bvs', 'upload_time', 'id')
-    else:
-        ordering = ('-thrp', 'upload_time', 'id')
-    return queryset.order_by(*ordering).first()
+def _best_videos_for_level(user, level, definitions, stats):
+    """同一难度只读取一次极值候选，多个指标/风格共享同一批录像。"""
+    wanted = None
+    targets = {}
+    for definition in definitions:
+        metric = {'timems': 'time', 'stnb': 'iqg'}.get(definition.metric, definition.metric)
+        value = stats.get(f'{metric}_{_style_key(definition)}')
+        if value is None:
+            continue
+        field = 'iqg' if definition.metric == 'stnb' else definition.metric
+        targets[definition.code] = (definition, field, value)
+        clause = _candidate_filter(definition) & Q(**{field: value})
+        wanted = clause if wanted is None else wanted | clause
+    if wanted is None:
+        return {}
+    best = {}
+    for video in _pb_queryset(user, level).filter(wanted).order_by('upload_time', 'id').iterator():
+        for code, (definition, field, value) in targets.items():
+            if code not in best and getattr(video, field) == value and _video_qualifies(video, definition, user.id):
+                best[code] = video
+        if len(best) == len(targets):
+            break
+    return best
 
 
 def _earliest_for_stage(user, definition, stage):
@@ -621,51 +674,56 @@ def _evidence_stands(grant, definition, stage, user_id):
     return _video_qualifies(video, definition, user_id) and _meets_stage(definition, raw, stage)
 
 
-def _apply_pb(user, definition, stats, progress, grant):
+def _apply_pb(user, definition, stats, progress, grant, best, state=None, overridden=False):
     raw = _aggregate_raw(stats, definition)
     units = _units_of(definition, raw)
     stage = _stage_of(definition, raw)
-    best = None if raw is None else _ordered_best(user, definition)
     if best is None:
         stage = 0
         units = None
+    if overridden:
+        if progress is not None or best is not None:
+            _save_progress(user, definition, stage, units, UNSET, best, state)
+        return grant
     if stage <= 0:
-        if progress is None and grant is None:
+        if progress is None and grant is None and best is None:
             return None
         if progress is not None and progress.current_stage == 0 and progress.current_value == units and progress.best_video_id == (None if best is None else best.id) and (grant is None or grant.revoked_at is not None):
             return grant
-        return write_stage(user, definition, stage=0, current_value=units, best_video=best)
+        return write_stage(user, definition, stage=0, current_value=units, best_video=best, state=state)
     stands = _evidence_stands(grant, definition, stage, user.id)
     same_progress = progress is not None and progress.current_stage == stage and progress.current_value == units and progress.best_video_id == best.id
     if stands and same_progress:
         return grant
     if stands:
-        return write_stage(user, definition, stage=stage, current_value=units, best_video=best, keep_evidence=True)
+        return write_stage(user, definition, stage=stage, current_value=units, best_video=best, keep_evidence=True, state=state)
     earliest = _earliest_for_stage(user, definition, stage) or best
     return write_stage(
         user, definition, stage=stage, current_value=units, best_video=best, video=earliest,
         granted_at=None if earliest is None else earliest.upload_time, evidence={'video_id': None if earliest is None else earliest.id},
-        keep_evidence=False,
+        keep_evidence=False, state=state,
     )
 
 
-def evaluate_pb(user):
+def evaluate_pb(user, state=None):
     """按难度聚合生涯最佳。当前最佳仍有效、也没有更好的录像时，不重扫该难度。"""
     definitions = list(MedalDefinition.objects.filter(active=True, kind=KIND_PB, metric__in=['timems', 'bvs', 'stnb', 'thrp'], level__in=STANDARD_LEVELS))
     if not definitions:
         return
     codes = [item.code for item in definitions]
-    progress = {row.code: row for row in PlayerProgress.objects.filter(user=user, code__in=codes).select_related('best_video')}
-    grants = {row.definition_code: row for row in MedalGrant.objects.filter(user=user, definition_code__in=codes, scope_key='').select_related('video')}
+    progress = state.progress if state is not None else {row.code: row for row in PlayerProgress.objects.filter(user=user, code__in=codes).select_related('best_video')}
+    grants = state.grants if state is not None else {row.definition_code: row for row in MedalGrant.objects.filter(user=user, definition_code__in=codes, scope_key='').select_related('video')}
+    overrides = state.overrides if state is not None else {(row.definition_code, row.scope_key): row for row in MedalOverride.objects.filter(user=user, scope_key='')}
     by_level = {}
     for definition in definitions:
         by_level.setdefault(definition.level, []).append(definition)
     for level, level_definitions in by_level.items():
-        if not _level_needs_aggregate(user, level, level_definitions, progress):
+        if not _level_needs_aggregate(user, level, level_definitions, progress, grants, overrides):
             continue
         stats = _aggregate_level(user, level)
+        best = _best_videos_for_level(user, level, level_definitions, stats)
         for definition in level_definitions:
-            _apply_pb(user, definition, stats, progress.get(definition.code), grants.get(definition.code))
+            _apply_pb(user, definition, stats, progress.get(definition.code), grants.get(definition.code), best.get(definition.code), state, (definition.code, '') in overrides)
 
 
 def _mode_list(definition):
@@ -744,27 +802,29 @@ def _once_evidence_stands(grant, definition):
     return True
 
 
-def _write_once(user, definition, met):
-    grant = MedalGrant.objects.filter(user=user, definition_code=definition.code, scope_key='').select_related('video').first()
+def _write_once(user, definition, met, state=None):
+    grant = state.grants.get(definition.code) if state is not None else MedalGrant.objects.filter(user=user, definition_code=definition.code, scope_key='').select_related('video').first()
     if not met:
         if grant is None or grant.revoked_at is not None:
+            if state is not None and definition.code in state.progress:
+                _save_progress(user, definition, 0, 0, UNSET, None, state)
             return grant
-        return write_stage(user, definition, stage=0, current_value=0, best_video=None)
+        return write_stage(user, definition, stage=0, current_value=0, best_video=None, state=state)
     if _once_evidence_stands(grant, definition):
-        return write_stage(user, definition, stage=1, current_value=1, keep_evidence=True)
+        return write_stage(user, definition, stage=1, current_value=1, keep_evidence=True, state=state)
     video = _once_video(user, definition)
     if video is None and definition.code not in (NOVICE_REALNAME, NOVICE_SAOLEI):
         if grant is None or grant.revoked_at is not None:
             return grant
-        return write_stage(user, definition, stage=0, current_value=0, best_video=None)
+        return write_stage(user, definition, stage=0, current_value=0, best_video=None, state=state)
     evidence = {} if video is None else {'video_id': video.id}
     return write_stage(
         user, definition, stage=1, current_value=1, video=video, best_video=video,
-        granted_at=None if video is None else video.upload_time, evidence=evidence, keep_evidence=False,
+        granted_at=None if video is None else video.upload_time, evidence=evidence, keep_evidence=False, state=state,
     )
 
 
-def evaluate_once(user):
+def evaluate_once(user, state=None):
     """实名、过审、全级别、全模式，以及扫雷网已验证。其他平台这一步不发。"""
     codes = [NOVICE_REALNAME, NOVICE_REVIEW, NOVICE_LEVELS, NOVICE_LEVELS_NF, NOVICE_MODES, NOVICE_SAOLEI]
     definitions = {item.code: item for item in MedalDefinition.objects.filter(active=True, kind=KIND_ONCE, code__in=codes)}
@@ -772,16 +832,16 @@ def evaluate_once(user):
         definition = definitions.get(code)
         if definition is None:
             continue
-        _write_once(user, definition, _once_satisfied(user, definition))
+        _write_once(user, definition, _once_satisfied(user, definition), state)
 
 
-def evaluate_composite(user):
+def evaluate_composite(user, state=None):
     """三阶只读三个难度的进度，不扫录像，也不撤掉单级授予。"""
     definitions = list(MedalDefinition.objects.filter(active=True, kind=KIND_COMPOSITE, metric='thrp'))
     if not definitions:
         return
     codes = [code for definition in definitions for code in (definition.depends_on or [])]
-    progress = {row.code: row for row in PlayerProgress.objects.filter(user=user, code__in=codes).select_related('best_video')}
+    progress = state.progress if state is not None else {row.code: row for row in PlayerProgress.objects.filter(user=user, code__in=codes).select_related('best_video')}
     for definition in definitions:
         depended = list(definition.depends_on or [])
         if len(depended) < 3:
@@ -797,32 +857,107 @@ def evaluate_composite(user):
                 if row.best_video is not None:
                     uploaded.append(row.best_video.upload_time)
         stage = reached_asc_stage(definition.thresholds, min(stages) if stages else 0)
-        grant = MedalGrant.objects.filter(user=user, definition_code=definition.code, scope_key='').first()
+        grant = state.grants.get(definition.code) if state is not None else MedalGrant.objects.filter(user=user, definition_code=definition.code, scope_key='').first()
         if stage <= 0:
             if grant is None or grant.revoked_at is not None:
+                if state is not None and definition.code in state.progress:
+                    _save_progress(user, definition, 0, min(stages) if stages else 0, UNSET, UNSET, state)
                 continue
-            write_stage(user, definition, stage=0, current_value=min(stages) if stages else 0)
+            write_stage(user, definition, stage=0, current_value=min(stages) if stages else 0, state=state)
             continue
         if grant is not None and grant.revoked_at is None and grant.stage == stage:
-            write_stage(user, definition, stage=stage, current_value=stage, keep_evidence=True)
+            write_stage(user, definition, stage=stage, current_value=stage, keep_evidence=True, state=state)
             continue
         write_stage(
             user, definition, stage=stage, current_value=stage,
-            granted_at=max(uploaded) if uploaded else None, evidence={'video_ids': video_ids}, keep_evidence=False,
+            granted_at=max(uploaded) if uploaded else None, evidence={'video_ids': video_ids}, keep_evidence=False, state=state,
         )
 
 
-def revoke_manual(grant_id, reason):
-    if not str(reason or '').strip():
-        raise MedalError('reason')
+def revoke_manual(actor, grant_id, reason):
     grant = MedalGrant.objects.filter(pk=grant_id).first()
     if grant is None:
         raise MedalError('missing')
-    if grant.revoked_at is not None:
-        raise MedalError('revoked')
-    grant.revoked_at = timezone.now()
-    grant.revoke_reason = reason.strip()
-    grant.save(update_fields=['revoked_at', 'revoke_reason'])
-    if grant.scope_key == '':
-        PlayerProgress.objects.filter(user_id=grant.user_id, code=grant.definition_code).update(current_stage=0)
+    return set_player_override(actor, grant.user_id, grant.definition_code, grant.scope_key, 'revoke', reason)
+
+
+def _validate_override(actor, code, scope_key, mode, reason):
+    if not getattr(actor, 'pk', None) or not getattr(actor, 'is_staff', False) or not getattr(actor, 'is_active', False):
+        raise MedalError('actor')
+    if not isinstance(code, str) or not code or len(code) > 64:
+        raise MedalError('definition')
+    if not isinstance(scope_key, str) or len(scope_key) > 128:
+        raise MedalError('scope')
+    if mode not in ('grant', 'revoke', 'auto'):
+        raise MedalError('mode')
+    if not isinstance(reason, str) or not reason.strip() or len(reason.strip()) > 255:
+        raise MedalError('reason')
+    return reason.strip()
+
+
+@transaction.atomic
+def set_player_override(actor, user_id, code, scope_key, mode, reason, stage=None, granted_at=None):
+    """锁定人工结果或恢复自动；自然进度始终由评估器维护，服务不负责入队。"""
+    reason = _validate_override(actor, code, scope_key, mode, reason)
+    user = UserProfile.objects.select_for_update().filter(pk=user_id).first()
+    if user is None:
+        raise MedalError('user')
+    definition = MedalDefinition.objects.filter(pk=code).first()
+    identity = {'user': user, 'definition_code': code, 'scope_key': scope_key}
+    previous = MedalOverride.objects.filter(**identity).first()
+    grant = MedalGrant.objects.filter(**identity).first()
+    if definition is None and previous is None and grant is None:
+        raise MedalError('definition')
+    if mode == 'auto' and previous is None:
+        return grant
+    scoped_kinds = (KIND_MANUAL, KIND_EVENT_PLACE, KIND_GSC_STAT, KIND_GSC_PLACE)
+    bad_scope = scope_key != scope_key.strip() or (scope_key and definition is not None and definition.kind not in scoped_kinds)
+    if bad_scope and mode != 'auto' and not (mode == 'revoke' and (previous is not None or grant is not None)):
+        raise MedalError('scope')
+    logged_stage = None if grant is None else grant.stage
+    logged_granted_at = None if grant is None else grant.granted_at
+    if mode == 'grant':
+        if definition is None:
+            raise MedalError('definition')
+        if not definition.active:
+            raise MedalError('inactive')
+        thresholds = definition.thresholds or ([1] if definition.kind == KIND_MANUAL else [])
+        if type(stage) is not int or stage <= 0 or stage > 2147483647 or stage not in thresholds:
+            raise MedalError('stage')
+        at = granted_at or timezone.now()
+        MedalOverride.objects.update_or_create(**identity, defaults={
+            'mode': mode, 'stage': stage, 'granted_at': at, 'reason': reason, 'actor': actor,
+        })
+        evidence = {'override': True, 'reason': reason, 'actor_id': actor.pk}
+        if grant is None:
+            grant = MedalGrant.objects.create(
+                **identity, stage=stage, granted_at=at, evidence=evidence,
+                stage_log=[{'stage': stage, 'at': at.isoformat(), 'evidence_id': None}],
+            )
+        else:
+            grant.stage_log = _append_log(grant, stage, at, None)
+            grant.stage = stage
+            grant.granted_at = at
+            grant.video = None
+            grant.participant = None
+            grant.evidence = evidence
+            grant.revoked_at = None
+            grant.revoke_reason = ''
+            grant.save(update_fields=['stage', 'stage_log', 'granted_at', 'video', 'participant', 'evidence', 'revoked_at', 'revoke_reason'])
+        logged_stage = stage
+        logged_granted_at = at
+    else:
+        if mode == 'revoke':
+            MedalOverride.objects.update_or_create(**identity, defaults={
+                'mode': mode, 'stage': None, 'granted_at': None, 'reason': reason, 'actor': actor,
+            })
+        else:
+            previous.delete()
+        if grant is not None and grant.revoked_at is None:
+            grant.revoked_at = timezone.now()
+            grant.revoke_reason = reason
+            grant.save(update_fields=['revoked_at', 'revoke_reason'])
+    MedalOverrideLog.objects.create(
+        **identity, action=mode, stage=logged_stage, granted_at=logged_granted_at, reason=reason, actor=actor,
+    )
     return grant

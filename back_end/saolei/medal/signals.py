@@ -4,6 +4,7 @@ from django.dispatch import receiver
 
 from accountlink.models import AccountLinkQueue, Platform
 from userprofile.models import UserProfile
+from videomanager.events import videos_bulk_changed
 from videomanager.models import VideoModel
 from .cache import invalidate_catalog
 from .models import MedalDefinition
@@ -35,9 +36,15 @@ def enqueue_medal_refresh_on_video(sender, instance, **kwargs):
     _enqueue_video_players(instance)
 
 
+@receiver(videos_bulk_changed, dispatch_uid='medal.refresh_on_videos_bulk_changed')
+def enqueue_medal_refresh_on_bulk_videos(sender, player_ids, **kwargs):
+    for player_id in sorted(set(player_ids) - {None}):
+        transaction.on_commit(lambda player_id=player_id: enqueue_player_refresh(player_id), robust=True)
+
+
 @receiver(post_save, sender=UserProfile, dispatch_uid='medal.refresh_on_profile_save')
 def enqueue_medal_refresh_on_profile(sender, instance, created=False, update_fields=None, **kwargs):
-    if update_fields is not None and 'realname' not in update_fields:
+    if update_fields is not None and '_realname' not in update_fields:
         return
     if created and instance.realname == '匿名':
         return

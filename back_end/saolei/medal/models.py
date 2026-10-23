@@ -98,3 +98,41 @@ class MedalScan(models.Model):
 
     user = models.OneToOneField(UserProfile, on_delete=models.CASCADE, primary_key=True, related_name='medal_scan')
     scanned_at = models.DateTimeField()
+
+
+class MedalOverride(models.Model):
+    """管理员锁定同一授予身份，直到明确恢复自动判定。"""
+
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='medal_overrides')
+    definition_code = models.CharField(max_length=64)
+    scope_key = models.CharField(max_length=128, blank=True, default='')
+    mode = models.CharField(max_length=8, choices=[('grant', 'grant'), ('revoke', 'revoke')])
+    stage = models.PositiveIntegerField(null=True, blank=True)
+    granted_at = models.DateTimeField(null=True, blank=True)
+    reason = models.CharField(max_length=255)
+    actor = models.ForeignKey(UserProfile, null=True, blank=True, on_delete=models.SET_NULL, related_name='medal_overrides_made')
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['user', 'definition_code', 'scope_key'], name='medal_override_identity_uniq'),
+        ]
+
+
+class MedalOverrideLog(models.Model):
+    """人工决定的追加审计；恢复自动只删除覆盖，不删除这份记录。"""
+
+    user = models.ForeignKey(UserProfile, on_delete=models.CASCADE, related_name='medal_override_logs')
+    definition_code = models.CharField(max_length=64)
+    scope_key = models.CharField(max_length=128, blank=True, default='')
+    action = models.CharField(max_length=8, choices=[('grant', 'grant'), ('revoke', 'revoke'), ('auto', 'auto')])
+    stage = models.PositiveIntegerField(null=True, blank=True)
+    granted_at = models.DateTimeField(null=True, blank=True)
+    reason = models.CharField(max_length=255)
+    actor = models.ForeignKey(UserProfile, null=True, blank=True, on_delete=models.SET_NULL, related_name='medal_override_logs_made')
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        indexes = [
+            models.Index(fields=['user', 'definition_code', 'scope_key'], name='medal_override_log_ident_idx'),
+        ]

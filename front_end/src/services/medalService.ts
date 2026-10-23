@@ -25,6 +25,7 @@ export interface MedalItem {
 }
 
 export interface PlayerMedals {
+    scan_pending: boolean;
     score: number;
     max_pins: number;
     pin_ids: number[];
@@ -32,30 +33,116 @@ export interface PlayerMedals {
     series: { series: string; items: MedalItem[] }[];
 }
 
-const pinListeners = new Set<() => void>();
+const SUMMARY_TTL = 30_000;
+const SCAN_POLL_INTERVAL = 2000;
+const SCAN_POLL_LIMIT = 10;
+const SUMMARY_CACHE_LIMIT = 50;
 
-export function subscribeMedalPins(listener: () => void): () => void {
-    pinListeners.add(listener);
+interface SummaryListener {
+    receive: (summary: PlayerMedals) => void;
+    failed: () => void;
+}
+
+interface SummaryEntry {
+    data?: PlayerMedals;
+    expires: number;
+    version: number;
+    inflight?: Promise<PlayerMedals>;
+    listeners: Set<SummaryListener>;
+    timer?: ReturnType<typeof setTimeout>;
+    polls: number;
+}
+
+const summaries = new Map<number, SummaryEntry>();
+
+function entryFor(userId: number): SummaryEntry {
+    const existing = summaries.get(userId);
+    if (existing) return existing;
+    for (const [id, entry] of summaries) {
+        if (summaries.size < SUMMARY_CACHE_LIMIT) break;
+        if (!entry.listeners.size && !entry.inflight) summaries.delete(id);
+    }
+    const entry: SummaryEntry = { expires: 0, version: 0, listeners: new Set(), polls: 0 };
+    summaries.set(userId, entry);
+    return entry;
+}
+
+function stopPolling(entry: SummaryEntry) {
+    if (entry.timer !== undefined) clearTimeout(entry.timer);
+    entry.timer = undefined;
+}
+
+function pollPendingScan(userId: number, entry: SummaryEntry) {
+    if (entry.data?.scan_pending !== true || !entry.listeners.size || entry.timer !== undefined || entry.polls >= SCAN_POLL_LIMIT) return;
+    entry.timer = setTimeout(() => {
+        entry.timer = undefined;
+        entry.polls += 1;
+        void fetchPlayerMedals(userId, true).catch(() => undefined);
+    }, SCAN_POLL_INTERVAL);
+}
+
+export function fetchPlayerMedals(userId: number, refresh = false): Promise<PlayerMedals> {
+    const entry = entryFor(userId);
+    if (entry.inflight) return entry.inflight;
+    if (!refresh && entry.data && entry.expires > Date.now()) return Promise.resolve(entry.data);
+    const { version } = entry;
+    const request = $axios.get<PlayerMedals>(`/api/medal/players/${userId}`).then(({ data }) => {
+        if (entry.version === version) {
+            entry.data = data;
+            entry.expires = Date.now() + SUMMARY_TTL;
+            if (!data.scan_pending) stopPolling(entry);
+            entry.listeners.forEach((listener) => {
+                listener.receive(data);
+            });
+        }
+        return data;
+    }).catch((error: unknown) => {
+        if (entry.version === version) entry.listeners.forEach((listener) => {
+            listener.failed();
+        });
+        throw error;
+    }).finally(() => {
+        if (entry.inflight === request) {
+            entry.inflight = undefined;
+            pollPendingScan(userId, entry);
+        }
+    });
+    entry.inflight = request;
+    return request;
+}
+
+// One request and one bounded scan poller per player, shared by the sidebar and medal page.
+export function subscribePlayerMedals(userId: number, receive: SummaryListener['receive'], failed: SummaryListener['failed']): () => void {
+    const entry = entryFor(userId);
+    if (!entry.listeners.size) entry.polls = 0;
+    const listener = { receive, failed };
+    entry.listeners.add(listener);
+    if (entry.data && entry.expires > Date.now()) {
+        receive(entry.data);
+        pollPendingScan(userId, entry);
+    } else {
+        void fetchPlayerMedals(userId).catch(() => undefined);
+    }
     return () => {
-        pinListeners.delete(listener);
+        entry.listeners.delete(listener);
+        if (!entry.listeners.size) stopPolling(entry);
     };
 }
 
-export function notifyMedalPinsChanged(): void {
-    pinListeners.forEach((listener) => {
-        listener();
-    });
+export function refreshPlayerMedals(userId: number): void {
+    const entry = entryFor(userId);
+    stopPolling(entry);
+    entry.version += 1;
+    entry.expires = 0;
+    entry.inflight = undefined;
+    entry.polls = 0;
+    if (entry.listeners.size) void fetchPlayerMedals(userId, true).catch(() => undefined);
 }
 
-export async function fetchPlayerMedals(userId: number): Promise<PlayerMedals> {
-    const { data } = await $axios.get<PlayerMedals>(`/api/medal/players/${userId}`);
-    return data;
-}
-
-export async function saveMedalPins(grantIds: number[]): Promise<void> {
+export async function saveMedalPins(grantIds: number[], userId: number): Promise<void> {
     // 保持默认的表单 Content-Type。带 cookie 时，application/json 的跨域预检会被 Access-Control-Allow-Headers: * 拦住。
     await $axios.put('/api/medal/pins', JSON.stringify({ grant_ids: grantIds }));
-    notifyMedalPinsChanged();
+    refreshPlayerMedals(userId);
 }
 
 const medalSeriesKeys: Record<string, keyof typeof en.medal.series> = {

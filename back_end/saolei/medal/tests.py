@@ -1,9 +1,11 @@
 from datetime import timedelta
 import json
 
-from django.db import IntegrityError, transaction
+from django.db import connection, IntegrityError, transaction
+from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
 from django.tasks import TaskResultStatus
 from django.test import override_settings, TestCase
+from django.test.utils import CaptureQueriesContext
 from django.utils import timezone
 from django_tasks_db.models import DBTaskResult
 
@@ -12,10 +14,10 @@ from config.text_choices import MS_TextChoices
 from userprofile.models import UserProfile
 from videomanager.models import ExpandVideoModel, STNB_COEFFICIENTS, VideoModel
 from .models import MedalContribution, MedalDefinition, MedalGrant, MedalScan, PlayerProgress
-from .services import ensure_basic_definitions, ensure_shareholder_definition, evaluate_min_video_id, evaluate_player, player_summary, write_stage
+from .services import _aggregate_level, _best_videos_for_level, active_definitions, ensure_basic_definitions, ensure_shareholder_definition, evaluate_min_video_id, evaluate_player, player_summary, write_stage
 from .signals import enqueue_medal_refresh_on_video
 from .tasks import task_backfill_player_medals, task_refresh_player_medals
-from .utils import BVS_SCALE, DIRECTION_ASC, DIRECTION_DESC, KIND_MANUAL, KIND_ONCE, KIND_PB, MAX_PINS, NOVICE_LEVELS, NOVICE_LEVELS_NF, NOVICE_MODES, NOVICE_REALNAME, NOVICE_REVIEW, NOVICE_SAOLEI, open_modes, reached_asc_stage, SHAREHOLDER_CODE, THRP_SCALE, to_units
+from .utils import BVS_SCALE, DIRECTION_ASC, DIRECTION_DESC, KIND_MANUAL, KIND_ONCE, KIND_PB, MAX_PINS, NOVICE_LEVELS, NOVICE_LEVELS_NF, NOVICE_MODES, NOVICE_REALNAME, NOVICE_REVIEW, NOVICE_SAOLEI, open_modes, reached_asc_stage, SHAREHOLDER_CODE, STANDARD_LEVELS, THRP_SCALE, to_units
 
 
 @override_settings(
@@ -23,7 +25,23 @@ from .utils import BVS_SCALE, DIRECTION_ASC, DIRECTION_DESC, KIND_MANUAL, KIND_O
     SESSION_ENGINE='django.contrib.sessions.backends.db',
     CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'medal-tests'}},
 )
-class MedalShellTests(TestCase):
+class MedalTestCase(TestCase):
+    def delete_video(self, video_id):
+        signals = (pre_save, post_save, pre_delete, post_delete)
+        saved = [(signal, list(signal.receivers), dict(signal.sender_receivers_cache)) for signal in signals]
+        for signal in signals:
+            signal.receivers = []
+            signal.sender_receivers_cache.clear()
+        try:
+            VideoModel.objects.filter(pk=video_id).delete()
+        finally:
+            for signal, receivers, cache in saved:
+                signal.receivers = receivers
+                signal.sender_receivers_cache.clear()
+                signal.sender_receivers_cache.update(cache)
+
+
+class MedalShellFixture(MedalTestCase):
     def setUp(self):
         self.user = UserProfile.objects.create_user(username='medal_user', email='medal-user@example.com', password='password')
         self.definition = MedalDefinition.objects.create(
@@ -31,6 +49,20 @@ class MedalShellTests(TestCase):
             direction=DIRECTION_DESC, level='b', thresholds=[60000, 50000, 20000], score_by_stage=[3, 5, 8], active=True,
         )
         self.granted_at = timezone.now() - timedelta(days=3)
+
+
+class MedalShellTests(MedalShellFixture):
+    def test_catalog_cache_hit_does_not_query_definitions(self):
+        expected = active_definitions()
+        with self.assertNumQueries(0):
+            self.assertEqual(active_definitions(), expected)
+
+    def test_warm_summary_uses_five_queries_without_definition_reads(self):
+        MedalScan.objects.create(user=self.user, scanned_at=timezone.now())
+        active_definitions()
+        with self.assertNumQueries(5):
+            summary = player_summary(self.user.id)
+        self.assertFalse(summary['scan_pending'])
 
     def test_write_stage_rewrites_one_grant(self):
         first = write_stage(self.user, self.definition, stage=60000, current_value=59000, granted_at=self.granted_at, evidence={'video_id': 1})
@@ -204,7 +236,7 @@ class MedalShellTests(TestCase):
 
     def test_first_summary_scans_videos_already_in_the_library(self):
         self.user.realname = '已实名'
-        self.user.save(update_fields=['realname', 'date_updated'])
+        self.user.save(update_fields=['_realname', 'date_updated'])
         expand = ExpandVideoModel.objects.create(identifier='history-scan')
         VideoModel.objects.bulk_create([
             VideoModel(
@@ -215,6 +247,7 @@ class MedalShellTests(TestCase):
         ])
         before = self.client.get(f'/api/medal/players/{self.user.id}')
         self.assertEqual(before.status_code, 200)
+        self.assertTrue(before.json()['scan_pending'])
         self.assertFalse(MedalGrant.objects.filter(user=self.user, revoked_at__isnull=True).exists())
         queued = DBTaskResult.objects.filter(task_path=task_backfill_player_medals.module_path, status=TaskResultStatus.READY)
         self.assertEqual(queued.count(), 1)
@@ -226,10 +259,11 @@ class MedalShellTests(TestCase):
         self.assertIn(NOVICE_REVIEW, granted)
         again = self.client.get(f'/api/medal/players/{self.user.id}')
         self.assertEqual(again.status_code, 200)
+        self.assertFalse(again.json()['scan_pending'])
         self.assertEqual(queued.count(), 1)
 
 
-class ShareholderTests(MedalShellTests):
+class ShareholderTests(MedalShellFixture):
     def make_video(self, video_id, upload_time):
         expand = ExpandVideoModel.objects.create(identifier=f'shareholder-{video_id}')
         VideoModel.objects.bulk_create([
@@ -240,21 +274,6 @@ class ShareholderTests(MedalShellTests):
         ])
         VideoModel.objects.filter(pk=video_id).update(upload_time=upload_time)
         return VideoModel.objects.get(pk=video_id)
-
-    def delete_video(self, video_id):
-        from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
-        signals = (pre_save, post_save, pre_delete, post_delete)
-        saved = [(signal, list(signal.receivers), dict(signal.sender_receivers_cache)) for signal in signals]
-        for signal in signals:
-            signal.receivers = []
-            signal.sender_receivers_cache.clear()
-        try:
-            VideoModel.objects.filter(pk=video_id).delete()
-        finally:
-            for signal, receivers, cache in saved:
-                signal.receivers = receivers
-                signal.sender_receivers_cache.clear()
-                signal.sender_receivers_cache.update(cache)
 
     def test_min_id_rewrites_one_grant(self):
         first_time = timezone.now() - timedelta(days=4)
@@ -332,7 +351,7 @@ class ShareholderTests(MedalShellTests):
     SESSION_ENGINE='django.contrib.sessions.backends.db',
     CACHES={'default': {'BACKEND': 'django.core.cache.backends.locmem.LocMemCache', 'LOCATION': 'medal-basic'}},
 )
-class BasicMedalTests(TestCase):
+class BasicMedalTests(MedalTestCase):
     def setUp(self):
         self.user = UserProfile.objects.create_user(username='medal_basic', email='medal-basic@example.com', password='password')
         self.ids = iter(range(3_000_000, 4_000_000))
@@ -357,23 +376,84 @@ class BasicMedalTests(TestCase):
         VideoModel.objects.filter(pk=video_id).update(upload_time=upload_time or timezone.now())
         return VideoModel.objects.get(pk=video_id)
 
-    def delete_video(self, video_id):
-        from django.db.models.signals import post_delete, post_save, pre_delete, pre_save
-        signals = (pre_save, post_save, pre_delete, post_delete)
-        saved = [(signal, list(signal.receivers), dict(signal.sender_receivers_cache)) for signal in signals]
-        for signal in signals:
-            signal.receivers = []
-            signal.sender_receivers_cache.clear()
-        try:
-            VideoModel.objects.filter(pk=video_id).delete()
-        finally:
-            for signal, receivers, cache in saved:
-                signal.receivers = receivers
-                signal.sender_receivers_cache.clear()
-                signal.sender_receivers_cache.update(cache)
-
     def active(self, code):
         return MedalGrant.objects.filter(user=self.user, definition_code=code, revoked_at__isnull=True).first()
+
+    def test_pb_threshold_changes_revoke_and_regrant_without_new_video(self):
+        self.make_video(timems=19000)
+        evaluate_player(self.user.id)
+        grant = self.active('ability.time.b')
+        definition = MedalDefinition.objects.get(pk='ability.time.b')
+        definition.thresholds = [10000]
+        definition.save(update_fields=['thresholds'])
+        evaluate_player(self.user.id)
+        grant.refresh_from_db()
+        self.assertIsNotNone(grant.revoked_at)
+        self.assertEqual(PlayerProgress.objects.get(user=self.user, code=definition.code).current_stage, 0)
+        definition.thresholds = [30000]
+        definition.save(update_fields=['thresholds'])
+        evaluate_player(self.user.id)
+        grant.refresh_from_db()
+        self.assertIsNone(grant.revoked_at)
+        self.assertEqual(grant.stage, 30000)
+
+    def test_pb_invalid_evidence_is_replaced_while_best_video_remains(self):
+        first = self.make_video(timems=19000, upload_time=self.earlier)
+        evaluate_player(self.user.id)
+        best = self.make_video(timems=16000, upload_time=self.middle)
+        evaluate_player(self.user.id)
+        grant = self.active('ability.time.b')
+        self.assertEqual(grant.video_id, first.id)
+        VideoModel.objects.filter(pk=first.id).update(state=MS_TextChoices.State.FROZEN)
+        evaluate_player(self.user.id)
+        grant.refresh_from_db()
+        self.assertEqual(grant.video_id, best.id)
+        self.assertIsNone(grant.revoked_at)
+        self.assertEqual([entry['stage'] for entry in grant.stage_log], [20000])
+
+    def test_pb_deleted_evidence_is_replaced_while_best_video_remains(self):
+        first = self.make_video(timems=19000, upload_time=self.earlier)
+        evaluate_player(self.user.id)
+        best = self.make_video(timems=16000, upload_time=self.middle)
+        evaluate_player(self.user.id)
+        self.delete_video(first.id)
+        evaluate_player(self.user.id)
+        grant = self.active('ability.time.b')
+        self.assertEqual(grant.video_id, best.id)
+        self.assertEqual(grant.evidence['video_id'], best.id)
+
+    def test_level_best_videos_share_one_query_and_break_ties_by_upload(self):
+        later = self.make_video(timems=19000, upload_time=self.later)
+        first = self.make_video(timems=19000, upload_time=self.earlier)
+        ensure_basic_definitions()
+        definitions = list(MedalDefinition.objects.filter(kind=KIND_PB, level='b', active=True))
+        stats = _aggregate_level(self.user, 'b')
+        with self.assertNumQueries(1):
+            best = _best_videos_for_level(self.user, 'b', definitions, stats)
+        self.assertEqual(best['ability.time.b'].id, first.id)
+        self.assertEqual(best['ability.time.nf.b'].id, first.id)
+        self.assertEqual(best['ability.bvs.b'].id, first.id)
+        self.assertNotEqual(first.id, later.id)
+
+    def test_unchanged_refresh_reuses_state_and_does_not_write(self):
+        self.user.realname = '刷新测试'
+        self.user.save(update_fields=['_realname'])
+        AccountLinkQueue.objects.create(platform=Platform.SAOLEI, identifier='no-op-scan', userprofile=self.user, verified=True)
+        self.make_video(video_id=500, upload_time=self.earlier)
+        for level in STANDARD_LEVELS:
+            self.make_video(level=level, bv=100, left_ce=100, right_ce=0)
+            self.make_video(level=level, bv=120, left_ce=80, right_ce=20)
+        for mode in open_modes():
+            self.make_video(mode=mode)
+        evaluate_player(self.user.id)
+        for code in [NOVICE_REALNAME, NOVICE_REVIEW, NOVICE_LEVELS, NOVICE_LEVELS_NF, NOVICE_MODES, NOVICE_SAOLEI, SHAREHOLDER_CODE, 'ability.thrp.nf.three', 'ability.thrp.fl.three']:
+            self.assertIsNotNone(self.active(code), code)
+        with CaptureQueriesContext(connection) as captured:
+            evaluate_player(self.user.id)
+        writes = [query['sql'] for query in captured if query['sql'].lstrip().upper().startswith(('INSERT ', 'UPDATE ', 'DELETE '))]
+        self.assertEqual(writes, [])
+        progress_reads = [query['sql'] for query in captured if query['sql'].startswith('SELECT ') and 'medal_playerprogress' in query['sql']]
+        self.assertEqual(len(progress_reads), 1)
 
     def test_scaled_thresholds_are_not_overwritten(self):
         self.assertEqual(to_units(1.5, BVS_SCALE), 15000)
@@ -553,11 +633,11 @@ class BasicMedalTests(TestCase):
         evaluate_player(self.user.id)
         self.assertIsNotNone(self.active(NOVICE_MODES))
         self.user.realname = '实名玩家'
-        self.user.save(update_fields=['realname', 'date_updated'])
+        self.user.save(update_fields=['_realname', 'date_updated'])
         evaluate_player(self.user.id)
         self.assertIsNotNone(self.active(NOVICE_REALNAME))
         self.user.realname = '匿名'
-        self.user.save(update_fields=['realname', 'date_updated'])
+        self.user.save(update_fields=['_realname', 'date_updated'])
         evaluate_player(self.user.id)
         self.assertIsNone(self.active(NOVICE_REALNAME))
 
@@ -600,7 +680,7 @@ class BasicMedalTests(TestCase):
         self.assertFalse(DBTaskResult.objects.filter(task_path=path, status=TaskResultStatus.READY).exists())
         with self.captureOnCommitCallbacks(execute=True):
             self.user.realname = '信号实名'
-            self.user.save(update_fields=['realname', 'date_updated'])
+            self.user.save(update_fields=['_realname', 'date_updated'])
         rows = DBTaskResult.objects.filter(task_path=path, status=TaskResultStatus.READY)
         self.assertEqual(rows.count(), 1)
         self.assertEqual(rows.get().priority, 10)
