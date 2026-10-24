@@ -127,7 +127,7 @@ describe('staff medal management', () => {
         loadPlayer();
         selectOption(0, 'time.b');
         cy.get('.override-form .el-select').eq(1).click();
-        cy.get('.el-select-dropdown__item').filter(':visible').contains('Restore automatic').should('have.class', 'is-disabled');
+        cy.contains('.el-select-dropdown__item:visible', 'Restore automatic').should('have.class', 'is-disabled');
     });
 
     for (const failed of [false, true]) {
