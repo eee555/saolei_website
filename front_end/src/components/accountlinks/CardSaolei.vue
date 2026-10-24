@@ -152,7 +152,7 @@ const props = defineProps({
     info: { type: AccountSaolei, default: () => new AccountSaolei() },
 });
 
-defineEmits(['refresh']);
+const emit = defineEmits(['refresh']);
 
 const { proxy } = useCurrentInstance();
 
@@ -166,7 +166,9 @@ const carouselLength = computed(() => (store.player.id == store.user.id ? 2 : 1)
 function deleteAccountLink() {
     proxy.$axios.post('/accountlink/delete/', {
         platform: 'c',
-    }).then().catch(httpErrorNotification);
+    }).then(() => {
+        emit('refresh');
+    }).catch(httpErrorNotification);
     deleteDialogVisible.value = false;
 }
 
