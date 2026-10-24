@@ -20,7 +20,7 @@ describe('language setting', () => {
         });
     }
 
-    it('Change Language', () => {
+    it('Change Language', { viewportWidth: 1600 }, () => {
         cy.visit('/#/settings');
         for (const [language, label] of [['dev', 'local.docs'], ['zh-cn', '帮助'], ['en', 'Help'], ['de', 'Hilfe'], ['pl', 'pomoc']] as const) {
             cy.get('[data-cy=languagePicker]').click();
@@ -52,7 +52,7 @@ describe('Color Theme', () => {
         });
     }
 
-    it('switches themes from the toolbar and restores the choice after reloading', () => {
+    it('switches themes from the toolbar and restores the choice after reloading', { viewportWidth: 1600 }, () => {
         cy.visit('/#/settings');
         cy.get('#app[data-v-app]', { timeout: Cypress.config('pageLoadTimeout') }).should('be.visible');
         cy.get('[data-cy=themePicker]').click();

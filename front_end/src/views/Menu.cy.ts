@@ -217,9 +217,8 @@ describe('<Menu /> navigation layouts', () => {
     });
 
     it('opens downloads from About, switches to Analyzer and closes the dialog', () => {
-        mountMenu(1000);
-        openMore();
-        cy.get('[data-navigation-id=about] > .el-sub-menu__title:visible').click();
+        mountMenu(1600);
+        cy.get('[data-navigation-id=about] > .el-sub-menu__title').click();
 
         cy.get('[data-navigation-id=downloads] button:visible').click();
         cy.get('.el-dialog').should('be.visible');
