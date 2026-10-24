@@ -37,8 +37,8 @@
 import { ElTabPane, ElTabs } from 'element-plus';
 import { useI18n } from 'vue-i18n';
 
-import analyzerIcon from '@/assets/video-analyzer.svg';
 import yuanshenToolboxIcon from '@/assets/img/yuanshen-toolbox.png';
+import analyzerIcon from '@/assets/video-analyzer.svg';
 import AnalyzerHelper from '@/components/dialogs/AnalyzerHelper.vue';
 import ArbiterHelper from '@/components/dialogs/ArbiterHelper.vue';
 import MetasweeperHelper from '@/components/dialogs/MetasweeperHelper.vue';

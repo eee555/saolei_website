@@ -1,5 +1,5 @@
 <template>
-    <section class="yuanshen-helper text" aria-label="元神工具箱">
+    <section class="text yuanshen-helper" aria-label="元神工具箱">
         <h3 class="text-medium">
             {{ t('local.title') }}
         </h3>
