@@ -173,8 +173,10 @@ export function medalSeriesLabel(series: string, locale: string): string {
 
 const timeSeries = new Set(['破境', '盲扫破境']);
 const speedSeries = new Set(['神速', '盲扫神速']);
+const masterySeries = new Set(['通明', '盲扫通明']);
 const precisionSeries = new Set(['盲扫·精工', '标旗·精工', '三阶盲扫·精工', '三阶标旗·精工']);
 const noviceSeries = new Set(['实名在册', '录像过审', '扫雷新秀', '盲扫新秀', '走马观花', '旧迹新篇']);
+const badgeSeries = new Set(['盲扫破境', '盲扫神速', '盲扫通明', '盲扫·精工', '三阶盲扫·精工']);
 
 function trimScaled(stage: number, scale: number) {
     return (stage / scale).toFixed(5).replace(/0+$/, '').replace(/\.$/, '');
@@ -214,11 +216,33 @@ const medalArtFolder: Record<string, string> = {
     原始股东: 'shareholder',
 };
 
+export function medalArtMetal(series: string, code: string, stage: number | null): 'b' | 'i' | 'e' {
+    const level = medalLevel(code);
+    if (level) return level;
+    if (series !== '原始股东') return 'e';
+    // 越晚偏铜，居中偏银，最早保持金色。
+    if (stage != null && stage <= 1000) return 'e';
+    if (stage != null && stage <= 10000) return 'i';
+    return 'b';
+}
+
+export function medalArtBadge(series: string): boolean {
+    return badgeSeries.has(series);
+}
+
+/** 叠在底图上的短数字。称号里的 Sub 前缀和系列名仍由页面文案显示。 */
+export function medalArtPlate(series: string, stage: number | null): string {
+    if (stage == null || noviceSeries.has(series) || series === '原始股东') return '';
+    if (timeSeries.has(series)) return String(stage / 1000);
+    if (speedSeries.has(series)) return trimScaled(stage, 10000);
+    if (precisionSeries.has(series)) return trimScaled(stage, 100000);
+    if (masterySeries.has(series)) return String(stage);
+    return '';
+}
+
 export function medalArtUrl(series: string, code: string, stage: number | null): string | undefined {
     const folder = medalArtFolder[series];
-    if (!folder || stage == null) return undefined;
-    const level = medalLevel(code);
-    const file = level ? `${level}/${stage}.webp` : `${stage}.webp`;
-    // Bust cached 320px assets after switching to the bandwidth-limited 72px export.
-    return `${import.meta.env.BASE_URL}assets/medals/${folder}/${file}?v=2`;
+    if (!folder || stage == null || !code) return undefined;
+    // 铜和银由前端从这张金色底图换色。v=5 让浏览器丢掉按金属色缓存的旧图。
+    return `${import.meta.env.BASE_URL}assets/medals/${folder}.webp?v=5`;
 }

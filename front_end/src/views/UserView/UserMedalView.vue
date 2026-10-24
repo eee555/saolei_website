@@ -34,7 +34,7 @@
                                     :aria-label="canEdit ? titleOf(item) : undefined"
                                     @click="onPick(item)" @keydown.enter.prevent="onPick(item)" @keydown.space.prevent="onPick(item)"
                                 >
-                                    <img class="medal-art" alt="" :src="artSrc(item)" width="72" height="72" loading="lazy" decoding="async" @error="usePlaceholder">
+                                    <MedalArt :series="item.series" :code="item.code" :stage="item.stage" :size="72" framed :pinned="isSelected(item.grant_id)" />
                                 </div>
                                 <template #content>
                                     <div class="tip-title">
@@ -63,15 +63,15 @@
 import { computed, onActivated, onDeactivated, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 
+import MedalArt from './MedalArt.vue';
+
 import BaseButton from '@/components/common/BaseButton.vue';
 import BaseTooltip from '@/components/common/BaseTooltip.vue';
 import en from '@/i18n/locales/en';
 import zhCn from '@/i18n/locales/zh-cn';
 import type { MedalItem, PlayerMedals } from '@/services/medalService';
-import { medalArtUrl, medalLevel, medalSeriesLabel, medalStageLabel, refreshPlayerMedals, saveMedalPins, subscribePlayerMedals } from '@/services/medalService';
+import { medalLevel, medalSeriesLabel, medalStageLabel, refreshPlayerMedals, saveMedalPins, subscribePlayerMedals } from '@/services/medalService';
 import { store } from '@/store';
-
-const medalPlaceholder = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///yH5BAEAAAAALAAAAAABAAEAAAIBRAA7';
 
 type MedalCategory = 'ability' | 'novice' | 'practice' | 'contest' | 'contribution' | 'other';
 interface MedalSection { series: string; items: MedalItem[] }
@@ -133,15 +133,6 @@ function categoryLabel(id: MedalCategory) {
 
 function itemKey(item: MedalItem) {
     return `${item.code}:${item.scope_key}:${item.grant_id ?? 'locked'}`;
-}
-
-function artSrc(item: MedalItem) {
-    return medalArtUrl(item.series, item.code, item.stage) ?? medalPlaceholder;
-}
-
-function usePlaceholder(event: Event) {
-    const { target } = event;
-    if (target instanceof HTMLImageElement && !target.src.startsWith('data:')) target.src = medalPlaceholder;
 }
 
 function seriesLabel(name: string) {
@@ -431,21 +422,6 @@ const { locale } = useI18n({ useScope: 'global' });
 
 .medal-face.is-pickable {
     cursor: pointer;
-}
-
-.medal-art {
-    display: block;
-    box-sizing: border-box;
-    width: 72px;
-    height: 72px;
-    border: 1px solid var(--ui-border-color);
-    background: var(--ui-fill-color-blank);
-    object-fit: contain;
-}
-
-.medal-face.is-pinned .medal-art {
-    border-width: 3px;
-    border-color: var(--ui-color-primary);
 }
 
 .tip-title {

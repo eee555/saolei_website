@@ -19,11 +19,18 @@ function deferred() {
     return { promise, resolve, reject };
 }
 
-describe('compact medal image URLs', () => {
-    it('uses a cache version for level and unlevelled images', async () => {
-        const { medalArtUrl } = await import('./medalService');
-        expect(medalArtUrl('神速', 'ability.bvs.e', 50000)).toBe('/assets/medals/speed/e/50000.webp?v=2');
-        expect(medalArtUrl('实名在册', 'novice.realname', 1)).toBe('/assets/medals/registered/1.webp?v=2');
+describe('shared medal image parts', () => {
+    it('reuses one gold base and draws the number in the page', async () => {
+        const { medalArtPlate, medalArtUrl } = await import('./medalService');
+        expect(medalArtUrl('神速', 'ability.bvs.e', 50000)).toBe('/assets/medals/speed.webp?v=5');
+        expect(medalArtUrl('神速', 'ability.bvs.b', 15000)).toBe('/assets/medals/speed.webp?v=5');
+        expect(medalArtPlate('神速', 50000)).toBe('5');
+        expect(medalArtPlate('神速', 15000)).toBe('1.5');
+        expect(medalArtPlate('破境', 20000)).toBe('20');
+        expect(medalArtPlate('实名在册', 1)).toBe('');
+        expect(medalArtPlate('原始股东', 1000)).toBe('');
+        expect(medalArtUrl('实名在册', 'novice.realname', 1)).toBe('/assets/medals/registered.webp?v=5');
+        expect(medalArtUrl('原始股东', 'shareholder.origin', 1000)).toBe('/assets/medals/shareholder.webp?v=5');
         expect(medalArtUrl('神速', 'ability.bvs.e', null)).toBeUndefined();
         expect(medalArtUrl('unknown', 'unknown', 1)).toBeUndefined();
     });

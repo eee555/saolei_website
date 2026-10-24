@@ -1,7 +1,7 @@
 <template>
     <div v-show="pins.length" class="pins">
         <div v-for="pin in pins" :key="pin.grant_id ?? pin.code" class="pin" :class="{ 'pin-ring': showRing(pin) }">
-            <img v-if="artOf(pin)" class="pin-art" alt="" :src="artOf(pin)" width="48" height="48" loading="lazy" decoding="async">
+            <MedalArt v-if="pin.stage != null" :series="pin.series" :code="pin.code" :stage="pin.stage" :size="48" />
             <span class="series">{{ seriesLabel(pin.series) }}</span>
             <span class="stage">{{ stageLabel(pin) }}</span>
             <span v-if="showRing(pin)" class="count">{{ pin.current_value }}</span>
@@ -14,8 +14,10 @@ import { onActivated, onDeactivated, ref, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
 import { useRoute } from 'vue-router';
 
+import MedalArt from './MedalArt.vue';
+
 import type { MedalItem } from '@/services/medalService';
-import { fetchPlayerMedals, medalArtUrl, medalSeriesLabel, medalStageLabel, subscribePlayerMedals } from '@/services/medalService';
+import { fetchPlayerMedals, medalSeriesLabel, medalStageLabel, subscribePlayerMedals } from '@/services/medalService';
 
 const props = defineProps({
     userId: { type: Number, required: true },
@@ -32,10 +34,6 @@ function seriesLabel(series: string) {
 
 function stageLabel(pin: MedalItem) {
     return medalStageLabel(pin.series, pin.stage);
-}
-
-function artOf(pin: MedalItem) {
-    return medalArtUrl(pin.series, pin.code, pin.stage);
 }
 
 function showRing(pin: MedalItem) {
@@ -88,13 +86,6 @@ onDeactivated(() => {
 
 .pin-ring {
     box-shadow: 0 0 0 2px var(--ui-color-primary);
-}
-
-.pin-art {
-    display: block;
-    width: 48px;
-    height: 48px;
-    object-fit: contain;
 }
 
 .series,
