@@ -20,7 +20,6 @@ psutil==7.2.2
 pyo3_runtime==0.0.1
 redis==8.1.0
 requests==2.34.2
-websocket-client==1.9.2
 wom-api[system-certs]==0.1.0
 msgames-api==0.1.1
 cryptography==50.0.2
