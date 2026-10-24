@@ -17,11 +17,10 @@ from django_apscheduler.models import DjangoJob
 from django_redis import get_redis_connection
 from django_tasks_db.models import DBTaskResult, get_date_max
 
-from accountlink.models import AccountSaolei, VideoSaolei
 from common.management.commands import db_worker_robust
 from config.common import TASK_CLEANUP_CONFIGS
 from config.customranking import CUSTOM_PLUCK_LEVELS, CUSTOM_PLUCK_MODES
-from config.text_choices import MS_TextChoices, Saolei_TextChoices, Tournament_TextChoices
+from config.text_choices import MS_TextChoices, Tournament_TextChoices
 from customranking.cache import PLuckRankingCache
 from identifier.models import Identifier
 from msuser.models import UserMS
@@ -376,44 +375,12 @@ class TaskDeletionTests(TestCase):
 
     def test_restart_failed_task_reenqueues_same_task_and_updates_task_path_reference(self):
         run_after = timezone.now() - timedelta(minutes=1)
-        account_task = self.create_task(
-            status=TaskResultStatus.FAILED,
-            task_path='accountlink.tasks.task_saolei_video_import_bulk',
-            args=[100001, 'new'],
-            priority=2,
-            run_after=run_after,
-            finished_at=timezone.now(),
-        )
-        video_task = self.create_task(
-            status=TaskResultStatus.FAILED,
-            task_path='accountlink.tasks.task_saolei_video_import',
-            kwargs={'video_id': 100002},
-            priority=-1,
-            run_after=run_after,
-            finished_at=timezone.now(),
-        )
         gsc_task = self.create_task(
             status=TaskResultStatus.FAILED,
             task_path='tournament.gsc.tasks.task_gsc_finish',
             kwargs={'gsc_order': 100},
             run_after=run_after,
             finished_at=timezone.now(),
-        )
-        account = AccountSaolei.objects.create(
-            id=100001,
-            parent=self.staff,
-            video_import_task=account_task,
-        )
-        video = VideoSaolei.objects.create(
-            id=100002,
-            user=account,
-            upload_time=timezone.now(),
-            level=MS_TextChoices.Level.BEGINNER,
-            bv=1,
-            timems=1000,
-            nf=False,
-            state=Saolei_TextChoices.SaoleiVideoState.PENDING,
-            import_task=video_task,
         )
         tournament = GSCTournament.objects.create(
             order=100,
@@ -425,16 +392,6 @@ class TaskDeletionTests(TestCase):
         )
 
         cases = [
-            (
-                account_task,
-                account,
-                'video_import_task_id',
-            ),
-            (
-                video_task,
-                video,
-                'import_task_id',
-            ),
             (
                 gsc_task,
                 tournament,
@@ -471,29 +428,22 @@ class TaskDeletionTests(TestCase):
     def test_restart_task_with_stale_business_reference_returns_conflict(self):
         failed_task = self.create_task(
             status=TaskResultStatus.FAILED,
-            task_path='accountlink.tasks.task_saolei_video_import',
-            args=[100003],
+            task_path='tournament.gsc.tasks.task_gsc_finish',
+            args=[103],
             finished_at=timezone.now(),
         )
         current_task = self.create_task(
             status=TaskResultStatus.READY,
-            task_path='accountlink.tasks.task_saolei_video_import',
-            args=[100003],
+            task_path='tournament.gsc.tasks.task_gsc_finish',
+            args=[103],
         )
-        account = AccountSaolei.objects.create(
-            id=100003,
-            parent=self.staff,
-        )
-        VideoSaolei.objects.create(
-            id=100003,
-            user=account,
-            upload_time=timezone.now(),
-            level=MS_TextChoices.Level.BEGINNER,
-            bv=1,
-            timems=1000,
-            nf=False,
-            state=Saolei_TextChoices.SaoleiVideoState.PENDING,
-            import_task=current_task,
+        GSCTournament.objects.create(
+            order=103,
+            start_time=timezone.now() - timedelta(days=1),
+            end_time=timezone.now() - timedelta(hours=1),
+            state=Tournament_TextChoices.State.AWARDED,
+            host=self.staff,
+            task=current_task,
         )
 
         response = self.client.post(
@@ -513,7 +463,7 @@ class TaskDeletionTests(TestCase):
     def test_restart_task_with_invalid_business_arguments_returns_error_body(self):
         failed_task = self.create_task(
             status=TaskResultStatus.FAILED,
-            task_path='accountlink.tasks.task_saolei_video_import',
+            task_path='tournament.gsc.tasks.task_gsc_finish',
             finished_at=timezone.now(),
         )
 

@@ -67,7 +67,7 @@ def verify_link(request, data: AccountLinkVerifyIn = Form(...)):  # noqa: B008
     Remote synchronization runs after the binding transaction has committed.
     """
     user, created = verify_account_link(data.id, data.platform, data.identifier, request.user.pk)
-    if created:
+    if created and data.platform != Platform.SAOLEI:
         update_account(data.platform, user)
     return HttpResponse()
 

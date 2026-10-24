@@ -1,6 +1,4 @@
-import logging
-
-from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseForbidden, HttpResponseNotFound, JsonResponse
+from django.http import HttpRequest, HttpResponse, HttpResponseBadRequest, HttpResponseNotFound, JsonResponse
 from django.tasks import TaskResultStatus
 from django.views.decorators.http import require_GET, require_POST
 from django_ratelimit.decorators import ratelimit
@@ -8,13 +6,9 @@ from django_ratelimit.decorators import ratelimit
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
 from utils.exceptions import ExceptionToResponse
-from utils.response import HttpResponseConflict
 from .models import AccountLinkQueue, AccountSaolei, Platform, VideoSaolei
-from .services import saolei_video_import_one, update_account
-from .tasks import helper_saolei_video_import_bulk
+from .services import update_account
 from .utils import delete_account
-
-logger = logging.getLogger('accountlink')
 
 
 # 解绑自己的账号，只需要指定平台
@@ -65,68 +59,6 @@ def update_link(request):
     except ExceptionToResponse as e:
         return e.response()
     return JsonResponse({'type': 'success'})
-
-
-@require_POST
-@login_required_error
-def view_saolei_import_one_video(request):
-    if not (video_id := request.POST.get('video_id')):
-        return HttpResponseBadRequest()
-    video = VideoSaolei.objects.filter(id=video_id).first()
-    if not video:
-        return HttpResponseNotFound()
-    if video.user != request.user.account_saolei:
-        return HttpResponseForbidden()
-    import_task = video.import_task
-    if import_task:
-        status = import_task.status
-        if status in [TaskResultStatus.READY, TaskResultStatus.RUNNING]:
-            return HttpResponseConflict()
-        import_task.delete()
-
-    try:
-        saolei_video_import_one(video)
-    except ExceptionToResponse as e:
-        return e.response()
-
-    video.refresh_from_db()
-    return JsonResponse({'type': 'success', 'import_video__id': video.import_video.id})
-
-
-@require_POST
-@login_required_error
-def view_saolei_import_videos(request):
-    """
-    处理扫雷网录像导入请求的视图函数。函数尝试创建一个任务。
-
-    前提：
-        1. 请求类型为POST。
-        2. 用户已登录，否则返回HttpResponseForbidden。
-
-    参数:
-        mode (str): 导入模式，必须为'all'或'new'，分别表示导入所有录像或仅导入新录像。
-
-    返回:
-        HttpResponseForbidden: 如果用户没有关联的saolei账号。
-        HttpResponseBadRequest: 如果请求中缺少mode参数或mode参数无效。
-        HttpResponseConflict: 如果已有排队中或进行中的任务。
-        HttpResponse: 成功创建导入任务后返回空响应。
-    """
-    if not (saolei_account := request.user.account_saolei):
-        return HttpResponseForbidden()
-    if not (mode := request.POST.get('mode')):
-        return HttpResponseBadRequest()
-    if mode not in ['all', 'new']:
-        return HttpResponseBadRequest()
-
-    import_task = saolei_account.video_import_task
-    if import_task and import_task.status in [TaskResultStatus.READY, TaskResultStatus.RUNNING]:
-        logger.warning(f'用户#{request.user.id} 已有一个扫雷网录像同步任务在进行中，无法创建新任务，模式：{mode}')
-        return HttpResponseConflict()
-    else:
-        logger.info(f'用户#{request.user.id} 开始创建扫雷网录像同步任务，模式：{mode}')
-        helper_saolei_video_import_bulk(saolei_account, mode)
-        return HttpResponse()
 
 
 @require_GET

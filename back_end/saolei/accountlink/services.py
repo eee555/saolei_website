@@ -2,11 +2,11 @@ from datetime import datetime, timezone as datetime_timezone
 import logging
 
 from asgiref.sync import async_to_sync
+from django.core.files import File
 from django.core.files.base import ContentFile
 from django.db import transaction
 from django.utils import timezone
 from django_tasks_db.models import DBTaskResult
-import requests
 
 from config.text_choices import MS_TextChoices, Saolei_TextChoices
 from identifier.models import Identifier
@@ -16,13 +16,13 @@ from userprofile.services import grant_name_privacy
 from utils.exceptions import ExceptionToResponse
 from utils.parser import MSVideoParser
 from utils.ranking_lock import ranking_access
-from utils.saolei import SaoleiUserInfo, SaoleiUtils
+from utils.saolei import SaoleiVideoInfo
 from videomanager.models import VideoModel
 from videomanager.services import set_import_upload_time
 from .models import AccountLinkQueue, AccountMinesweeperGames, AccountSaolei, AccountWorldOfMinesweeper, Platform, VideoMSGames, VideoSaolei
 from .msgames.client import download_replay as download_msgames_replay, fetch_profile as fetch_msgames_profile, fetch_replays as fetch_msgames_replays
 from .msgames.utils import upload_date_upper_bound
-from .utils import fetch_saolei_profile, fetch_saolei_video_download_and_state, link_account, update_bilibili_account
+from .utils import link_account, update_bilibili_account
 from .wom.client import fetch_wom_profile
 
 logger = logging.getLogger('accountlink')
@@ -59,7 +59,7 @@ def verify_account_link(user_id: int, platform: str, identifier: str, actor_id: 
 
 def update_account(platform: Platform, user: UserProfile):
     if platform == Platform.SAOLEI:
-        update_saolei_account_info(user.account_saolei)
+        raise ExceptionToResponse('saolei', 'crawling_disabled', status_code=410)
     elif platform == Platform.MSGAMES:
         update_msgames_account(user.account_msgames)
     elif platform == Platform.WOM:
@@ -142,80 +142,17 @@ def msgames_video_import_one(source: VideoMSGames):
         return video
 
 
-def _get_task_identity(args: list, kwargs: dict, key: str):
-    return kwargs.get(key, args[0] if args else None)
-
-
 def restart_accountlink_task(db_task: DBTaskResult, args: list, kwargs: dict):
-    if db_task.task_path == SAOLEI_VIDEO_IMPORT_TASK_PATH:
-        return restart_saolei_video_import_task(db_task, args, kwargs)
-    if db_task.task_path == SAOLEI_VIDEO_IMPORT_BULK_TASK_PATH:
-        return restart_saolei_video_import_bulk_task(db_task, args, kwargs)
+    if db_task.task_path in {
+        SAOLEI_VIDEO_IMPORT_TASK_PATH, SAOLEI_VIDEO_IMPORT_BULK_TASK_PATH,
+        'accountlink.tasks.task_saolei_profile',
+    }:
+        raise ExceptionToResponse('saolei', 'crawling_disabled', status_code=410)
     return None
 
 
-def restart_saolei_video_import_task(db_task: DBTaskResult, args: list, kwargs: dict):
-    saolei_video_id = _get_task_identity(args, kwargs, 'video_id')
-    if saolei_video_id is None:
-        raise ExceptionToResponse('task_restart', 'invalid_args', status_code=400)
-
-    current_reference = (
-        VideoSaolei.objects
-        .select_for_update()
-        .filter(id=saolei_video_id, import_task_id=db_task.id)
-        .first()
-    )
-    if current_reference is None:
-        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
-
-    new_db_task = db_task.task.enqueue(*args, **kwargs).db_result
-    updated_count = (
-        VideoSaolei.objects
-        .filter(id=saolei_video_id, import_task_id=db_task.id)
-        .update(import_task_id=new_db_task.id)
-    )
-    if not updated_count:
-        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
-    return new_db_task
-
-
-def restart_saolei_video_import_bulk_task(db_task: DBTaskResult, args: list, kwargs: dict):
-    saolei_account_id = _get_task_identity(args, kwargs, 'saolei_id')
-    if saolei_account_id is None:
-        raise ExceptionToResponse('task_restart', 'invalid_args', status_code=400)
-
-    current_reference = (
-        AccountSaolei.objects
-        .select_for_update()
-        .filter(id=saolei_account_id, video_import_task_id=db_task.id)
-        .first()
-    )
-    if current_reference is None:
-        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
-
-    new_db_task = db_task.task.enqueue(*args, **kwargs).db_result
-    updated_count = (
-        AccountSaolei.objects
-        .filter(id=saolei_account_id, video_import_task_id=db_task.id)
-        .update(video_import_task_id=new_db_task.id)
-    )
-    if not updated_count:
-        raise ExceptionToResponse('task_restart', 'stale_reference', status_code=409)
-    return new_db_task
-
-
-def update_saolei_account_info(account: AccountSaolei):
-    try:
-        profile = fetch_saolei_profile(account.id)
-    except requests.exceptions.Timeout:  # 请求超时
-        logger.error(f'雷网 用户#{account.id} 信息获取失败：请求超时')
-        raise ExceptionToResponse(obj='import', category='timeout')
-    except IndexError:  # 解析html时超出索引
-        logger.error(f'雷网 用户#{account.id} 信息获取失败：解析错误')
-        raise ExceptionToResponse(obj='import', category='indexerror')
-    except requests.exceptions.RequestException:  # 其他请求异常
-        raise ExceptionToResponse(obj='import', category='requestexception')
-
+def update_saolei_account_info(account: AccountSaolei, profile: dict):
+    """写入已取得的扫雷网资料，不访问外站。"""
     account.name = profile['name']
     account.total_views = profile['total_views']
 
@@ -244,19 +181,8 @@ def update_saolei_account_info(account: AccountSaolei):
     ])
 
 
-# 扫描一页扫雷网用户录像，返回新录像列表
-def update_saolei_user_video_one_page(account: AccountSaolei, page: int):
-    logger.info(f'开始扫描扫雷网用户#{account.id}的第{page}页录像列表')
-    saolei_user = SaoleiUserInfo(saolei_id=account.id)
-    try:
-        video_list = SaoleiUtils.get_video_list(saolei_user.videos_url(page=page))
-    except requests.exceptions.ConnectionError:
-        logger.error(f'扫雷网用户#{account.id}的第{page}页录像列表获取失败：连接失败')
-        raise ExceptionToResponse(obj='import', category='connection')
-
-    if not video_list:
-        logger.warning(f'扫雷网用户#{account.id}的第{page}页录像列表为空')
-        raise ExceptionToResponse(obj='saolei', category='page_empty')
+def update_saolei_user_video_one_page(account: AccountSaolei, video_list: list[SaoleiVideoInfo]):
+    """写入一批已取得的录像元数据，返回新增记录，不抓取页面。"""
     existing_video_ids = list(VideoSaolei.objects.filter(id__in=[info.id for info in video_list]).values_list('id', flat=True))
 
     new_video_list: list[VideoSaolei] = []
@@ -265,16 +191,16 @@ def update_saolei_user_video_one_page(account: AccountSaolei, page: int):
             new_video = VideoSaolei.objects.create(id=video_info.id, user=account, upload_time=video_info.upload_time, level=video_info.level, bv=video_info.bv, timems=video_info.timems, nf=video_info.nf)
             new_video_list.append(new_video)
 
-    logger.info(f'扫雷网用户#{account.id}的第{page}页扫描完成，共{len(video_list)}个录像，其中{len(new_video_list)}个新录像')
+    logger.info(f'扫雷网用户#{account.id}的录像元数据入库完成，共{len(video_list)}个录像，其中{len(new_video_list)}个新录像')
     return new_video_list
 
 
 # 导入一个扫雷网录像
 @ranking_access(operation='accountlink.saolei_import')
-def saolei_video_import_one(saolei_video: VideoSaolei):
+def saolei_video_import_one(saolei_video: VideoSaolei, file: File, state: str):
+    """导入已取得的录像文件及来源状态，保留查重、审核、上传时间和排行更新。"""
     logger.info(f'开始导入扫雷网录像#{saolei_video.id}')
     try:
-        download_url, state = fetch_saolei_video_download_and_state(saolei_video.id)
         saolei_video.state = state
         saolei_video.save(update_fields=['state'])
 
@@ -282,23 +208,19 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
             logger.warning(f'扫雷网 录像#{saolei_video.id} 不存在，可能已被删除')
             return
 
-        file_name = download_url.split('/')[-1]
-
-        response = requests.get(url=download_url, timeout=5)
-        file_size = response.headers.get('Content-Length')
-        if file_size is None:
-            logger.error(f'雷网 录像#{saolei_video.id} 下载失败：无法获取文件大小')
-            raise ExceptionToResponse(obj='import', category='unknown')
-
-        collisions = VideoModel.objects.filter(file_size=file_size)
+        file.seek(0)
+        content = file.read()
+        collisions = VideoModel.objects.filter(file_size=len(content))
         for collision in collisions:
-            if collision.file.read() == response.content:
+            with collision.file.open('rb') as collision_file:
+                same_file = collision_file.read() == content
+            if same_file:
                 set_import_upload_time(collision, saolei_video.upload_time)
                 saolei_video.import_video = collision
                 saolei_video.save(update_fields=['import_video'])
                 return
 
-        parser = MSVideoParser(ContentFile(response.content, file_name))
+        parser = MSVideoParser(ContentFile(content, file.name))
         user = saolei_video.user.parent
 
         if not user.userms:
@@ -312,12 +234,6 @@ def saolei_video_import_one(saolei_video: VideoSaolei):
         video.save(update_fields=['upload_time', 'ongoing_tournament'])
         saolei_video.import_video = video
         saolei_video.save(update_fields=['import_video'])
-    except requests.exceptions.ConnectionError:
-        logger.error(f'雷网 录像#{saolei_video.id} 下载失败：连接错误')
-        raise ExceptionToResponse(obj='import', category='connection')
-    except requests.exceptions.ReadTimeout:
-        logger.error(f'雷网 录像#{saolei_video.id} 下载失败：请求超时')
-        raise ExceptionToResponse(obj='import', category='timeout')
-    except BaseException as e:
-        logger.error(f'雷网 录像#{saolei_video.id} 下载失败：未知错误')
-        raise e
+    except BaseException:
+        logger.exception(f'扫雷网录像#{saolei_video.id} 导入失败')
+        raise

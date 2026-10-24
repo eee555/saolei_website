@@ -112,7 +112,12 @@ class AccountLinkTestCase(TestCase):
 
     def test_update_saolei(self):
         account = AccountSaolei.objects.filter(id=1).first()
-        update_saolei_account_info(account)
+        update_saolei_account_info(account, {
+            'name': '张砷镓', 'total_views': 100,
+            'timems': {'b': 980, 'i': 10310, 'e': 37820, 's': 49110},
+            'bvs_cent': {'b': 729, 'i': 530, 'e': 423, 's': 1681},
+            'count': {'b': 12, 'i': 33, 'e': 50},
+        })
         account = AccountSaolei.objects.filter(id=1).first()
         self.assertEqual(account.id, 1)
         self.assertEqual(account.name, '张砷镓')
