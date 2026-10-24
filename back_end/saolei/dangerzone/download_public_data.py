@@ -55,7 +55,7 @@ class PublicClient:
             by_id = {}
             for offset in range(0, len(metadata), 100):
                 ids = ','.join(str(row['id']) for row in metadata[offset:offset + 100])
-                parsed = self.get('/api/video/info/batch', {'ids': ids})
+                parsed = self.get('/api/video/staticdetailbatch', {'ids': ids})
                 by_id.update((row['id'], row) for row in parsed)
             data = [{**by_id[row['id']], **row} for row in metadata if row['id'] in by_id]
         write_json(target, data)

@@ -77,6 +77,7 @@ const acknowledgements = [
     { text: 'jabajop' },
     { text: 'qqwref' },
     { text: 'gacord' },
+    { text: 'Nanaka.' },
 ];
 
 /* 本地化 Localization */

@@ -57,7 +57,7 @@ class PublicSnapshotNFTests(SimpleTestCase):
                 if not compact:
                     return videos if params['user_id'] == 48 else []
                 return [{'id': row['id'], 'state': row['state'], 'upload_time': row['upload_time'], 'ongoing_tournament': False} for row in videos] if params['user_id'] == 48 else []
-            if path.endswith('/info/batch'):
+            if path.endswith('/staticdetailbatch'):
                 return videos
             self.assertEqual(path, '/api/video/detailbulk')
             return [{**row, 'player': 48, 'right_ce': 2 if row['id'] == 2 else None} for row in videos]
@@ -73,6 +73,6 @@ class PublicSnapshotNFTests(SimpleTestCase):
                 self.assertEqual([row['right_ce'] for row in rows], [0, 3 if skip_details else 2, None])
                 self.assertEqual([video_from_snapshot(row).right_ce for row in rows], [0, 3 if skip_details else 2, None])
                 self.assertEqual(manifest['missing_detail_video_ids'], [1, 2, 3] if skip_details else [])
-                self.assertEqual('/api/video/info/batch' in [call.args[0] for call in request.call_args_list], compact)
+                self.assertEqual('/api/video/staticdetailbatch' in [call.args[0] for call in request.call_args_list], compact)
                 if skip_details:
                     self.assertNotIn('/api/video/detailbulk', [call.args[0] for call in request.call_args_list])

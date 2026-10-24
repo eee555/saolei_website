@@ -29,6 +29,7 @@ describe('<PBRankingTable />', () => {
             props: { rows: [{ player_id: 42, video_id: 8001, timems: 1000, upload_time: upload }], level: 'b', bv: 1, first: 20, loading: false },
             global: { plugins: [i18n, pinia, hashRouter()], config: { globalProperties: { $axios } } },
         });
+        cy.get('.pb-ranking-table .video-preview-link').should('not.exist');
         cy.get('.pb-ranking-table thead').extractTableData().should((data) => {
             expect(data[0]).to.deep.equal(['#', 'Player', 'Time', 'Bvs', 'STNB', 'Upload Time']);
         });
@@ -55,13 +56,13 @@ describe('<PBRankingTable />', () => {
         cy.get('.pb-ranking-table a[href="#/player/42"]').click();
         cy.wrap(videoplayerstore).its('visible').should('eq', false);
         cy.get('@software.all').should('have.length', 0);
-        cy.get('.pb-ranking-table tbody tr').first().find('td').first().click();
-        cy.wait('@software').its('request.query.ids').should('eq', '8001');
+        cy.get('@parsedVideoInfo.all').should('have.length', 0);
+        cy.get('.pb-ranking-table tbody tr').first().find('td').eq(2).click();
         cy.wait('@parsedVideoInfo').its('request.query.ids').should('eq', '8001');
         cy.wrap(videoplayerstore).its('visible').should('eq', true);
         cy.wrap(videoplayerstore).its('id').should('eq', 8001);
         cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=8001');
-        cy.get('@software.all').should('have.length', 1);
+        cy.get('@parsedVideoInfo.all').should('have.length', 1);
 
         cy.get<ComponentWrapper<typeof PBRankingTable>>('@vue').then((wrapper) => wrapper.setProps({ level: 'e', bv: 2, first: 0 }));
         cy.get('.pb-ranking-table tbody').extractTableData().should((data) => {
@@ -69,15 +70,14 @@ describe('<PBRankingTable />', () => {
             expect(data[0]?.slice(2, 5)).to.deep.equal(['1.000', '2.000', '870.000']);
         });
 
-        for (const [key, requests] of [['Enter', 2], ['Space', 3]] as const) {
+        for (const key of ['Enter', 'Space'] as const) {
             cy.then(() => {
                 videoplayerstore.visible = false;
             });
             cy.get('.pb-ranking-table tbody tr').first().focus();
             cy.realPress(key);
-            cy.wait('@software').its('request.query.ids').should('eq', '8001');
             cy.wrap(videoplayerstore).its('visible').should('eq', true);
-            cy.get('@software.all').should('have.length', requests);
+            cy.get('@software.all').should('have.length', 0);
             cy.get('@parsedVideoInfo.all').should('have.length', 1);
         }
     });

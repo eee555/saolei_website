@@ -151,8 +151,8 @@ digraph cache {
         get_review_queue [label="/api/video/review_queue"];
         get_video_info_bulk [label="/api/video/infobulk"];
         get_video_detail_bulk [label="/api/video/detailbulk"];
-        get_video_info [label="/api/video/info/batch"];
-        get_video_metadata [label="/api/video/metadata"];
+        get_static_video_detail_batch [label="/api/video/staticdetailbatch"];
+        get_video_abstract_bulk [label="/api/video/abstractbulk"];
         video_preview [label="/api/video/preview"];
         video_download [label="/api/video/download/{video_id}"];
         video_query [label="/api/video/query"];
@@ -490,8 +490,8 @@ digraph cache {
     video_db -> get_review_queue;
     video_db -> get_video_info_bulk;
     video_db -> get_video_detail_bulk;
-    video_db -> get_video_info;
-    video_db -> get_video_metadata;
+    video_db -> get_static_video_detail_batch;
+    video_db -> get_video_abstract_bulk;
     video_db -> video_preview;
     userprofile_db -> video_preview;
     video_files -> video_preview;

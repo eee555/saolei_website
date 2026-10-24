@@ -2,15 +2,18 @@ import { defineComponent, h } from 'vue';
 
 import VideoPreviewLink from './VideoPreviewLink.vue';
 
+import i18n from '@/i18n';
 import { videoplayerstore } from '@/store';
 import type { MS_Software } from '@/utils/ms_const';
+import { VideoAbstract } from '@/utils/videoabstract';
 import { mockVideoInfo } from '@cy/support/videoInfo';
 
 function mountLink(id: number | null | undefined, software?: MS_Software) {
+    const video = software !== undefined && id != null && id > 0 ? new VideoAbstract({ id, software, level: 'b', mode: '00', timems: 12345, bv: 4, state: 'c' }) : undefined;
     cy.mount(defineComponent({
         expose: [],
-        render: () => h(VideoPreviewLink, { id, software }, () => '12.345'),
-    }));
+        render: () => h(VideoPreviewLink, { id, software, video }, () => '12.345'),
+    }), { global: { plugins: [i18n] } });
 }
 
 describe('<VideoPreviewLink />', () => {
@@ -28,15 +31,16 @@ describe('<VideoPreviewLink />', () => {
 
         cy.get('.video-preview-link').should('have.attr', 'href', '#/video/42').focus();
         cy.realPress('Enter');
-        cy.wait('@software').its('request.query.ids').should('eq', '42');
+        cy.wait('@parsedVideoInfo').its('request.query.ids').should('eq', '42');
         cy.wrap(videoplayerstore).its('visible').should('eq', true);
         cy.wrap(videoplayerstore).its('id').should('eq', 42);
         cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=42');
         cy.location('hash').should('not.eq', '#/video/42');
-        cy.get('@software.all').should('have.length', 1);
+        cy.get('@software.all').should('have.length', 0);
+        cy.get('@parsedVideoInfo.all').should('have.length', 1);
     });
 
-    it('opens the preview once on an ordinary click and keeps the supplied software', () => {
+    it('opens the preview once on an ordinary click and reuses a supplied video without downloading it', () => {
         mockVideoInfo([{ id: 42, software: 'e' }], 'software');
         mountLink(43, 'r');
         const parentClick = cy.spy().as('parentClick');
@@ -50,7 +54,44 @@ describe('<VideoPreviewLink />', () => {
         cy.wrap(videoplayerstore).its('url').should('include', '/api/video/preview?id=43.rmv');
         cy.location('hash').should('not.eq', '#/video/43');
         cy.get('@software.all').should('have.length', 0);
+        cy.get('@parsedVideoInfo.all').should('have.length', 0);
         cy.get('@parentClick').should('not.have.been.called');
+    });
+
+    it('loads the software icon and renders a single summary on hover without opening the player', () => {
+        mockVideoInfo([{ id: 42, software: 'a', timems: 12345, bv: 4 }]);
+        mountLink(42);
+        cy.get('.video-preview-link .video-preview-software').should('be.visible').and('have.attr', 'title', i18n.global.t('common.software.a'));
+        cy.get('.descriptions').should('not.exist');
+        cy.get('.video-preview-link').trigger('mouseenter');
+        cy.get('[role=tooltip]:visible').should('have.length', 1).and('contain.text', '12.345').and('not.contain.text', i18n.global.t('common.prop.upload_time'));
+        cy.wrap(videoplayerstore).its('visible').should('eq', false);
+        cy.get('.video-preview-link').trigger('mouseleave');
+        cy.get('[role=tooltip]:visible').should('not.exist');
+        cy.get('@videoMetadata.all').should('have.length', 0);
+        cy.get('@parsedVideoInfo.all').should('have.length', 1);
+    });
+
+    it('discards late data after the linked video changes', () => {
+        mockVideoInfo([{ id: 42, software: 'a' }, { id: 43, software: 'r' }]);
+        let requested = false;
+        cy.intercept('GET', '**/api/video/staticdetailbatch*', (request) => {
+            requested = true;
+            const id = Number(String(request.query.ids).split(',')[0]);
+            request.reply({ delay: id === 42 ? 500 : 0, body: [{ id, software: id === 42 ? 'a' : 'r', ongoing_tournament: false }] });
+        }).as('parsedVideoInfo');
+        const Link = defineComponent({
+            props: { id: { type: Number, default: 42 } },
+            setup: (props) => () => h(VideoPreviewLink, { id: props.id }, () => '12.345'),
+        });
+        cy.mount(Link, { global: { plugins: [i18n] } });
+        cy.wrap(null).should(() => {
+            expect(requested).to.equal(true);
+        });
+        cy.get<ComponentWrapper<typeof Link>>('@vue').then((wrapper) => wrapper.setProps({ id: 43 }));
+        cy.get('.video-preview-link').should('have.attr', 'href', '#/video/43');
+        cy.get('.video-preview-software').should('have.attr', 'title', i18n.global.t('common.software.r'));
+        cy.get('@videoMetadata.all').should('have.length', 0);
     });
 
     for (const options of [{ ctrlKey: true }, { metaKey: true }, { shiftKey: true }, { altKey: true }, { button: 1 }]) {

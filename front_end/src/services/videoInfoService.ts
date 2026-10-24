@@ -49,6 +49,11 @@ export interface VideoMetadata {
     state?: string;
 }
 
+interface VideoInfoReference {
+    id: number;
+    ongoing_tournament?: boolean;
+}
+
 interface CacheRow {
     id: number;
     scope: string;
@@ -67,7 +72,7 @@ interface Viewer {
 }
 
 interface PendingRequest {
-    row: VideoMetadata;
+    row: VideoInfoReference;
     viewer: Viewer;
     promise: Promise<ParsedVideoInfo>;
     resolve: (data: ParsedVideoInfo) => void;
@@ -87,6 +92,7 @@ const PUBLIC_VIEWER: Viewer = { id: 0, revision: -1 };
 let currentViewer: Viewer = { id: 0, revision: 0 };
 let running = false;
 let timer: ReturnType<typeof setTimeout> | undefined;
+const infoRequests = new Map<string, Promise<ParsedVideoInfo>>();
 
 export const videoInfoDownloads = computed(() => [...downloads.values()]);
 
@@ -102,12 +108,12 @@ export function setVideoInfoViewer(id: number, revision: number): void {
     currentViewer = { id, revision };
 }
 
-function scope(row: VideoMetadata, value: Viewer): string {
-    return row.ongoing_tournament ? `user:${value.id}` : 'public';
+function scope(row: VideoInfoReference, value: Viewer): string {
+    return row.ongoing_tournament === false ? 'public' : `user:${value.id}`;
 }
 
-function canCache(row: VideoMetadata, value: Viewer): boolean {
-    return !row.ongoing_tournament || (value.id > 0 && serviceConfig.value.videoInfoCacheUnpublished);
+function canCache(row: VideoInfoReference, value: Viewer): boolean {
+    return row.ongoing_tournament !== true || (value.id > 0 && serviceConfig.value.videoInfoCacheUnpublished);
 }
 
 export function videoInfoBatchSize(): number {
@@ -120,17 +126,25 @@ function batchDelay(): number {
     return Number.isFinite(value) ? Math.max(250, Math.min(60000, value)) : 250;
 }
 
-async function readCached(rows: VideoMetadata[], value: Viewer): Promise<Map<number, ParsedVideoInfo>> {
+async function readCached(rows: VideoInfoReference[], value: Viewer): Promise<Map<number, ParsedVideoInfo>> {
     const result = new Map<number, ParsedVideoInfo>();
     try {
         const db = await getDatabase();
         for (let offset = 0; offset < rows.length; offset += 200) {
             const tx = db.transaction(VIDEO_INFO_STORE_NAME);
-            await Promise.all(rows.slice(offset, offset + 200).filter((row) => canCache(row, value)).map(async (row) => {
-                const cached = await tx.store.get([scope(row, value), row.id]) as CacheRow | undefined;
-                if (cached !== undefined) result.set(row.id, cached.data);
+            const found = await Promise.all(rows.slice(offset, offset + 200).map(async (row) => {
+                const candidates = row.ongoing_tournament === undefined ? [{ ...row, ongoing_tournament: false }, { ...row, ongoing_tournament: true }] : [row];
+                for (const candidate of candidates) {
+                    if (!canCache(candidate, value)) continue;
+                    const cached = await tx.store.get([scope(candidate, value), row.id]) as CacheRow | undefined;
+                    if (cached !== undefined) return { data: cached.data, unpublished: candidate.ongoing_tournament === true };
+                }
+                return undefined;
             }));
             await tx.done;
+            for (const cached of found) {
+                if (cached !== undefined && (!cached.unpublished || sameViewer(value))) result.set(cached.data.id, cached.data);
+            }
         }
     } catch {
         // Read failures fall back to the batch API.
@@ -139,7 +153,7 @@ async function readCached(rows: VideoMetadata[], value: Viewer): Promise<Map<num
 }
 
 async function writeCached(rows: (ParsedVideoInfo & { ongoing_tournament: boolean })[], value: Viewer): Promise<void> {
-    if (!sameViewer(value)) return;
+    if (rows.length === 0 || !sameViewer(value)) return;
     try {
         const db = await getDatabase();
         const tx = db.transaction(VIDEO_INFO_STORE_NAME, 'readwrite');
@@ -190,14 +204,14 @@ async function processBatch(): Promise<void> {
         request.inFlight = true;
     });
     try {
-        if (!sameViewer(first.viewer)) throw new Error('Login session changed.');
-        const { data } = await $axios.get<(ParsedVideoInfo & { ongoing_tournament: boolean })[]>('/api/video/info/batch', { params: { ids: entries.map(([, request]) => request.row.id).join(',') } });
-        if (!sameViewer(first.viewer)) throw new Error('Login session changed.');
-        await writeCached(data, first.viewer);
+        const { data } = await $axios.get<(ParsedVideoInfo & { ongoing_tournament: boolean })[]>('/api/video/staticdetailbatch', { params: { ids: entries.map(([, request]) => request.row.id).join(',') } });
+        await writeCached(data.filter((row) => !row.ongoing_tournament), PUBLIC_VIEWER);
+        await writeCached(data.filter((row) => row.ongoing_tournament), first.viewer);
         const found = new Map(data.map((row) => [row.id, row]));
         for (const [, request] of entries) {
             const row = found.get(request.row.id);
             if (row === undefined) request.reject(new Error(`Video ${request.row.id} is missing or unavailable.`));
+            else if (row.ongoing_tournament && (request.viewer === PUBLIC_VIEWER || !sameViewer(request.viewer))) request.reject(new Error('Login session changed.'));
             else request.resolve(parsedFields(row));
         }
     } catch (error) {
@@ -213,8 +227,8 @@ async function processBatch(): Promise<void> {
     }
 }
 
-function enqueue(row: VideoMetadata, value: Viewer): Promise<ParsedVideoInfo> {
-    const requestViewer = row.ongoing_tournament ? value : PUBLIC_VIEWER;
+function enqueue(row: VideoInfoReference, value: Viewer): Promise<ParsedVideoInfo> {
+    const requestViewer = row.ongoing_tournament === false ? PUBLIC_VIEWER : value;
     const key = `${requestViewer.id}:${requestViewer.revision}:${row.id}`;
     const existing = pending.get(key);
     if (existing !== undefined) return existing.promise;
@@ -224,7 +238,7 @@ function enqueue(row: VideoMetadata, value: Viewer): Promise<ParsedVideoInfo> {
     return deferred.promise;
 }
 
-export async function fetchVideoInfos<Row extends VideoMetadata>(rows: Row[]): Promise<(Row & ParsedVideoInfo)[]> {
+export async function fetchVideoInfos<Row extends VideoInfoReference>(rows: Row[]): Promise<(Row & ParsedVideoInfo)[]> {
     const value = viewer();
     const unique = [...new Map(rows.map((row) => [row.id, row])).values()];
     if (unique.some((row) => !Number.isSafeInteger(row.id) || row.id < 1)) throw new Error('Invalid server video ID.');
@@ -248,7 +262,7 @@ export async function fetchVideoInfos<Row extends VideoMetadata>(rows: Row[]): P
             const failure = settled.find((result) => result.status === 'rejected');
             if (failure?.status === 'rejected') throw failure.reason instanceof Error ? failure.reason : new Error(String(failure.reason));
         }
-        if (unique.some((row) => row.ongoing_tournament) && !sameViewer(value)) throw new Error('Login session changed.');
+        if (unique.some((row) => row.ongoing_tournament === true) && !sameViewer(value)) throw new Error('Login session changed.');
         return rows.map((row) => {
             const data = found.get(row.id);
             if (data === undefined) throw new Error(`Video ${row.id} is unavailable.`);
@@ -259,10 +273,18 @@ export async function fetchVideoInfos<Row extends VideoMetadata>(rows: Row[]): P
     }
 }
 
-export async function fetchVideoInfo(id: number): Promise<VideoMetadata & ParsedVideoInfo> {
-    const { data } = await $axios.get<VideoMetadata[]>('/api/video/metadata', { params: { ids: id } });
-    if (data.length !== 1) throw new Error(`Video ${id} is missing or unavailable.`);
-    return (await fetchVideoInfos(data))[0];
+/** Read stable fields by ID; the batch response determines their public or user cache scope. */
+export function fetchVideoInfo(id: number): Promise<ParsedVideoInfo> {
+    if (!Number.isSafeInteger(id) || id < 1) return Promise.reject(new Error('Invalid server video ID.'));
+    const value = viewer();
+    const key = `${value.id}:${value.revision}:${id}`;
+    const existing = infoRequests.get(key);
+    if (existing !== undefined) return existing;
+    const request = fetchVideoInfos([{ id }]).then(([row]) => row).finally(() => {
+        infoRequests.delete(key);
+    });
+    infoRequests.set(key, request);
+    return request;
 }
 
 function sum(values: (number | null)[]): number | null {

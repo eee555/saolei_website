@@ -10,7 +10,8 @@ PARSED_VIDEO_FIELDS = [
     'path', 'pluck', 'flag', 'op', 'isl',
     'cell0', 'cell1', 'cell2', 'cell3', 'cell4', 'cell5', 'cell6', 'cell7', 'cell8',
 ]
-VIDEO_METADATA_FIELDS = ['id', 'player', 'upload_time', 'state', 'ongoing_tournament']
+PUBLIC_VIDEO_METADATA_FIELDS = ['id', 'player', 'upload_time', 'state']
+VIDEO_METADATA_FIELDS = [*PUBLIC_VIDEO_METADATA_FIELDS, 'ongoing_tournament']
 
 
 class ParsedVideoResolvers(Schema):
@@ -31,6 +32,7 @@ ParsedVideoOut = create_schema(
     base_class=ParsedVideoResolvers,
 )
 VideoMetadataOut = create_schema(VideoModel, name='VideoMetadataOut', fields=VIDEO_METADATA_FIELDS)
+PublicVideoMetadataOut = create_schema(VideoModel, name='PublicVideoMetadataOut', fields=PUBLIC_VIDEO_METADATA_FIELDS)
 
 
 VideoBaseOut = create_schema(
