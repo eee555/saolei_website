@@ -137,6 +137,12 @@ export default defineConfig({
                                 { text: '后端管理命令', link: '/zh/guide/development/management-commands' },
                             ],
                         },
+                        {
+                            text: '周边工具',
+                            items: [
+                                { text: '元神工具箱', link: '/zh/guide/tools/yuanshen-toolbox' },
+                            ],
+                        },
                     ],
                 },
             },
