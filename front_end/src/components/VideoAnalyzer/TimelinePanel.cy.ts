@@ -1,5 +1,5 @@
 import type { VueWrapper } from '@vue/test-utils';
-import { defineComponent, h, ref } from 'vue';
+import { defineComponent, h, ref, shallowRef } from 'vue';
 import type { VueDraggable } from 'vue-draggable-plus';
 
 import { counterVariables, defaultCounterConfig, prepareCounters } from './counter';
@@ -26,7 +26,7 @@ function mountTimeline(config: TimelineConfig = emptyTimelineConfig(), width = 8
     const stored = ref(config);
     const customEvents = ref(definitions);
     const timeWindow = ref<TimeWindow>({ startMs: 0, endMs: durationMs });
-    const counters = ref(prepareCounters(counterConfig.rows, events));
+    const counters = shallowRef(prepareCounters(counterConfig.rows, events));
     let playback: PlaybackController;
     cy.viewport(1000, 720);
     cy.mount(defineComponent({
@@ -100,7 +100,7 @@ describe('<TimelinePanel />', () => {
             const commands = data.match(/[ML]/g) ?? [];
             expect(commands.length).to.be.greaterThan(0).and.at.most(4 * (Math.ceil(width) + 1));
             expect(data).not.to.match(/NaN|Infinity/);
-            expect(counters.value.get('bvs')?.samples).to.have.length(250001);
+            expect(counters.value.get('bvs')?.samples.length).to.eq(250001);
         });
         cy.then(() => {
             timeWindow.value = { startMs: 0, endMs: 10000 };

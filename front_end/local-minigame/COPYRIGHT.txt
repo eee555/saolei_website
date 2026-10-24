@@ -1,0 +1,14 @@
+Copyright (c) 2023 eee555
+开源扫雷网 / Open Minesweeper Website
+https://github.com/eee555/saolei_website
+https://openms.top
+
+灵感来源：
+Inspiration:
+https://mzrg.com/js/mine/square_finder.html
+https://mzrg.com/js/mine/mouse.html
+
+项目 MIT 声明见 LICENSE。第三方依赖完整许可见 THIRD_PARTY_LICENSES.txt / .json。
+See LICENSE for the project MIT notice and THIRD_PARTY_LICENSES.txt / .json for bundled dependency notices.
+主题变量及 PrimeIcons 字体的许可见 licenses/。
+See licenses/ for theme-variable and PrimeIcons font notices.

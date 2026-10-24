@@ -40,7 +40,10 @@
     "src/setup.ts",
     "vite.config.ts",
     "vite.offline.config.ts",
-    "local-analyzer/**/*.ts"
+    "vite.minigame.config.ts",
+    "local-analyzer/**/*.ts",
+    "local-minigame/**/*.ts",
+    "local-minigame/**/*.vue"
   ],
   "exclude": [
     "node_modules"

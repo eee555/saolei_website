@@ -83,6 +83,18 @@ describe('PlayerName', () => {
         cy.contains(`User#${user.id}`);
     });
 
+    it('uses the fallback fixture even when the player name was previously cached', () => {
+        cy.then(async () => {
+            const db = await getDatabase();
+            await db.put(USER_INFO_STORE_NAME, user);
+        });
+        cy.mockPlayerNameFallback();
+        mountPlayerName(user.id);
+
+        cy.wait('@playerNameFallbackUserInfoBulk');
+        expectName(`User#${user.id}`);
+    });
+
     it('shows the username without an avatar by default, with all names in a multiline title', () => {
         mockUserInfo();
         mountPlayerName(user.id);

@@ -62,6 +62,7 @@ flowchart LR
     pluck_pre_save --> pluck_post_save
     pluck_post_save --> update_custom_pluck_cache_on_record_save[更新pluck榜缓存]
     pluck_post_delete --> update_custom_pluck_cache_on_record_delete[删除pluck榜缓存]
+    minigame_post_delete[MiniGameBestScore post_delete] --> delete_cached_score[删除小游戏排行成绩]
 
     add_created_video_to_checked_tournaments -. m2m_changed .-> no_video_signal[无]
 
@@ -88,6 +89,7 @@ flowchart LR
     click pluck_pre_save "#signal-function-map" "CustomPluckRecord 保存前触发"
     click pluck_post_save "#signal-function-map" "CustomPluckRecord 保存后触发"
     click pluck_post_delete "#signal-function-map" "CustomPluckRecord 删除后触发"
+    click delete_cached_score "#signal-function-map" "提交后删除小游戏 ZSET 和明细 Hash 中的玩家"
     click tournament_post_save "#signal-function-map" "Tournament 保存后触发"
     click tournament_post_delete "#signal-function-map" "Tournament 删除后触发"
     click gsc_post_save "#signal-function-map" "GSCTournament 保存后触发"
@@ -123,12 +125,15 @@ flowchart LR
 
 <a id="signal-function-map"></a>
 
+`MiniGameBestScore.post_delete` 调用 `minigame.signals.delete_cached_score`，在事务提交后从该榜 ZSET 和明细 Hash 移除玩家，保留初始化标记；覆盖 Admin、QuerySet 和用户级联删除，回滚不改缓存。小游戏创建和改善由提交服务直接注册 `on_commit` 更新，不另设保存信号。
+
 GSC 历史补录沿用默认 TournamentUser 创建和 best 保存信号，允许默认或手工成绩改善 best；匿名参赛者不调度参赛缓存更新。已颁奖 GSC 创建 participant 时不自动回填录像，由代传 service 显式关联，普通报名和周赛不变。补录接口的调用顺序和手工成绩规则见 [GSC 历史录像补录](./gsc-history-import.md)。
 
 导入录像在 `create_from_parser` 中提前设置来源 `upload_time` 供 `pre_save` check-in 使用，创建后再次显式保存以覆盖 `auto_now_add`；既有文件仅当本次时间更早时保存。两种保存仍走状态队列和排行信号，不用 `QuerySet.update` 绕过副作用。
 
 | 图中名称 | 函数 |
 | --- | --- |
+| 删除小游戏排行成绩 | `minigame.signals.delete_cached_score` |
 | 捕获字段旧值 | `capture_video_update` |
 | 比赛录像检测 | `checkin_video_before_create` |
 | 刷新状态队列 | `refresh_state_queue_on_video_save` |

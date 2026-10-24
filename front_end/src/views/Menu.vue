@@ -119,6 +119,7 @@ const mainItems = computed<NavigationItem[]>(() => [
     { id: 'ranking', label: t('local.ranking'), to: '/ranking' },
     { id: 'database', label: t('local.database'), to: '/database' },
     { id: 'tournament', label: t('local.tournament'), to: '/tournament' },
+    { id: 'minigame', label: t('local.minigame'), to: '/minigame/left-click' },
     { id: 'server', label: t('local.server'), to: '/server' },
 ].map((item) => ({ ...item, primary: true })));
 const drawerItems = computed<NavigationItem[]>(() => [
@@ -228,6 +229,7 @@ const i18nMessages = {
         server: '服务器',
         setting: '设置',
         tournament: '比赛',
+        minigame: '小游戏',
         language: '语言',
         theme: '颜色主题',
         about: '关于我们',
@@ -252,6 +254,7 @@ const i18nMessages = {
         server: 'Server',
         setting: 'Settings',
         tournament: 'Tournament',
+        minigame: 'Minigames',
         language: 'Language',
         theme: 'Color theme',
         about: 'About',
