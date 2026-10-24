@@ -10,7 +10,7 @@
 npm.cmd run build:offline
 ```
 
-版本唯一来源为 [version.json](./version.json)。输出：
+此命令同时生成 Analyzer 与[小游戏离线包](../local-minigame/README.md)；仅构建 Analyzer 时运行 `npm.cmd run build:offline:analyzer`。Analyzer 版本唯一来源为 [version.json](./version.json)。输出：
 
 - 展开目录：dist-offline-analyzer/
 - ZIP：OpenMinesweeperVideoAnalyzer-${version}.zip
@@ -22,7 +22,7 @@ npm.cmd run build:offline
 
 ## 资源与构建边界
 
-- vite.offline.config.ts 使用 Vite、vite-plugin-singlefile 和 vite-plugin-wasm 内联脚本、CSS、WASM、图标及字体；离线依赖图禁止导入网站 HTTP 初始化、用户 store、路由或站内包装页。
+- vite.offline.config.ts 使用 Vite、vite-plugin-singlefile 和 vite-plugin-wasm 内联脚本、CSS、WASM、图标及字体；与小游戏共用 scripts/offline-build.ts 和 scripts/offline-package.mjs 的内联及打包工具。离线依赖图禁止导入网站 HTTP 初始化、用户 store、路由或站内包装页。
 - 主 HTML 不通过 file:// fetch 加载运行资源。PrimeIcons 只保留可内联的 WOFF2 字体；帮助是包内相对 HTML，用户主动打开的链接不属于运行资源。
 - package-offline-analyzer.mjs 拒绝独立资产、外部脚本/样式和非内联 CSS URL，并检查 WASM 与 SVG favicon 已内联。它生成帮助及版权清单，检查每个已打包依赖都有许可正文，再生成 ZIP 和网站副本。
 - ms-toollib 的 npm 包缺少许可正文，使用 [已核对的上游 MIT 声明](../licenses/ms-toollib/README.md) 补齐；升级依赖时须复查。

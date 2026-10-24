@@ -23,6 +23,18 @@ export const rankingRoutes: RouteRecordRaw[] = [
         ],
     },
     {
+        path: 'minigame',
+        name: 'ranking_minigame',
+        component: () => import('./MinigameRanking.vue'),
+        redirect: { name: 'ranking_minigame_left-click' },
+        children: ['left-click', 'flag-chord', 'missing-cell'].map((game) => ({
+            path: game,
+            name: `ranking_minigame_${game}`,
+            component: () => import('./MinigameRankingTable.vue'),
+            props: { game },
+        })),
+    },
+    {
         path: 'density',
         name: 'ranking_density',
         component: () => import('./DensityRanking.vue'),

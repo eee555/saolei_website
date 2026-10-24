@@ -6,6 +6,17 @@
 python manage.py <command> --help
 ```
 
+## 小游戏排行榜
+
+`minigame/management/commands/rebuild_minigame_ranks.py` 从数据库最佳成绩重建 ZSET、明细 Hash 和初始化标记；空榜也初始化。不修改数据库，允许与提交并发时产生偶发偏差。
+
+```bash
+python manage.py rebuild_minigame_ranks
+python manage.py rebuild_minigame_ranks --ranking-key left-click-b-50-v1
+```
+
+首次部署先运行 `python manage.py migrate`。缓存也可在首次查询时按需初始化；Redis 故障期间查询降级至数据库。
+
 ## 录像缓存升级
 
 ### `compact_video_cache`

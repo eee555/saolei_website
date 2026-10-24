@@ -30,7 +30,7 @@ function mountMenu(width: number, options: { layout?: 'top' | 'sidebar'; setting
     store.login(user);
     const router = createRouter({
         history: createMemoryHistory(),
-        routes: ['/', '/ranking', '/ranking/pb', '/database', '/database/identifiers', '/video/:id', '/tournament', '/server', '/player/:id', '/staff', '/settings'].
+        routes: ['/', '/ranking', '/ranking/pb', '/database', '/database/identifiers', '/video/:id', '/tournament', '/minigame/left-click', '/server', '/player/:id', '/staff', '/settings'].
             map((path) => ({ path, component: PageState })),
     });
     void router.push('/');
@@ -87,6 +87,10 @@ describe('<Menu /> navigation layouts', () => {
         cy.title().should('eq', 'OpenMS - Database');
         cy.then(() => router.push('/database/identifiers'));
         cy.get('.site-menu--top [data-navigation-id=database]').should('have.class', 'is-active');
+        cy.get('.site-menu--top [data-navigation-id=minigame] a').click();
+        cy.wrap(router).its('currentRoute.value.path').should('eq', '/minigame/left-click');
+        cy.get('.site-menu--top [data-navigation-id=minigame]').should('have.class', 'is-active');
+        cy.title().should('eq', 'OpenMS - Minigames');
         cy.get('[data-cy=navigation-home]').click();
         cy.wrap(router).its('currentRoute.value.path').should('eq', '/');
         cy.title().should('eq', 'OpenMS - Home');
@@ -213,7 +217,7 @@ describe('<Menu /> navigation layouts', () => {
     });
 
     it('opens downloads from About, switches to Analyzer and closes the dialog', () => {
-        mountMenu(1000);
+        mountMenu(1600);
         cy.get('[data-navigation-id=about] > .el-sub-menu__title').click();
 
         cy.get('[data-navigation-id=downloads] button:visible').click();
