@@ -17,7 +17,9 @@
     "build:openms": "vite build --mode openms",
     "prebuild:frontend": "npm run build:offline",
     "build:frontend": "vite build --mode frontend",
-    "build:offline": "vite build --config vite.offline.config.ts && node scripts/package-offline-analyzer.mjs",
+    "build:offline": "npm run build:offline:analyzer && npm run build:offline:minigame",
+    "build:offline:analyzer": "vite build --config vite.offline.config.ts && node scripts/package-offline-analyzer.mjs",
+    "build:offline:minigame": "vite build --config vite.minigame.config.ts && node scripts/package-offline-minigame.mjs",
     "vitest": "vitest",
     "typecheck": "vue-tsc --noEmit"
   },

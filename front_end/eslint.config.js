@@ -42,7 +42,7 @@ const restrictedDescriptionsElements = [{
 
 export default defineConfig({
     ignores: [
-        '**/node_modules/**', '**/dist/**', '**/dist-offline-analyzer/**', '**/build/**', '**/public/**',
+        '**/node_modules/**', '**/dist/**', '**/dist-offline-analyzer/**', '**/dist-offline-minigame/**', '**/build/**', '**/public/**',
         '**/GuideView.vue',
     ],
 }, {
@@ -112,6 +112,8 @@ export default defineConfig({
                 'eslint.config.js',
                 'vite.config.ts',
                 'vite.offline.config.ts',
+                'vite.minigame.config.ts',
+                'scripts/offline-build.ts',
                 'scripts/cdn-styles.ts',
             ],
             optionalDependencies: false,

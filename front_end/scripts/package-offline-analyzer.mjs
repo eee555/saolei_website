@@ -2,8 +2,9 @@ import { mkdir, readFile, readdir, writeFile } from 'node:fs/promises';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
-import JSZip from 'jszip';
 import MarkdownIt from 'markdown-it';
+
+import { validateInlineHtml, writeBundledLicenses, writeOfflineArchive } from './offline-package.mjs';
 
 const frontend = fileURLToPath(new URL('../', import.meta.url));
 const output = join(frontend, 'dist-offline-analyzer');
@@ -14,11 +15,7 @@ const html = await readFile(join(output, 'index.html'), 'utf8');
 const packagedDocuments = new Set(['index.html', 'help', 'README.txt', 'version.json', 'LICENSE', 'COPYRIGHT.txt', 'THIRD_PARTY_LICENSES.json', 'THIRD_PARTY_LICENSES.txt', 'licenses']);
 const standaloneAssets = (await readdir(output)).filter((name) => !packagedDocuments.has(name));
 if (standaloneAssets.length > 0) throw new Error(`Unbundled assets: ${standaloneAssets.join(', ')}`);
-if (/<script\b[^>]*\bsrc\s*=/iu.test(html) || /<link\b[^>]*\b(?:stylesheet|modulepreload)\b/iu.test(html)) throw new Error('HTML still loads external scripts or styles');
-const css = [...html.matchAll(/<style\b[^>]*>([\s\S]*?)<\/style>/giu)].map((match) => match[1]).join('\n');
-const resourceUrls = [...css.matchAll(/url\(\s*["']?([^\s"')]+)/giu)].map((match) => match[1]);
-const externalResources = resourceUrls.filter((url) => !url.startsWith('data:') && !url.startsWith('#') && url !== 'about:blank');
-if (externalResources.length > 0) throw new Error(`External CSS resources: ${externalResources.join(', ')}`);
+const resourceUrls = validateInlineHtml(html);
 if (!html.includes('data:application/wasm;base64,')) throw new Error('WASM was not inlined');
 const favicon = html.match(/<link\b(?=[^>]*\brel=["']icon["'])[^>]*\bhref=(["'])(.*?)\1/iu)?.[2];
 if (!favicon || !/^data:image\/svg\+xml[;,]/iu.test(favicon)) throw new Error('Analyzer favicon was not inlined');
@@ -35,11 +32,7 @@ if (msToollib && !msToollib.text) {
     msToollib.text = (await readFile(join(frontend, 'licenses', 'ms-toollib', 'LICENSE'), 'utf8')).trim();
     msToollib.source = 'https://github.com/eee555/ms-toollib/blob/ca1439a08c2e15fa34db7f3e0c9b245fda90ad48/LICENSE';
 }
-for (const entry of dependencyLicenses) {
-    if (!entry.text) throw new Error(`Missing bundled license text: ${entry.name}@${entry.version}`);
-}
-await writeFile(join(output, 'THIRD_PARTY_LICENSES.json'), JSON.stringify(dependencyLicenses, null, 2));
-await writeFile(join(output, 'THIRD_PARTY_LICENSES.txt'), dependencyLicenses.map((entry) => `${entry.name}@${entry.version} (${entry.identifier ?? 'See notice'})\n${entry.source ? `Source: ${entry.source}\n` : ''}\n${entry.text}\n`).join('\n========================================\n\n'));
+await writeBundledLicenses(output, dependencyLicenses);
 await mkdir(join(output, 'licenses'), { recursive: true });
 for (const [source, destination] of [
     ['src/styles/theme/LICENSE.element-plus.txt', 'LICENSE.element-plus-theme.txt'],
@@ -60,23 +53,8 @@ for (const language of ['zh', 'en']) {
 await writeFile(join(output, 'README.txt'), await readFile(join(frontend, 'local-analyzer', 'README.txt')));
 await writeFile(join(output, 'version.json'), versionFile);
 
-const zip = new JSZip();
-async function addDirectory(directory, prefix = '') {
-    for (const entry of await readdir(directory, { withFileTypes: true })) {
-        const filename = join(directory, entry.name);
-        const archivePath = `${prefix}${entry.name}`;
-        if (entry.isDirectory()) await addDirectory(filename, `${archivePath}/`);
-        else zip.file(archivePath, await readFile(filename));
-    }
-}
-await addDirectory(output);
 const packageName = `OpenMinesweeperVideoAnalyzer-${version}.zip`;
-const zipPath = join(frontend, packageName);
-const zipData = await zip.generateAsync({ type: 'nodebuffer', compression: 'DEFLATE' });
-await writeFile(zipPath, zipData);
-const downloadPath = join(frontend, 'public', 'assets', packageName);
-await mkdir(dirname(downloadPath), { recursive: true });
-await writeFile(downloadPath, zipData);
+const { zipPath, downloadPath } = await writeOfflineArchive(frontend, output, packageName);
 console.log(`Offline HTML: ${join(output, 'index.html')} (${html.length} characters)`);
 console.log(`Inlined CSS resource URLs: ${resourceUrls.length}; no external scripts/styles/assets`);
 console.log(`Offline package: ${zipPath}`);

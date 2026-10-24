@@ -5,6 +5,7 @@ import 'cypress-table';
 import 'cypress-intercept-formdata';
 import type { StaticResponse } from 'cypress/types/net-stubbing';
 
+import { getDatabase, USER_INFO_STORE_NAME } from '../../src/services/database';
 import type { LocalSettings } from '../../src/store';
 
 declare global {
@@ -161,6 +162,11 @@ Cypress.Commands.add('mockRegister', () => {
 Cypress.Commands.add('mockPlayerNameFallback', () => {
     cy.intercept('GET', '**/api/userprofile/avatar/**', { statusCode: 404 }).as('playerNameFallbackAvatar');
     cy.intercept('GET', '**/api/userprofile/infobulk*', { body: [] }).as('playerNameFallbackUserInfoBulk');
+    cy.then(async () => {
+        // Cached names bypass the mocked API and can leak across specs or repeated runs.
+        const db = await getDatabase();
+        await db.clear(USER_INFO_STORE_NAME);
+    });
 });
 
 Cypress.Commands.add('mockLogin', () => {
