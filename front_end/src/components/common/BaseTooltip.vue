@@ -12,6 +12,7 @@
 <script setup lang="ts">
 import '@/styles/cards.css';
 import { useTemplateRef } from 'vue';
+import type { PropType } from 'vue';
 import { Tippy } from 'vue-tippy';
 import type { TippyComponent } from 'vue-tippy';
 
@@ -23,7 +24,7 @@ defineProps({
     followCursor: { type: Boolean, default: false },
     trigger: { type: String, default: 'mouseenter focus' },
     // 不用 onShow 作 prop 名，避免和 Vue 的 onXxx 侦听器约定撞车。
-    beforeShow: { type: Function, default: undefined },
+    beforeShow: { type: Function as PropType<() => false | undefined>, default: undefined },
 });
 
 const tippy = useTemplateRef<TippyComponent>('tippy');
