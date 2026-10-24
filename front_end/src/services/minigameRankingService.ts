@@ -2,6 +2,7 @@ import type { CSSProperties } from 'vue';
 
 import $axios from '@/http';
 import type { TrainingGame } from '@/utils/minigame/games';
+import type { MinigameReplayData } from '@/utils/minigame/history';
 
 export interface MinigameRanking {
     key: string;
@@ -49,7 +50,7 @@ export async function fetchMinigameRanking(game: TrainingGame, sort: string, sta
     return data;
 }
 
-export async function submitMinigameScore(rankingKey: string, score: number): Promise<{ improved: boolean; record: MinigameScore & { id: number; ranking_key: string; player_id: number } }> {
-    const { data } = await $axios.post<{ improved: boolean; record: MinigameScore & { id: number; ranking_key: string; player_id: number } }>(`/api/minigame/${rankingKey}/score`, { score });
+export async function submitMinigameScore(rankingKey: string, score: number, replay: MinigameReplayData): Promise<{ improved: boolean; record: MinigameScore & { id: number; ranking_key: string; player_id: number } }> {
+    const { data } = await $axios.post<{ improved: boolean; record: MinigameScore & { id: number; ranking_key: string; player_id: number } }>(`/api/minigame/${rankingKey}/score`, { score, replay: JSON.stringify(replay) });
     return data;
 }

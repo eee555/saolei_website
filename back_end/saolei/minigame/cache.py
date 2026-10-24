@@ -45,7 +45,7 @@ class MiniGameRankingCache:
             pipe.execute()
 
     def rebuild(self, ranking_key):
-        records = list(MiniGameBestScore.objects.filter(ranking_key=ranking_key))
+        records = list(MiniGameBestScore.objects.filter(ranking_key=ranking_key).defer('replay'))
         with self.client.pipeline() as pipe:
             pipe.delete(*self.ranking_keys(ranking_key))
             if records:

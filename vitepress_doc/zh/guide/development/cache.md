@@ -46,6 +46,8 @@ Redis 分类只读取业务代码直接确定的 DB 0 key，不执行 `SCAN`、`
 
 成绩创建或严格改善后通过 `on_commit` 写 ZSET 和 Hash，删除后移除成员并保留初始化标记。接受并发和重建的偶发覆盖；运行 `manage.py rebuild_minigame_ranks [--ranking-key key]` 可恢复缓存，不改数据库成绩。完整接口与取舍见 `back_end/saolei/minigame/README.md`。
 
+最佳成绩对应的精简回放仅保存在 `MiniGameBestScore.replay` JSONField，不进入 Redis。缓存重建和排行榜数据库回源用 `defer('replay')` 排除回放字段。
+
 ### 用户姓名与隐私
 
 前端 `user-info` 的姓名列直接兼容隐藏标记 `hidden`，无需清空缓存或调整版本与检查间隔。资格及隐藏状态变更更新 `date_updated`，现有 `infoupdated` 流程按正常周期更新对应记录，允许旧姓名延迟变化。Redis 排行继续只引用用户 ID。缓存流程见仓库 `front_end/src/services/userService.md`；授权、展示与迁移约定见 `back_end/saolei/userprofile/README.md`。
@@ -206,7 +208,7 @@ digraph cache {
         monitor_summary_cache [label="api:monitor/*\nTTL 300s"];
     }
 
-    minigame_score -> minigame_db [label="保存最佳成绩"];
+    minigame_score -> minigame_db [label="保存最佳成绩及回放 JSON"];
     minigame_db -> minigame_cache [label="on_commit 更新 / 删除；重建"];
     minigame_cache -> minigame_rank [label="分组批量读"];
     minigame_db -> minigame_rank [label="Redis 故障降级"];

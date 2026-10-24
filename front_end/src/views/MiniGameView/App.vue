@@ -28,13 +28,14 @@ import { store } from '@/store';
 import { LoginStatus } from '@/utils/common/structInterface';
 import { trainingGames } from '@/utils/minigame/games';
 import type { TrainingGame } from '@/utils/minigame/games';
+import type { MinigameReplayData } from '@/utils/minigame/history';
 
 const route = useRoute();
 const router = useRouter();
-async function submitResult(rankingKey: string, scoreMs: number) {
+async function submitResult(rankingKey: string, scoreMs: number, replay: MinigameReplayData) {
     if (store.login_status !== LoginStatus.IsLogin || store.user.is_banned) return;
     try {
-        await submitMinigameScore(rankingKey, scoreMs);
+        await submitMinigameScore(rankingKey, scoreMs, replay);
     } catch (error) {
         httpErrorNotification(error);
     }

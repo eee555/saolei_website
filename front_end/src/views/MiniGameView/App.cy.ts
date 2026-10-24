@@ -18,13 +18,14 @@ describe('online minigame score submission', () => {
     });
 
     it('submits completed games for a logged-in player without a real name and skips anonymous or banned players', () => {
+        const replay = { initialBoard: [[1, 16]], events: [] };
         const game = defineComponent({
             emits: ['completed'],
             expose: [],
             setup(_props, { emit }) {
                 return () => h('button', { 'data-cy': 'complete',
                     onClick: () => {
-                        emit('completed', 'flag-chord-b-v1', 1234);
+                        emit('completed', 'flag-chord-b-v1', 1234, replay);
                     } }, 'Complete');
             },
         });
@@ -44,7 +45,11 @@ describe('online minigame score submission', () => {
             store.login({ id: 42, username: 'player', realname: '匿名' });
         });
         cy.get('[data-cy=complete]').click();
-        cy.wait('@submit').its('request.body').should('equal', 'score=1234');
+        cy.wait('@submit').its('request.body').should((body: string) => {
+            const form = new URLSearchParams(body);
+            expect(form.get('score')).to.eq('1234');
+            expect(JSON.parse(form.get('replay') ?? 'null')).to.deep.eq(replay);
+        });
         cy.then(() => {
             store.user.is_banned = true;
         });

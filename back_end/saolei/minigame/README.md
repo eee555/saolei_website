@@ -1,13 +1,13 @@
 ﻿# 小游戏成绩与排行榜
 
-网站登录且未封禁的玩家成功通关后自动提交用时；离线版只保存本地历史。玩法见[使用指南](../../../vitepress_doc/zh/guide/minigames.md)，前端结构、回放和离线构建见[前端开发文档](../../../front_end/local-minigame/README.md)。
+网站登录且未封禁的玩家成功通关后自动提交用时与回放；离线版只保存本地历史。玩法见[使用指南](../../../vitepress_doc/zh/guide/minigames.md)，前端结构、回放和离线构建见[前端开发文档](../../../front_end/local-minigame/README.md)。
 
 ## 约定与取舍
 
-这是娱乐训练排行，优先简单实现和查询性能。接受客户端成绩，不检测作弊，不保存棋盘、录像或鼠标轨迹。
+这是娱乐训练排行，优先简单实现和查询性能。接受客户端成绩及回放，不检测作弊。
 
 - 提交需要登录且未封禁，无需实名、扫雷档案或账号关联；排行和个人成绩公开查询。
-- `MiniGameBestScore` 每人每榜保存一条最佳成绩，以 `(player, ranking_key)` 为唯一约束；顺序提交只接受严格改善，同分或更差不更新成绩及达成时间。
+- `MiniGameBestScore` 每人每榜保存一条最佳成绩及对应回放，以 `(player, ranking_key)` 为唯一约束；顺序提交只接受严格改善，同分或更差不更新成绩、达成时间及回放。
 - 允许并发提交丢失成绩或覆盖较好成绩，也接受缓存偶发偏差；使用普通读取、比较和保存，不加玩家行锁。
 - 名次直接使用 Redis 位置，同分按 Redis 默认成员顺序展示，不维护并列名次或 tiebreaker。
 - 使用永久榜；规则变化影响可比性时新建榜单 key，保留旧榜数据。
@@ -33,7 +33,7 @@
 | 方法与完整路径 | 输入 | 输出 |
 | --- | --- | --- |
 | `GET /api/minigame/rankings` | 无 | 游戏分组、固定列顺序及榜单配置 |
-| `POST /api/minigame/{ranking_key}/score` | 表单 `score`，归属取自登录用户 | `{improved, record}` |
+| `POST /api/minigame/{ranking_key}/score` | 表单 `score` 和 `replay`（JSON 对象字符串），归属取自登录用户 | `{improved, record}`，不回传回放 |
 | `GET /api/minigame/{game}/rank` | `sort=榜单key, start=0, end=20` | `{count, players}`，每行包含名次与完整成绩列 |
 | `GET /api/minigame/{game}/player/{player_id}` | 路径参数 | 该玩家本组全部成绩及各列名次 |
 
@@ -43,7 +43,9 @@
 
 ## 持久化与缓存
 
-[models.py](./models.py) 保存最佳成绩及服务端达成时间，`(ranking_key, score, id)` 索引用于回源排序。[services.py](./services.py) 负责提交与查询，[cache.py](./cache.py) 只负责缓存，不引用服务。缓存结构复用项目 [THRP](../effranking/thrp/cache.py) 与[自定义排行](../customranking/cache.py) 的 ZSET、Hash 和 pipeline 方案。
+[models.py](./models.py) 保存最佳成绩、服务端达成时间及 `replay` JSONField，`(ranking_key, score, id)` 索引用于回源排序。[services.py](./services.py) 负责提交与查询，[cache.py](./cache.py) 只负责缓存，不引用服务。缓存结构复用项目 [THRP](../effranking/thrp/cache.py) 与[自定义排行](../customranking/cache.py) 的 ZSET、Hash 和 pipeline 方案。
+
+回放使用前端本地历史相同的精简数据：左键、标双为 `{initialBoard, events}`；漏雷为 `{rounds: [{board, timeMs}, ...]}`，目标已编码在每局初始棋盘中。新建或改善成绩时与成绩一起写入，服务端只解析 JSON 对象，不重演或校验游戏规则。回放仅存数据库，不进入 Redis；排行榜及个人成绩响应均不包含回放，缓存重建和数据库回源查询用 `defer('replay')` 排除该字段。
 
 每榜三个固定键，均无 TTL：
 
@@ -73,6 +75,6 @@
 .\.venv\Scripts\python.exe -m flake8 minigame saolei/api.py monitor/cache.py monitor/test_server_metrics.py
 ```
 
-模型变更后使用 `manage.py makemigrations minigame` 生成迁移，部署时执行 `manage.py migrate`。缓存首次查询自动初始化，也可用 `manage.py rebuild_minigame_ranks [--ranking-key key]` 预热或恢复。
+模型变更后使用 `manage.py makemigrations minigame` 生成迁移，部署时执行 `manage.py migrate`。小游戏尚未上线，当前直接重新生成初始迁移，不维护旧结构兼容。缓存首次查询自动初始化，也可用 `manage.py rebuild_minigame_ranks [--ranking-key key]` 预热或恢复。
 
 网站地址、URL 查询参数及配色扩展接口见[排行榜开发说明](../../../front_end/src/views/RankingView/README.md)；前端检查与由用户执行的 Cypress 命令见[前端开发文档](../../../front_end/local-minigame/README.md#验证)。

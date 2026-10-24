@@ -6,9 +6,9 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { flagChordModes, FlagChordTraining } from './flagChordTraining';
 import type { MinigameResult } from './history';
 import { leftClickModes, LeftClickTraining } from './leftClickTraining';
-import { missingCellModes, MissingCellTraining } from './missingCellTraining';
+import { missingCellModes, MissingCellTraining, reviewMissingCellRound } from './missingCellTraining';
 import { missingCellCandidates } from './missingCellTraining.testHelpers';
-import { replayFrame, TrainingReplayRecorder } from './replay';
+import { rebuildTrainingReplay, replayFrame, TrainingReplayRecorder } from './replay';
 import type { TrainingMouseInput, TrainingReplay } from './replay';
 
 const databaseName = 'saolei-minigame';
@@ -19,40 +19,38 @@ function input(now: number, row: number, column: number, action: TrainingMouseIn
 
 function leftClickResult(): Extract<MinigameResult, { game: 'left-click' }> {
     const game = new LeftClickTraining(leftClickModes[2], () => 0.37);
-    const recorder = new TrainingReplayRecorder(game.board, game.remainingSafe);
+    const recorder = new TrainingReplayRecorder('left-click', game.board);
     const safe = game.board.flatMap((row, r) => row.flatMap((value, c) => (value === 10 ? [{ row: r, column: c }] : [])));
     let replay: TrainingReplay | null = null;
-    safe.forEach(({ row, column }, index) => {
+    for (const [index, { row, column }] of safe.entries()) {
         const now = 100 + index * 50;
         recorder.capture(input(now - 10, row, column, 'lc', null));
         recorder.capture(input(now, row, column, 'lr', 'left'));
         game.trigger(row, column, now);
-        replay = recorder.update(now, game.board, game.remainingSafe, game.phase, game.elapsedMs(now));
-    });
+        replay = recorder.update(now, game.phase, game.elapsedMs(now));
+    }
     if (replay === null) throw new Error('Missing completed left-click replay');
-    return { game: 'left-click', mode: game.mode, scoreMs: game.elapsedMs(99999), replay };
+    return { game: 'left-click', mode: game.mode, scoreMs: game.elapsedMs(99999), replay: { initialBoard: replay.initialBoard, events: replay.events } };
 }
 
 function flagChordResult(): Extract<MinigameResult, { game: 'flag-chord' }> {
     const game = new FlagChordTraining(flagChordModes[0], () => 0.37);
-    const recorder = new TrainingReplayRecorder(game.board, game.remaining);
+    const recorder = new TrainingReplayRecorder('flag-chord', game.board);
     let replay: TrainingReplay | null = null;
-    game.questions.forEach((question, index) => {
+    for (const [index, question] of game.questions.entries()) {
         const now = 100 + index * 100;
         const row = Math.floor(question.mine / game.mode.columns);
         const column = question.mine % game.mode.columns;
         recorder.capture(input(now, row, column, 'rc', 'right'));
         game.act('right', row, column, now);
-        recorder.update(now, game.board, game.remaining, game.phase, game.elapsedMs(now));
-        recorder.flag(index);
+        recorder.update(now, game.phase, game.elapsedMs(now));
         recorder.capture(input(now + 20, question.row, question.column, 'lc', null));
         recorder.capture(input(now + 40, question.row, question.column, 'lr', 'chord'));
         game.act('chord', question.row, question.column, now + 40);
-        replay = recorder.update(now + 40, game.board, game.remaining, game.phase, game.elapsedMs(now + 40));
-        recorder.completeQuestion(index);
-    });
+        replay = recorder.update(now + 40, game.phase, game.elapsedMs(now + 40));
+    }
     if (replay === null) throw new Error('Missing completed flag-and-chord replay');
-    return { game: 'flag-chord', mode: game.mode, scoreMs: game.elapsedMs(99999), replay };
+    return { game: 'flag-chord', mode: game.mode, scoreMs: game.elapsedMs(99999), replay: { initialBoard: replay.initialBoard, events: replay.events } };
 }
 
 function missingCellResult(): Extract<MinigameResult, { game: 'missing-cell' }> {
@@ -94,13 +92,34 @@ describe('local minigame history', () => {
             if (entry.game === 'missing-cell') {
                 expect(entry.rounds).toHaveLength(10);
                 expect(entry.rounds.reduce((total, round) => total + round.timeMs, 0)).toBe(entry.scoreMs);
+                for (const round of entry.rounds) {
+                    expect(Object.keys(round).sort()).toEqual(['board', 'timeMs']);
+                    const preview = reviewMissingCellRound(round);
+                    expect(preview.target).toEqual(missingCellCandidates(preview.board)[0]);
+                }
             } else {
-                expect(replayFrame(entry.replay, { timeMs: entry.scoreMs }).remaining).toBe(0);
-                expect(replayFrame(entry.replay, { timeMs: 0 }).cursor).toBeDefined();
-                if (entry.game === 'flag-chord') expect(entry.replay.chords).toHaveLength(4);
+                expect(Object.keys(entry.replay).sort()).toEqual(['events', 'initialBoard']);
+                const replay = rebuildTrainingReplay(entry.game, entry.replay, entry.scoreMs);
+                expect(replayFrame(replay, { timeMs: entry.scoreMs }).remaining).toBe(0);
+                expect(replayFrame(replay, { timeMs: 0 }).cursor).toBeDefined();
+                if (entry.game === 'flag-chord') expect(replay.chords).toHaveLength(4);
             }
         }
         db.close();
+    });
+
+    it('omits expanded snapshots, counters and chord timings from persisted replay data', async () => {
+        const history = await import('./history');
+        const result = flagChordResult();
+        const replay = rebuildTrainingReplay(result.game, result.replay, result.scoreMs);
+        expect(replay.chords).toHaveLength(4);
+        const id = await history.saveMinigameResult({ ...result, replay });
+        if (id === undefined) throw new Error('Missing saved game');
+        const db = await history.getMinigameDatabase();
+        const saved = await db.get(history.MINIGAME_RESULTS_STORE, id);
+        if (saved?.game !== 'flag-chord') throw new Error('Wrong saved game');
+        expect(saved.replay).toEqual(result.replay);
+        expect(Object.keys(saved.replay).sort()).toEqual(['events', 'initialBoard']);
     });
 
     it('indexes completion time and numeric score independently', async () => {
@@ -122,7 +141,7 @@ describe('local minigame history', () => {
         const original = structuredClone(result);
         const pending = history.saveMinigameResult(result);
         result.replay.events.length = 0;
-        result.replay.snapshots[0].board[0][0] = 99;
+        result.replay.initialBoard[0][0] = 99;
         result.scoreMs = 1;
         const id = await pending;
         if (id === undefined) throw new Error('Missing saved game');
@@ -138,28 +157,6 @@ describe('local minigame history', () => {
         expect(warning).toHaveBeenCalledOnce();
         vi.unstubAllGlobals();
         expect(await history.saveMinigameResult(leftClickResult())).toBeTypeOf('number');
-    });
-
-    it('renames the legacy ranking identifier while preserving history and board snapshots', async () => {
-        const result = leftClickResult();
-        const { rankingKey, ...mode } = result.mode;
-        const previous = await openDB(databaseName, 1, {
-            upgrade(db) {
-                const results = db.createObjectStore('results', { keyPath: 'id', autoIncrement: true });
-                results.createIndex('playedAt', 'playedAt');
-                results.createIndex('scoreMs', 'scoreMs');
-            },
-        });
-        const otherResults = [flagChordResult(), missingCellResult()];
-        await previous.add('results', { ...result, id: 7, playedAt: 100, mode: { ...mode, board: rankingKey } });
-        for (const [index, other] of otherResults.entries()) await previous.add('results', { ...other, id: 8 + index, playedAt: 200 });
-        previous.close();
-
-        const history = await import('./history');
-        const upgraded = await history.getMinigameDatabase();
-        expect(await upgraded.get(history.MINIGAME_RESULTS_STORE, 7)).toEqual({ ...result, id: 7, playedAt: 100 });
-        for (const [index, other] of otherResults.entries()) expect(await upgraded.get(history.MINIGAME_RESULTS_STORE, 8 + index)).toEqual({ ...other, id: 8 + index, playedAt: 200 });
-        expect(await upgraded.getAllKeysFromIndex(history.MINIGAME_RESULTS_STORE, 'playedAt')).toEqual([7, 8, 9]);
     });
 
     it('releases old connections for an upgrade without clearing saved games', async () => {

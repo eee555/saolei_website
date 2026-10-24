@@ -4,6 +4,7 @@ from django_ratelimit.decorators import ratelimit
 from ninja import Form, Router, Schema
 from ninja.decorators import decorate_view
 from ninja.orm import create_schema
+from pydantic import Json
 
 from userprofile.decorators import banned_blocked, login_required_error
 from userprofile.models import UserProfile
@@ -67,14 +68,14 @@ def get_rankings(request):
 # decorate_view 的最后一个参数最先执行：先检查登录，再读取封禁状态。
 @router.post('/{ranking_key}/score', response=SubmissionOut)
 @decorate_view(ratelimit(group='minigame.submit.user', key='user', rate='60/m'), banned_blocked, login_required_error)
-def post_score(request, ranking_key: str, score: Form[int]):
+def post_score(request, ranking_key: str, score: Form[int], replay: Form[Json[dict]]):
     """
     - login_required_error
     - banned_blocked
     - ratelimit(group='minigame.submit.user', key='user', rate='60/m')
     """
     require_ranking(ranking_key)
-    return submit_score(request.user, ranking_key, score)
+    return submit_score(request.user, ranking_key, score, replay)
 
 
 @router.get('/{game}/rank', response=RankingOut)

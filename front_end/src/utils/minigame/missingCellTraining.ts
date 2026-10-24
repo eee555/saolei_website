@@ -9,9 +9,18 @@ export const missingCellModes = trainingLevels.map((level) => ({ ...level, mines
 export type MissingCellMode = typeof missingCellModes[number];
 
 export interface MissingCellRoundResult {
+    /** Initial board: 16 marks a hidden mine, and 10 marks the only unopened safe cell. */
     board: number[][];
-    target: { row: number; column: number };
     timeMs: number;
+}
+
+export function reviewMissingCellRound(result: MissingCellRoundResult): { board: number[][]; target: { row: number; column: number } | null; timeMs: number } {
+    let target: { row: number; column: number } | null = null;
+    const board = result.board.map((row, r) => row.map((value, c) => {
+        if (value === 10) target = { row: r, column: c };
+        return value === 16 ? 10 : value;
+    }));
+    return { board, target, timeMs: result.timeMs };
 }
 
 function neighbors(index: number, rows: number, columns: number, radius = 1): number[] {
@@ -90,7 +99,7 @@ export class MissingCellTraining {
     }
 
     public get roundResults(): readonly MissingCellRoundResult[] {
-        return this.results.map((result) => ({ ...result, board: result.board.map((row) => [...row]), target: { ...result.target } }));
+        return this.results.map((result) => ({ ...result, board: result.board.map((row) => [...row]) }));
     }
 
     public get board(): number[][] {
@@ -122,7 +131,10 @@ export class MissingCellTraining {
         if (puzzle === null) return false;
         const index = row * this.mode.columns + column;
         if (index === puzzle.target) {
-            const { board } = this;
+            const board = puzzle.numbers.map((numbers, r) => numbers.map((value, c) => {
+                const cell = r * this.mode.columns + c;
+                return cell === puzzle.target ? 10 : puzzle.mines.has(cell) ? 16 : value;
+            }));
             if (this.remaining > 1) this.puzzle = createPuzzle(this.mode, this.random);
             this.completed++;
             if (this.remaining === 0) {
@@ -131,7 +143,7 @@ export class MissingCellTraining {
             }
             // 使用累计整数毫秒的差值，让各局用时之和与最终计数器完全一致。
             const timeMs = this.clock.elapsedMs(now) - this.results.reduce((total, result) => total + result.timeMs, 0);
-            this.results.push({ board, target: { row, column }, timeMs });
+            this.results.push({ board, timeMs });
             return true;
         }
         if (!puzzle.mines.has(index)) return false;

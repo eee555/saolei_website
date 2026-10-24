@@ -6,6 +6,8 @@ import type { ClassicMouseAction, ClassicMouseEvent } from '../classicMouse';
 
 import type { BoardPress } from './boardPress';
 import type { TrainingPhase } from './clock';
+import { flagChordModes, FlagChordTraining } from './flagChordTraining';
+import { leftClickModes, LeftClickTraining } from './leftClickTraining';
 
 // Internal observations shared by live replay and IndexedDB history; not an export format.
 export interface TrainingMouseInput {
@@ -25,6 +27,19 @@ export interface TrainingReplayEvent extends MouseTraceEvent {
     cancelled: boolean;
 }
 
+/** Only the source data is persisted; frames and timings are derived during review. */
+export interface TrainingRecording {
+    initialBoard: number[][];
+    events: TrainingReplayEvent[];
+}
+
+export interface TrainingReplay extends TrainingRecording {
+    game: 'left-click' | 'flag-chord';
+    durationMs: number;
+    snapshots: ReplaySnapshot[];
+    chords: FlagChordTiming[];
+}
+
 interface ReplaySnapshot {
     eventIndex: number;
     board: number[][];
@@ -36,13 +51,6 @@ export interface FlagChordTiming {
     leftMs: number;
     chordMs: number;
     eventIndex: number;
-}
-
-export interface TrainingReplay {
-    durationMs: number;
-    events: TrainingReplayEvent[];
-    snapshots: ReplaySnapshot[];
-    chords: FlagChordTiming[];
 }
 
 export interface ReplayPosition {
@@ -67,12 +75,12 @@ export class TrainingReplayRecorder {
     private finished = false;
     private pending: TrainingMouseInput | null = null;
     private readonly events: TrainingReplayEvent[] = [];
-    private readonly snapshots: ReplaySnapshot[];
-    private readonly flags = new Map<number, number>();
-    private readonly chords: FlagChordTiming[] = [];
+    private readonly game: TrainingReplay['game'];
+    private readonly initialBoard: number[][];
 
-    public constructor(board: number[][], remaining: number) {
-        this.snapshots = [{ eventIndex: -1, board, remaining }];
+    public constructor(game: TrainingReplay['game'], initialBoard: number[][]) {
+        this.game = game;
+        this.initialBoard = initialBoard;
     }
 
     public capture(input: TrainingMouseInput): void {
@@ -91,43 +99,68 @@ export class TrainingReplayRecorder {
         });
     }
 
-    public update(now: number, board: number[][], remaining: number, phase: TrainingPhase, durationMs: number): TrainingReplay | null {
+    public update(now: number, phase: TrainingPhase, durationMs: number): TrainingReplay | null {
         if (this.finished || phase === 'ready') return null;
         if (this.startedAt === null) {
             this.startedAt = now;
             if (this.pending !== null) this.capture({ ...this.pending, now });
         }
-        this.snapshots.push({ eventIndex: this.events.length - 1, board, remaining });
         if (phase === 'playing') return null;
         this.finished = true;
-        return { durationMs, events: this.events, snapshots: this.snapshots, chords: this.chords };
+        return rebuildTrainingReplay(this.game, { initialBoard: this.initialBoard, events: this.events }, durationMs);
     }
+}
 
-    /** Called only after the game accepts a flag placement. */
-    public flag(question: number): void {
-        const event = this.events.at(-1);
-        if (event !== undefined) this.flags.set(question, event.timeMs);
+function createReplayGame(replay: Pick<TrainingReplay, 'game' | 'initialBoard'>): LeftClickTraining | FlagChordTraining {
+    const board = replay.initialBoard;
+    const rows = board.length;
+    const columns = board[0]?.length ?? 0;
+    if (replay.game === 'left-click') {
+        const mines = board.flat().filter((value) => value === 16).length;
+        const mode = leftClickModes.find((item) => item.rows === rows && item.columns === columns && item.mines === mines);
+        if (mode === undefined) throw new Error('Unknown left-click replay mode');
+        return new LeftClickTraining(mode, Math.random, board);
     }
+    const mode = flagChordModes.find((item) => item.rows === rows && item.columns === columns);
+    if (mode === undefined) throw new Error('Unknown flag-and-chord replay mode');
+    return new FlagChordTraining(mode, Math.random, board);
+}
 
-    /** Called only when this chord completes a question, never for failed/no-op chords. */
-    public completeQuestion(question: number): void {
-        const flagMs = this.flags.get(question);
-        const eventIndex = this.events.length - 1;
-        const chord = this.events[eventIndex];
-        if (flagMs === undefined || chord === undefined) return;
-        for (let index = eventIndex - 1; index >= 0; index--) {
-            const event = this.events[index];
-            if (event.cancelled || event.timeMs < flagMs) return;
-            if (event.action === 'lc') {
-                this.chords.push({ flagMs, leftMs: event.timeMs, chordMs: chord.timeMs, eventIndex });
-                return;
-            }
-        }
-    }
+function applyEvent(game: LeftClickTraining | FlagChordTraining, event: TrainingReplayEvent): boolean {
+    if (event.cancelled || event.trigger === null) return false;
+    const row = Math.floor(event.row);
+    const column = Math.floor(event.column);
+    return game instanceof LeftClickTraining ? event.trigger === 'left' && game.trigger(row, column, event.timeMs) : game.act(event.trigger, row, column, event.timeMs);
 }
 
 const eventTime = bisector<TrainingReplayEvent, number>((event) => event.timeMs);
 const snapshotIndex = bisector<ReplaySnapshot, number>((snapshot) => snapshot.eventIndex);
+
+/** Expand source data once when opening a replay; derived data stays in memory. */
+export function rebuildTrainingReplay(kind: TrainingReplay['game'], recording: TrainingRecording, durationMs: number): TrainingReplay {
+    const game = createReplayGame({ game: kind, initialBoard: recording.initialBoard });
+    const remaining = () => (game instanceof LeftClickTraining ? game.remainingSafe : game.remaining);
+    const snapshots: ReplaySnapshot[] = [{ eventIndex: -1, board: game.board, remaining: remaining() }];
+    const chords: FlagChordTiming[] = [];
+    const flags = new Map<number, number>();
+    let leftMs: number | null = null;
+    recording.events.forEach((event, eventIndex) => {
+        if (event.cancelled) leftMs = null;
+        else if (event.action === 'lc') leftMs = event.timeMs;
+        const previousRemaining = remaining();
+        if (!applyEvent(game, event)) return;
+        const { board } = game;
+        snapshots.push({ eventIndex, board, remaining: remaining() });
+        if (!(game instanceof FlagChordTraining)) return;
+        const row = Math.floor(event.row);
+        const column = Math.floor(event.column);
+        const question = game.questions.findIndex((item) => Math.abs(item.row - row) <= 1 && Math.abs(item.column - column) <= 1);
+        if (event.trigger === 'right' && board[row][column] === 11) flags.set(question, event.timeMs);
+        const flagMs = flags.get(question);
+        if (game.remaining < previousRemaining && flagMs !== undefined && leftMs !== null && leftMs >= flagMs) chords.push({ flagMs, leftMs, chordMs: event.timeMs, eventIndex });
+    });
+    return { ...recording, game: kind, durationMs, snapshots, chords };
+}
 
 export function replayFrame(replay: TrainingReplay, position: ReplayPosition): TrainingReplayFrame {
     const timeMs = Math.max(0, Math.min(replay.durationMs, position.timeMs));

@@ -9,6 +9,7 @@ class MiniGameBestScore(models.Model):
     ranking_key = models.CharField(max_length=64)
     score = models.BigIntegerField()
     achieved_at = models.DateTimeField(default=timezone.now)
+    replay = models.JSONField()
 
     class Meta:
         constraints = [models.UniqueConstraint(fields=['player', 'ranking_key'], name='minigame_player_ranking_uniq')]

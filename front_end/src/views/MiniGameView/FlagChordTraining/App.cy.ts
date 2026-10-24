@@ -5,6 +5,7 @@ import App from './App.vue';
 import type MiniGameBoard from '@/components/MiniGame/Board.vue';
 import type ReplayAnalysis from '@/components/MiniGame/ReplayAnalysis.vue';
 import i18n from '@/i18n';
+import { rebuildTrainingReplay, replayFrame } from '@/utils/minigame/replay';
 import type { TrainingReplay } from '@/utils/minigame/replay';
 import { chordAt, isolateMinigameHistory, mouseAt, rightAt, savedMinigameResults } from '@cy/support/minigame';
 
@@ -92,11 +93,12 @@ describe('flag-and-chord training', () => {
             const [entry] = entries;
             if (entry.game !== 'flag-chord') throw new Error('Wrong saved game');
             expect(entry.mode).to.include({ key: 'b', total: 4 });
-            expect(entry.replay.chords).to.have.length(4);
-            expect(entry.replay.snapshots.at(-1)?.remaining).to.eq(0);
-            expect(entry.replay.durationMs).to.eq(entry.scoreMs);
+            expect(Object.keys(entry.replay).sort()).to.deep.eq(['events', 'initialBoard']);
+            const replay = rebuildTrainingReplay(entry.game, entry.replay, entry.scoreMs);
+            expect(replay.chords).to.have.length(4);
+            expect(replayFrame(replay, { timeMs: entry.scoreMs }).remaining).to.eq(0);
             cy.get<ComponentWrapper<typeof App>>('@vue').should((wrapper) => {
-                expect(wrapper.emitted('completed')).to.deep.eq([['flag-chord-b-v1', entry.scoreMs]]);
+                expect(wrapper.emitted('completed')).to.deep.eq([['flag-chord-b-v1', entry.scoreMs, entry.replay]]);
             });
         });
     });

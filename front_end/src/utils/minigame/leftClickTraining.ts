@@ -30,10 +30,14 @@ export class LeftClickTraining {
     private readonly clock = new TrainingClock();
     private exploded: number | null = null;
 
-    public constructor(mode: LeftClickMode, random: () => number = Math.random) {
+    public constructor(mode: LeftClickMode, random: () => number = Math.random, initialBoard?: number[][]) {
         this.mode = mode;
-        const indices = Array.from({ length: mode.rows * mode.columns }, (_, i) => i);
-        this.mines = new Set(shuffler(random)(indices).slice(0, mode.mines));
+        if (initialBoard === undefined) {
+            const indices = Array.from({ length: mode.rows * mode.columns }, (_, i) => i);
+            this.mines = new Set(shuffler(random)(indices).slice(0, mode.mines));
+        } else {
+            this.mines = new Set(initialBoard.flatMap((row, r) => row.flatMap((value, c) => (value === 16 ? [r * mode.columns + c] : []))));
+        }
     }
 
     public get remainingSafe(): number {

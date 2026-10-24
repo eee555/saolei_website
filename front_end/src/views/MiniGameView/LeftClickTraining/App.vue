@@ -63,11 +63,12 @@ import { offlineDownloadFilename, offlineDownloadUrl } from '@/utils/minigame/ga
 import { saveMinigameResult } from '@/utils/minigame/history';
 import { leftClickModes, LeftClickTraining, trainingDensities, trainingLevels } from '@/utils/minigame/leftClickTraining';
 import { TrainingReplayRecorder } from '@/utils/minigame/replay';
+import type { TrainingRecording } from '@/utils/minigame/replay';
 import { minigameSettings } from '@/utils/minigame/settings';
 import { useTrainingReplay } from '@/utils/minigame/useTrainingReplay';
 
 defineProps({ offline: { type: Boolean, default: false } });
-const emit = defineEmits<{ completed: [rankingKey: string, scoreMs: number] }>();
+const emit = defineEmits<{ completed: [rankingKey: string, scoreMs: number, replay: TrainingRecording] }>();
 const level = ref<typeof trainingLevels[number]['key']>('b');
 const levelGroupName = useId();
 const density = ref<typeof trainingDensities[number]['value']>(50);
@@ -82,7 +83,7 @@ const phase = ref(game.phase);
 const remaining = ref(game.remainingSafe);
 const elapsed = ref(0);
 const round = ref(0);
-let recorder = new TrainingReplayRecorder(board.value, remaining.value);
+let recorder = new TrainingReplayRecorder('left-click', board.value);
 const replay = useTrainingReplay();
 
 const { pause, resume } = useRafFn(() => {
@@ -97,7 +98,7 @@ function restart() {
     phase.value = game.phase;
     remaining.value = game.remainingSafe;
     elapsed.value = 0;
-    recorder = new TrainingReplayRecorder(board.value, remaining.value);
+    recorder = new TrainingReplayRecorder('left-click', board.value);
     round.value++;
 }
 
@@ -108,11 +109,11 @@ function onAction(action: ClassicMouseAction, row: number, column: number, now: 
     phase.value = game.phase;
     remaining.value = game.remainingSafe;
     elapsed.value = game.elapsedMs(now);
-    const recording = recorder.update(now, board.value, remaining.value, phase.value, elapsed.value);
+    const recording = recorder.update(now, phase.value, elapsed.value);
     replay.finish(recording);
-    if (game.phase === 'won') {
-        if (recording !== null) void saveMinigameResult({ game: 'left-click', mode: game.mode, scoreMs: elapsed.value, replay: recording });
-        emit('completed', game.mode.rankingKey, elapsed.value);
+    if (game.phase === 'won' && recording !== null) {
+        void saveMinigameResult({ game: 'left-click', mode: game.mode, scoreMs: elapsed.value, replay: recording });
+        emit('completed', game.mode.rankingKey, elapsed.value, { initialBoard: recording.initialBoard, events: recording.events });
     }
     if (game.phase === 'playing') resume();
     else pause();

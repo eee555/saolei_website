@@ -47,12 +47,12 @@ import MiniGameFrame from '@/components/MiniGame/Frame.vue';
 import type { ClassicMouseAction } from '@/utils/classicMouse';
 import { offlineDownloadFilename, offlineDownloadUrl } from '@/utils/minigame/games';
 import { saveMinigameResult } from '@/utils/minigame/history';
-import { missingCellModes, missingCellRounds, MissingCellTraining } from '@/utils/minigame/missingCellTraining';
+import { missingCellModes, missingCellRounds, MissingCellTraining, reviewMissingCellRound } from '@/utils/minigame/missingCellTraining';
 import type { MissingCellRoundResult } from '@/utils/minigame/missingCellTraining';
 import { minigameSettings } from '@/utils/minigame/settings';
 
 defineProps({ offline: { type: Boolean, default: false } });
-const emit = defineEmits<{ completed: [rankingKey: string, scoreMs: number] }>();
+const emit = defineEmits<{ completed: [rankingKey: string, scoreMs: number, replay: { rounds: readonly MissingCellRoundResult[] }] }>();
 const level = ref<typeof missingCellModes[number]['key']>('b');
 const levelGroupName = useId();
 const mode = computed(() => {
@@ -69,7 +69,10 @@ const round = ref(0);
 const roundResults = shallowRef<readonly MissingCellRoundResult[]>([]);
 const roundTimes = computed(() => roundResults.value.map((result) => result.timeMs));
 const hoveredRound = ref<number | null>(null);
-const preview = computed(() => (hoveredRound.value === null ? null : roundResults.value[hoveredRound.value] ?? null));
+const preview = computed(() => {
+    const result = hoveredRound.value === null ? undefined : roundResults.value[hoveredRound.value];
+    return result === undefined ? null : reviewMissingCellRound(result);
+});
 const previewRemaining = computed(() => (preview.value === null || hoveredRound.value === null ? remaining.value : missingCellRounds - hoveredRound.value));
 const { pause, resume } = useRafFn(() => {
     elapsed.value = game.elapsedMs(performance.now());
@@ -98,7 +101,7 @@ function onAction(action: ClassicMouseAction, row: number, column: number) {
     roundResults.value = game.roundResults;
     if (game.phase === 'won') {
         void saveMinigameResult({ game: 'missing-cell', mode: game.mode, scoreMs: elapsed.value, rounds: roundResults.value });
-        emit('completed', `missing-cell-${game.mode.key}-v1`, elapsed.value);
+        emit('completed', `missing-cell-${game.mode.key}-v1`, elapsed.value, { rounds: roundResults.value });
     }
     if (game.phase === 'playing') resume();
     else pause();

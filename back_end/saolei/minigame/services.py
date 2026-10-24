@@ -25,19 +25,20 @@ def remove_cached_score(ranking_key, player_id):
         logger.exception('Failed to remove minigame score cache')
 
 
-def submit_score(player, ranking_key, score):
+def submit_score(player, ranking_key, score, replay):
     config = RANKINGS[ranking_key]
     if not config.accept_submissions:
         raise MiniGameError(409, 'ranking_closed', 'This ranking no longer accepts scores')
     if type(score) is not int or not config.min_score <= score <= config.max_score:
         raise MiniGameError(422, 'invalid_score', 'Score must be an integer within the ranking limits')
-    record, created = MiniGameBestScore.objects.get_or_create(player=player, ranking_key=ranking_key, defaults={'score': score})
+    record, created = MiniGameBestScore.objects.defer('replay').get_or_create(player=player, ranking_key=ranking_key, defaults={'score': score, 'replay': replay})
     improved = created or config.is_better(score, record.score)
     if improved:
         if not created:
             record.score = score
             record.achieved_at = timezone.now()
-            record.save(update_fields=['score', 'achieved_at'])
+            record.replay = replay
+            record.save(update_fields=['score', 'achieved_at', 'replay'])
         transaction.on_commit(lambda: update_cached_score(record))
     return {'improved': improved, 'record': record}
 
@@ -52,7 +53,7 @@ def get_ranking(game, sort, start, end):
     player_ids = list(ranking.order_by(order, 'id').values_list('player_id', flat=True)[start:end])
     records = {player_id: dict.fromkeys(ranking.key for ranking in GAME_RANKINGS[game]) for player_id in player_ids}
     if player_ids:
-        for record in MiniGameBestScore.objects.filter(player_id__in=player_ids, ranking_key__in=records[player_ids[0]]):
+        for record in MiniGameBestScore.objects.filter(player_id__in=player_ids, ranking_key__in=records[player_ids[0]]).defer('replay'):
             records[record.player_id][record.ranking_key] = score_detail(record)
     players = [
         {'player_id': player_id, 'rank': start + index + 1, 'records': records[player_id]}
@@ -67,6 +68,6 @@ def get_player_scores(game, player_id):
     except RedisError:
         logger.exception('Falling back to database for minigame player scores')
     records = dict.fromkeys(ranking.key for ranking in GAME_RANKINGS[game])
-    for record in MiniGameBestScore.objects.filter(player_id=player_id, ranking_key__in=records):
+    for record in MiniGameBestScore.objects.filter(player_id=player_id, ranking_key__in=records).defer('replay'):
         records[record.ranking_key] = {**score_detail(record), 'rank': None}
     return {'player_id': player_id, 'records': records}

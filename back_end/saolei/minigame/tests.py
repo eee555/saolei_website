@@ -1,11 +1,13 @@
 from dataclasses import replace
 from io import StringIO
+import json
 from unittest.mock import patch
 from uuid import uuid4
 
 from django.core.management import call_command
-from django.db import IntegrityError, transaction
+from django.db import connection, IntegrityError, transaction
 from django.test import override_settings, TestCase
+from django.test.utils import CaptureQueriesContext
 from redis.exceptions import ConnectionError as RedisConnectionError
 
 from config.global_settings import MAX_SAFE_INTEGER
@@ -26,13 +28,17 @@ class MiniGameRankingTests(TestCase):
         self.addCleanup(lambda: self.cache.client.delete(*self.cache.keys))
         self.player = self.make_player('minigame')
         self.ranking_key = GAME_RANKINGS['left-click'][0].key
+        self.replay = {'initialBoard': [[10, 16]], 'events': []}
 
     def make_player(self, name):
         return UserProfile.objects.create_user(username=name, email=f'{name}@example.com')
 
-    def submit(self, score, ranking_key=None, player=None):
+    def submit(self, score, ranking_key=None, player=None, replay=None):
         with self.captureOnCommitCallbacks(execute=True):
-            return submit_score(player or self.player, ranking_key or self.ranking_key, score)
+            return submit_score(player or self.player, ranking_key or self.ranking_key, score, self.replay if replay is None else replay)
+
+    def post_data(self, score, replay=None):
+        return {'score': score, 'replay': json.dumps(self.replay if replay is None else replay)}
 
     def test_best_score_and_unique_constraint(self):
         first = self.submit(2000)
@@ -49,7 +55,7 @@ class MiniGameRankingTests(TestCase):
         self.assertGreater(improved['record'].achieved_at, achieved_at)
         self.assertEqual(self.cache.client.zscore(self.cache.rank_key(self.ranking_key), self.player.id), 1000)
         with transaction.atomic(), self.assertRaises(IntegrityError):
-            MiniGameBestScore.objects.create(player=self.player, ranking_key=self.ranking_key, score=4000)
+            MiniGameBestScore.objects.create(player=self.player, ranking_key=self.ranking_key, score=4000, replay=self.replay)
         second_ranking_key = GAME_RANKINGS['left-click'][1].key
         self.submit(5000, second_ranking_key)
         self.assertEqual(MiniGameBestScore.objects.filter(player=self.player).count(), 2)
@@ -58,31 +64,70 @@ class MiniGameRankingTests(TestCase):
         url = f'/api/minigame/{self.ranking_key}/score'
         self.assertFalse(self.player.has_realname())
         self.assertIsNone(self.player.userms_id)
-        self.assertEqual(self.client.post(url, {'score': 1000}).status_code, 403)
+        self.assertEqual(self.client.post(url, self.post_data(1000)).status_code, 403)
         self.client.force_login(self.player)
         with self.captureOnCommitCallbacks(execute=True):
-            response = self.client.post(url, {'score': 1000, 'player_id': 999})
+            response = self.client.post(url, {**self.post_data(1000), 'player_id': 999})
         self.assertEqual(response.status_code, 200, response.content)
         self.assertEqual(response.json()['record']['player_id'], self.player.id)
         self.assertEqual(response.json()['record']['ranking_key'], self.ranking_key)
+        self.assertNotIn('replay', response.json()['record'])
+        self.assertEqual(MiniGameBestScore.objects.get(player=self.player, ranking_key=self.ranking_key).replay, self.replay)
         self.player.is_banned = True
         self.player.save(update_fields=['is_banned'])
-        self.assertEqual(self.client.post(url, {'score': 500}).status_code, 403)
+        self.assertEqual(self.client.post(url, self.post_data(500)).status_code, 403)
 
     def test_input_errors_and_slashless_routes(self):
         self.client.force_login(self.player)
         for score in ('no', '1.5', 0, -1, MAX_SAFE_INTEGER + 1):
-            self.assertEqual(self.client.post(f'/api/minigame/{self.ranking_key}/score', {'score': score}).status_code, 422)
-        self.assertEqual(self.client.post('/api/minigame/no/score', {'score': 1000}).status_code, 404)
+            self.assertEqual(self.client.post(f'/api/minigame/{self.ranking_key}/score', self.post_data(score)).status_code, 422)
+        self.assertEqual(self.client.post('/api/minigame/no/score', self.post_data(1000)).status_code, 404)
         with patch.dict(RANKINGS, {self.ranking_key: replace(RANKINGS[self.ranking_key], accept_submissions=False)}):
-            response = self.client.post(f'/api/minigame/{self.ranking_key}/score', {'score': 1000})
+            response = self.client.post(f'/api/minigame/{self.ranking_key}/score', self.post_data(1000))
         self.assertEqual(response.status_code, 409)
         self.assertEqual(response.json()['code'], 'ranking_closed')
         for path in ('/api/minigame/no/rank', '/api/minigame/left-click/rank?sort=no', '/api/minigame/no/player/1', '/api/minigame/left-click/player/999999999'):
             self.assertEqual(self.client.get(path).status_code, 404)
         self.assertEqual(self.client.get('/api/minigame/left-click/rank', {'sort': 'flag-chord-b-v1'}).status_code, 422)
         self.assertEqual(self.client.get('/api/minigame/rankings/').status_code, 404)
-        self.assertEqual(self.client.post(f'/api/minigame/{self.ranking_key}/score/', {'score': 1000}).status_code, 404)
+        self.assertEqual(self.client.post(f'/api/minigame/{self.ranking_key}/score/', self.post_data(1000)).status_code, 404)
+
+    def test_replay_follows_best_score_and_is_never_cached(self):
+        first = self.submit(2000)['record']
+        replacement = {'initialBoard': [[16, 10]], 'events': [{'timeMs': 0, 'action': 'lr', 'row': 0.5, 'column': 1.5}]}
+        for score in (2000, 3000):
+            self.assertFalse(self.submit(score, replay=replacement)['improved'])
+            first.refresh_from_db()
+            self.assertEqual(first.replay, self.replay)
+        self.assertTrue(self.submit(1000, replay=replacement)['improved'])
+        first.refresh_from_db()
+        self.assertEqual(first.replay, replacement)
+        self.assertEqual(first.score, 1000)
+        with CaptureQueriesContext(connection) as queries:
+            self.cache.rebuild(self.ranking_key)
+        self.assertEqual(len(queries), 1)
+        self.assertNotIn('replay', queries[0]['sql'].lower())
+        detail = json.loads(self.cache.client.hget(self.cache.detail_key(self.ranking_key), str(self.player.id)))
+        self.assertEqual(detail, {'score': 1000, 'achieved_at': first.achieved_at.isoformat()})
+        self.assertEqual(self.cache.client.zscore(self.cache.rank_key(self.ranking_key), str(self.player.id)), 1000)
+
+    def test_replay_json_is_required_and_supports_both_recording_shapes(self):
+        self.client.force_login(self.player)
+        url = f'/api/minigame/{self.ranking_key}/score'
+        self.assertEqual(self.client.post(url, {'score': 1000}).status_code, 422)
+        for replay in ('not json', '[]', 'null', '123'):
+            self.assertEqual(self.client.post(url, {'score': 1000, 'replay': replay}).status_code, 422)
+        recordings = {
+            'left-click': self.replay,
+            'flag-chord': self.replay,
+            'missing-cell': {'rounds': [{'board': [[10, 16]], 'timeMs': 1000}]},
+        }
+        for game, replay in recordings.items():
+            ranking_key = GAME_RANKINGS[game][0].key
+            with self.captureOnCommitCallbacks(execute=True):
+                response = self.client.post(f'/api/minigame/{ranking_key}/score', self.post_data(1000, replay))
+            self.assertEqual(response.status_code, 200, response.content)
+            self.assertEqual(MiniGameBestScore.objects.get(player=self.player, ranking_key=ranking_key).replay, replay)
 
     def test_groups_sort_columns_nulls_pagination_and_personal(self):
         other = self.make_player('minigame-other')
@@ -118,7 +163,7 @@ class MiniGameRankingTests(TestCase):
                 self.cache.client.delete(*self.cache.keys)
                 if size:
                     players = [self.make_player(f'size-{size}-{index}') for index in range(size)]
-                    MiniGameBestScore.objects.bulk_create([MiniGameBestScore(player=player, ranking_key=self.ranking_key, score=1000) for player in players])
+                    MiniGameBestScore.objects.bulk_create([MiniGameBestScore(player=player, ranking_key=self.ranking_key, score=1000, replay=self.replay) for player in players])
                 count = MiniGameBestScore.objects.filter(ranking_key=self.ranking_key).count()
                 self.assertEqual(get_ranking('left-click', self.ranking_key, 0, 100)['count'], count)
                 with self.assertNumQueries(0):
@@ -133,7 +178,7 @@ class MiniGameRankingTests(TestCase):
         self.assertFalse(self.cache.client.exists(self.cache.ready_key(self.ranking_key)))
         get_ranking('left-click', self.ranking_key, 0, 20)
         with self.captureOnCommitCallbacks(execute=True), transaction.atomic():
-            submit_score(self.player, self.ranking_key, 500)
+            submit_score(self.player, self.ranking_key, 500, self.replay)
             transaction.set_rollback(True)
         self.assertEqual(self.cache.client.zscore(self.cache.rank_key(self.ranking_key), self.player.id), 1000)
         output = StringIO()
@@ -150,11 +195,13 @@ class MiniGameRankingTests(TestCase):
         with patch('minigame.services.MiniGameRankingCache', side_effect=RedisConnectionError), self.assertLogs('minigame.services', 'ERROR'):
             self.submit(1000)
             self.submit(2000, GAME_RANKINGS['left-click'][1].key)
-            with self.assertNumQueries(3):
+            with self.assertNumQueries(3), CaptureQueriesContext(connection) as queries:
                 result = get_ranking('left-click', self.ranking_key, 0, 20)
+            self.assertTrue(all('replay' not in query['sql'].lower() for query in queries))
             self.assertEqual(result['players'][0]['records'][self.ranking_key]['score'], 1000)
-            with self.assertNumQueries(1):
+            with self.assertNumQueries(1), CaptureQueriesContext(connection) as queries:
                 personal = get_player_scores('left-click', self.player.id)
+            self.assertTrue(all('replay' not in query['sql'].lower() for query in queries))
             self.assertIsNone(personal['records'][self.ranking_key]['rank'])
 
     def test_descending_support(self):
@@ -175,10 +222,10 @@ class MiniGameRankingTests(TestCase):
                 player = self.player if index == 0 else self.make_player(f'submit-rate-{index}')
                 self.client.force_login(player)
                 for _ in range(submissions):
-                    response = self.client.post(url, {'score': 1000}, REMOTE_ADDR=address)
+                    response = self.client.post(url, self.post_data(1000), REMOTE_ADDR=address)
                     self.assertEqual(response.status_code, 200, response.content)
                 if index == 0:
-                    response = self.client.post(url, {'score': 1000}, REMOTE_ADDR='2001:db8::1')
+                    response = self.client.post(url, self.post_data(1000), REMOTE_ADDR='2001:db8::1')
                     self.assertEqual(response.status_code, 429)
 
     @override_settings(RATELIMIT_ENABLE=True)

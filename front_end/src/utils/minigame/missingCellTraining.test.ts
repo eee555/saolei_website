@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { isUniqueMissingCell, isValidMissingCellTarget, missingCellModes, missingCellRounds, MissingCellTraining } from './missingCellTraining';
+import { isUniqueMissingCell, isValidMissingCellTarget, missingCellModes, missingCellRounds, MissingCellTraining, reviewMissingCellRound } from './missingCellTraining';
 import { missingCellCandidates } from './missingCellTraining.testHelpers';
 
 function display(rows: number, columns: number, mines: ReadonlySet<number>, target: number): number[][] {
@@ -83,7 +83,11 @@ describe('missing-cell training', () => {
             expect(game.trigger(target.row, target.column, 1100 + round * 100)).toBe(true);
             expect(game.remaining).toBe(9 - round);
             expect(game.roundTimesMs).toEqual(Array.from({ length: round + 1 }, () => 100));
-            expect(game.roundResults[round]).toEqual({ board, target, timeMs: 100 });
+            const result = game.roundResults[round];
+            expect(Object.keys(result).sort()).toEqual(['board', 'timeMs']);
+            expect(result.board.flat().filter((cell) => cell === 10)).toHaveLength(1);
+            expect(result.board.flat().filter((cell) => cell === 16)).toHaveLength(mode.mines);
+            expect(reviewMissingCellRound(result)).toEqual({ board, target, timeMs: 100 });
         }
         expect(game.phase).toBe('won');
         expect(game.elapsedMs(99999)).toBe(1000);
@@ -173,10 +177,9 @@ describe('missing-cell training', () => {
         expect(game.roundTimesMs).toEqual([1, 2, 1]);
         const snapshot = game.roundResults;
         snapshot[0].board[0][0] = 99;
-        snapshot[0].target.row = -1;
         snapshot[0].timeMs = 999;
         expect(game.roundResults[0].board[0][0]).not.toBe(99);
-        expect(game.roundResults[0].target.row).toBeGreaterThanOrEqual(0);
+        expect(reviewMissingCellRound(game.roundResults[0]).target?.row).toBeGreaterThanOrEqual(0);
         expect(game.roundTimesMs).toEqual([1, 2, 1]);
     });
 });

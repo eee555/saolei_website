@@ -4,18 +4,20 @@ import type { DBSchema, IDBPDatabase } from 'idb';
 import type { FlagChordMode } from './flagChordTraining';
 import type { LeftClickMode } from './leftClickTraining';
 import type { MissingCellMode, MissingCellRoundResult } from './missingCellTraining';
-import type { TrainingReplay } from './replay';
+import type { TrainingRecording } from './replay';
 
 export const MINIGAME_DB_NAME = 'saolei-minigame';
-export const MINIGAME_DB_VERSION = 2;
+export const MINIGAME_DB_VERSION = 1;
 export const MINIGAME_RESULTS_STORE = 'results';
 
 /** Successful games only. This is local application data, not an export format. */
 export type MinigameResult = { scoreMs: number } & (
-    | { game: 'left-click'; mode: LeftClickMode; replay: TrainingReplay }
-    | { game: 'flag-chord'; mode: FlagChordMode; replay: TrainingReplay }
+    | { game: 'left-click'; mode: LeftClickMode; replay: TrainingRecording }
+    | { game: 'flag-chord'; mode: FlagChordMode; replay: TrainingRecording }
     | { game: 'missing-cell'; mode: MissingCellMode; rounds: readonly MissingCellRoundResult[] }
 );
+
+export type MinigameReplayData = TrainingRecording | { rounds: readonly MissingCellRoundResult[] };
 
 export type MinigameHistoryEntry = MinigameResult & {
     id?: number;
@@ -38,27 +40,10 @@ let databasePromise: Promise<IDBPDatabase<MinigameHistoryDB>> | undefined;
 export function getMinigameDatabase(): Promise<IDBPDatabase<MinigameHistoryDB>> {
     if (databasePromise !== undefined) return databasePromise;
     const opening: Promise<IDBPDatabase<MinigameHistoryDB>> = openDB<MinigameHistoryDB>(MINIGAME_DB_NAME, MINIGAME_DB_VERSION, {
-        upgrade(db, oldVersion, newVersion, transaction) {
-            if (oldVersion === 0) {
-                const store = db.createObjectStore(MINIGAME_RESULTS_STORE, { keyPath: 'id', autoIncrement: true });
-                store.createIndex('playedAt', 'playedAt');
-                store.createIndex('scoreMs', 'scoreMs');
-            } else if (oldVersion === 1 && newVersion === 2) {
-                // Preserve beta history while renaming the old ranking identifier.
-                void (async () => {
-                    let cursor = await transaction.objectStore(MINIGAME_RESULTS_STORE).openCursor();
-                    while (cursor !== null) {
-                        const entry = cursor.value;
-                        if (entry.game === 'left-click' && 'board' in entry.mode) {
-                            const { board: rankingKey, ...mode } = entry.mode;
-                            if (typeof rankingKey === 'string') await cursor.update({ ...entry, mode: { ...mode, rankingKey } });
-                        }
-                        cursor = await cursor.continue();
-                    }
-                })().catch(() => {
-                    transaction.abort();
-                });
-            }
+        upgrade(db) {
+            const store = db.createObjectStore(MINIGAME_RESULTS_STORE, { keyPath: 'id', autoIncrement: true });
+            store.createIndex('playedAt', 'playedAt');
+            store.createIndex('scoreMs', 'scoreMs');
         },
         blocking() {
             void opening.then((db) => {
@@ -80,7 +65,8 @@ export function getMinigameDatabase(): Promise<IDBPDatabase<MinigameHistoryDB>> 
 /** Snapshot immediately, before awaiting IndexedDB, so restarting cannot change the pending save. */
 export async function saveMinigameResult(result: MinigameResult): Promise<number | undefined> {
     try {
-        const entry = structuredClone({ ...result, playedAt: Date.now() });
+        const data = result.game === 'missing-cell' ? result : { ...result, replay: { initialBoard: result.replay.initialBoard, events: result.replay.events } };
+        const entry = structuredClone({ ...data, playedAt: Date.now() });
         const db = await getMinigameDatabase();
         return await db.add(MINIGAME_RESULTS_STORE, entry);
     } catch (error) {

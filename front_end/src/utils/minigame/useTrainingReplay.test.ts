@@ -47,7 +47,7 @@ describe('shared minigame playback and chart previews', () => {
     it('locks chart previews while preserving time and play state, and cleans up on a new game', () => {
         const replay = scope.run(() => useTrainingReplay());
         if (replay === undefined) throw new Error('Missing replay controller');
-        replay.finish({ durationMs: 1000, events: [], snapshots: [{ eventIndex: -1, board: [[0]], remaining: 0 }], chords: [] });
+        replay.finish({ game: 'left-click', durationMs: 1000, initialBoard: [[0]], events: [], snapshots: [{ eventIndex: -1, board: [[0]], remaining: 0 }], chords: [] });
         expect(replay.frame.value?.timeMs).toBe(1000);
         expect(replay.playback.isPlaying.value).toBe(false);
         replay.playback.seek(100);

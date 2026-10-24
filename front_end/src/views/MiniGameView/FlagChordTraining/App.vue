@@ -58,11 +58,12 @@ import { flagChordModes, FlagChordTraining } from '@/utils/minigame/flagChordTra
 import { offlineDownloadFilename, offlineDownloadUrl } from '@/utils/minigame/games';
 import { saveMinigameResult } from '@/utils/minigame/history';
 import { TrainingReplayRecorder } from '@/utils/minigame/replay';
+import type { TrainingRecording } from '@/utils/minigame/replay';
 import { minigameSettings } from '@/utils/minigame/settings';
 import { useTrainingReplay } from '@/utils/minigame/useTrainingReplay';
 
 defineProps({ offline: { type: Boolean, default: false } });
-const emit = defineEmits<{ completed: [rankingKey: string, scoreMs: number] }>();
+const emit = defineEmits<{ completed: [rankingKey: string, scoreMs: number, replay: TrainingRecording] }>();
 const level = ref<typeof flagChordModes[number]['key']>('b');
 const levelGroupName = useId();
 const mode = computed(() => {
@@ -76,7 +77,7 @@ const phase = ref(game.phase);
 const remaining = ref(game.remaining);
 const elapsed = ref(0);
 const round = ref(0);
-let recorder = new TrainingReplayRecorder(board.value, remaining.value);
+let recorder = new TrainingReplayRecorder('flag-chord', board.value);
 const replay = useTrainingReplay();
 const { pause, resume } = useRafFn(() => {
     elapsed.value = game.elapsedMs(performance.now());
@@ -90,25 +91,21 @@ function restart() {
     phase.value = game.phase;
     remaining.value = game.remaining;
     elapsed.value = 0;
-    recorder = new TrainingReplayRecorder(board.value, remaining.value);
+    recorder = new TrainingReplayRecorder('flag-chord', board.value);
     round.value++;
 }
 
 function onAction(action: ClassicMouseAction, row: number, column: number, now: number) {
-    const previousRemaining = game.remaining;
     if (!game.act(action, row, column, now)) return;
     board.value = game.board;
     phase.value = game.phase;
     remaining.value = game.remaining;
     elapsed.value = game.elapsedMs(now);
-    const recording = recorder.update(now, board.value, remaining.value, phase.value, elapsed.value);
-    const question = game.questions.findIndex((item) => Math.abs(item.row - row) <= 1 && Math.abs(item.column - column) <= 1);
-    if (action === 'right' && board.value[row][column] === 11) recorder.flag(question);
-    if (game.remaining < previousRemaining) recorder.completeQuestion(question);
+    const recording = recorder.update(now, phase.value, elapsed.value);
     replay.finish(recording);
-    if (game.phase === 'won') {
-        if (recording !== null) void saveMinigameResult({ game: 'flag-chord', mode: game.mode, scoreMs: elapsed.value, replay: recording });
-        emit('completed', `flag-chord-${game.mode.key}-v1`, elapsed.value);
+    if (game.phase === 'won' && recording !== null) {
+        void saveMinigameResult({ game: 'flag-chord', mode: game.mode, scoreMs: elapsed.value, replay: recording });
+        emit('completed', `flag-chord-${game.mode.key}-v1`, elapsed.value, { initialBoard: recording.initialBoard, events: recording.events });
     }
     if (game.phase === 'playing') resume();
     else pause();

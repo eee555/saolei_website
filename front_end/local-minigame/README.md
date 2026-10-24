@@ -1,6 +1,6 @@
 # 小游戏开发与离线构建
 
-网站和离线版共用三种训练。网站登录且未封禁的玩家成功通关后自动提交用时，各模式保留个人最佳，公开排行榜位于 `/#/ranking/minigame`，无需实名；离线版只保留本地历史。在线使用指南见 [VitePress 中文页](../../vitepress_doc/zh/guide/minigames.md)及[英文页](../../vitepress_doc/en/guide/minigames.md)。离线帮助维护在 [README.txt](./README.txt)，版权及灵感来源维护在 [COPYRIGHT.txt](./COPYRIGHT.txt)，两份正文同时用于离线页面和 ZIP。[后端实现](../../back_end/saolei/minigame/README.md) 单独维护成绩与排行方案。
+网站和离线版共用三种训练。网站登录且未封禁的玩家成功通关后自动提交用时及回放，各模式保留个人最佳及对应回放，公开排行榜位于 `/#/ranking/minigame`，无需实名；离线版只保留本地历史。在线使用指南见 [VitePress 中文页](../../vitepress_doc/zh/guide/minigames.md)及[英文页](../../vitepress_doc/en/guide/minigames.md)。离线帮助维护在 [README.txt](./README.txt)，版权及灵感来源维护在 [COPYRIGHT.txt](./COPYRIGHT.txt)，两份正文同时用于离线页面和 ZIP。[后端实现](../../back_end/saolei/minigame/README.md) 单独维护成绩与排行方案。
 
 | 游戏 | 网站入口 | 规则与生成器 |
 | --- | --- | --- |
@@ -55,15 +55,15 @@
 
 [history.ts](../src/utils/minigame/history.ts) 使用已有的 `idb`，在每局成功结算时自动保存一条记录；失败、未完成的重开及切换游戏不保存，回放和悬停不重复写入。在线和离线入口共用此逻辑，暂不提供历史列表或历史可视化。
 
-数据库为 `saolei-minigame`，结构版本 2，`results` 表使用自增 `id`，保存游戏类型、完整模式参数、完成时间 `playedAt`（Unix 毫秒）和成绩 `scoreMs`（整数毫秒）。两条非唯一索引分别为 `playedAt` 和 `scoreMs`，支持时间与成绩排序；同一毫秒完成或成绩相同的多局均保留。版本 1 升级时，仅将左键模式中旧的排行榜标识 `mode.board` 改为 `mode.rankingKey`，保留成绩、轨迹和实际棋盘数据。
+数据库为 `saolei-minigame`，结构版本 1，`results` 表使用自增 `id`，保存游戏类型、完整模式参数、完成时间 `playedAt`（Unix 毫秒）和成绩 `scoreMs`（整数毫秒）。两条非唯一索引分别为 `playedAt` 和 `scoreMs`，支持时间与成绩排序；同一毫秒完成或成绩相同的多局均保留。小游戏尚未上线，当前不提供旧结构迁移。
 
-- 左键及标双训练保存完整 `TrainingReplay`：鼠标坐标、按键事件、棋盘快照、计数及标双时间点，读取后可直接交给现有回放组件。
-- 漏雷训练保存 10 局的棋盘、目标坐标及各局耗时，可逐局回溯。
+- 左键及标双训练仅保存 `TrainingRecording` 的初始棋盘 `initialBoard` 和鼠标事件 `events`。读取后调用 `rebuildTrainingReplay(game, recording, scoreMs)`，复用游戏规则一次性重建全部快照、剩余计数及成功标双时间点，再交给现有回放组件；这些派生数据只留在内存中。
+- 漏雷训练保存 10 局的初始棋盘及各局耗时。棋盘用 `16` 表示隐藏雷，唯一的 `10` 表示目标格，无需另存目标坐标；`reviewMissingCellRound` 恢复隐藏雷的显示并定位目标，可逐局回溯。
 - 写入前立即复制数据，异步打开数据库期间重开不会改变待保存内容。`idb.add` 等待事务完成；保存失败记录控制台警告，不中断当前对局，后续成绩仍会尝试写入。
 - 本地历史独立于可丢弃的 `saolei-cache`，不套用缓存的过期、版本清空或自动字段转换。以后修改结构时显式迁移并保留历史数据。连接在版本升级时释放，避免旧页面阻塞迁移。
 - 数据归属于当前浏览器与来源，在线站点和离线文件不保证共用；清除浏览器站点数据会删除记录。
 
-网站入口通过游戏的 `completed(rankingKey, scoreMs)` 事件提交成绩，HTTP 和登录状态仅由网站 `MiniGameView/App.vue` 引入。棋盘与轨迹历史仍只保存在本地，上传失败不会删除本地记录；失败局不发完成事件。离线入口不监听此事件，继续禁止导入网站 HTTP、用户 store 及路由。
+网站入口通过游戏的 `completed(rankingKey, scoreMs, replay)` 事件提交成绩和精简回放，HTTP 和登录状态仅由网站 `MiniGameView/App.vue` 引入。左键及标双提交 `{initialBoard, events}`，漏雷提交 `{rounds}`；表单中的 `replay` 为 JSON 字符串。后端用 JSONField 保存每人每榜最佳成绩对应的回放，回放不进入 Redis。上传失败不会删除本地记录；失败局不发完成事件。离线入口不监听此事件，继续禁止导入网站 HTTP、用户 store 及路由。
 
 ## 构建与资源
 

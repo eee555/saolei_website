@@ -8,7 +8,7 @@ import App from './App.vue';
 import type MiniGameBoard from '@/components/MiniGame/Board.vue';
 import type ReplayAnalysis from '@/components/MiniGame/ReplayAnalysis.vue';
 import i18n from '@/i18n';
-import { replayFrame } from '@/utils/minigame/replay';
+import { rebuildTrainingReplay, replayFrame } from '@/utils/minigame/replay';
 import type { TrainingReplay } from '@/utils/minigame/replay';
 import { leftClickDurations, replaySpeeds } from '@/utils/minigame/replayAnalysis';
 import { defaultMinigameSettings, minigameSettings } from '@/utils/minigame/settings';
@@ -215,10 +215,11 @@ describe('left-click training preview', () => {
             if (entry.game !== 'left-click') throw new Error('Wrong saved game');
             expect(entry.mode).to.include({ key: 'b', density: 87.5 });
             expect(entry.replay.events).not.to.have.length(0);
-            expect(entry.replay.durationMs).to.eq(entry.scoreMs);
-            expect(replayFrame(entry.replay, { timeMs: entry.scoreMs }).remaining).to.eq(0);
+            expect(Object.keys(entry.replay).sort()).to.deep.eq(['events', 'initialBoard']);
+            const replay = rebuildTrainingReplay(entry.game, entry.replay, entry.scoreMs);
+            expect(replayFrame(replay, { timeMs: entry.scoreMs }).remaining).to.eq(0);
             cy.get<ComponentWrapper<typeof App>>('@vue').should((wrapper) => {
-                expect(wrapper.emitted('completed')).to.deep.eq([[entry.mode.rankingKey, entry.scoreMs]]);
+                expect(wrapper.emitted('completed')).to.deep.eq([[entry.mode.rankingKey, entry.scoreMs, entry.replay]]);
             });
         });
     });
