@@ -1,5 +1,25 @@
 # Account Link
 
+## 扫雷网迁移期间
+
+旧站资料页、录像列表和下载地址的爬取逻辑已删除。账号关联申请、人工审核、绑定关系、已保存资料和历史录像继续保留；审核扫雷网关联时不再自动刷新资料。
+
+- 资料刷新 `/accountlink/update/` 的 `platform=c` 返回 HTTP 410，错误类别为 `saolei/crawling_disabled`；其他平台沿用原流程。
+- 触发爬取的 `/accountlink/saolei_import_video/`、`/accountlink/saolei_import_videos/` 已移除，返回 HTTP 404。
+- 历史列表 `/accountlink/saolei/videolist/get/` 和统计 `/accountlink/saolei/videoimport/stat/` 仍可查询，不访问外站。
+- 三个旧 Django Task 路径保留为失败入口，处理升级前已入队的任务，并禁止管理员重启这些爬取任务。部署时需要重启 Web 和任务 worker，使它们加载新代码；不清除历史任务或业务数据。
+- 前端保留原有卡片、轮播、同步区域和统计展示，禁用爬取按钮，停止进度轮询；管理按钮仍可查看历史结果。
+
+后续接入新数据来源时复用以下业务入口，不恢复旧站抓取：
+
+| 入口 | 调用方提供 | 保留的处理 |
+| --- | --- | --- |
+| `update_saolei_account_info(account, profile)` | 结构化资料字典，包含 `name`、`total_views`、`timems`、`bvs_cent`、`count` | 更新资料、纪录、录像数量和更新时间 |
+| `update_saolei_user_video_one_page(account, video_list)` | 一批 `SaoleiVideoInfo`，不再接收页码 | 录像元数据入库、跳过已有 ID、返回新增记录 |
+| `saolei_video_import_one(saolei_video, file, state)` | 已取得的 Django `File` 和来源审核状态 | 文件查重、标识校验、录像创建、来源上传时间、比赛与排行更新 |
+
+不修改模型字段，不删除已有录像，不需要数据库迁移。
+
 ## Mineracer 接入现状
 
 Mineracer 提供的账号关联方式不是现有的“用户手填平台 ID，管理员人工验证”流程，而是更接近 OAuth 2.0 Device Authorization Grant 的确认模型。

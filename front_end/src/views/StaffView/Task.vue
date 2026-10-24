@@ -82,6 +82,7 @@
             <template #body="{ data }">
                 <BaseButton
                     v-if="data.status === 'FAILED'"
+                    :disabled="disabledCrawlingTasks.has(data.task_path)"
                     :loading="restartingTaskId === data.id"
                     @click="restartTask(data)"
                 >
@@ -138,6 +139,12 @@ interface TaskSummary {
 }
 
 const { proxy } = useCurrentInstance();
+
+const disabledCrawlingTasks = new Set([
+    'accountlink.tasks.task_saolei_profile',
+    'accountlink.tasks.task_saolei_video_import',
+    'accountlink.tasks.task_saolei_video_import_bulk',
+]);
 
 const taskData = ref<TaskDetail[]>([]);
 const selectedTasks = ref<TaskDetail[]>([]);

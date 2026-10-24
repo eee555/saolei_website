@@ -9,6 +9,8 @@ Account links connect your identity on different platforms to your Open Mineswee
 
 You need to sign in before you can manage your own account links.
 
+Profile refresh and replay synchronization are disabled while Saolei.wang migrates. Account linking, saved profiles and imported replays remain available. Use Manage to view saved import results.
+
 ## Linking Process
 
 Mineracer accounts are linked automatically after confirmation on Mineracer. Other platforms require you to enter an ID and have a moderator verify it.

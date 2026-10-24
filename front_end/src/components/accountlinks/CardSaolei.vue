@@ -52,15 +52,12 @@
                         {{ t('accountlink.statSummary') }}
                     </span>
                     &nbsp;
-                    <ElButton v-loading="taskStatus == 'loading'" @click="updateLink(); $emit('refresh')">
+                    <ElButton disabled>
                         {{ t('accountlink.synchronize') }}
                     </ElButton>
                 </div>
                 <div class="text-regular text-small" style="margin-bottom: auto; margin-top: 0.25em;">
-                    {{ t('accountlink.statSummaryTooltip') }}
-                </div>
-                <div v-if="errorMsg" class="text-danger text-small" style="margin-top: 0.25em;">
-                    {{ errorMsg }}
+                    {{ t('local.crawlingDisabled') }}
                 </div>
                 <div style="margin-bottom: 0.25em">
                     <span class="text-medium text-regular">
@@ -79,25 +76,14 @@
                 <div class="text-regular">
                     已收藏{{ importSummary.total }}个录像
                     &nbsp;
-                    <span v-if="importSummary.bulk_task_status == 'FAILED'" class="text-danger">
-                        后台任务出错，请联系管理员
-                    </span>
-                    <span v-else-if="importSummary.bulk_task_status == 'READY'" class="text-primary">
-                        正在排队中
-                    </span>
-                    <span v-else-if="importSummary.bulk_task_status == 'RUNNING'" class="text-warning">
-                        正在同步中
-                    </span>
-                    <template v-else>
-                        <ElLink underline="never" style="vertical-align: top;" @click="syncModeAll = !syncModeAll">
-                            {{ syncModeAll ? t('accountlink.synchronizeAll') : t('accountlink.synchronizeNew') }}
-                        </ElLink>
-                        <ElButton class="button-compact" @click="syncModeAll ? createSyncTask('all') : createSyncTask('new')">
-                            更新
-                        </ElButton>
-                    </template>
+                    <ElLink disabled underline="never" style="vertical-align: top;">
+                        {{ syncModeAll ? t('accountlink.synchronizeAll') : t('accountlink.synchronizeNew') }}
+                    </ElLink>
+                    <ElButton disabled class="button-compact">
+                        更新
+                    </ElButton>
                     &nbsp;
-                    <ElButton v-loading="videoListImporting" class="button-compact" @click="importQueueVisible = true">
+                    <ElButton class="button-compact" @click="importQueueVisible = true">
                         {{ t('accountlink.synchronizeManage') }}
                     </ElButton>
                 </div>
@@ -138,8 +124,7 @@
 import 'vue-data-ui/style.css';
 import '@/styles/button.css';
 
-import { useIntervalFn } from '@vueuse/core';
-import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink, vLoading } from 'element-plus';
+import { ElButton, ElCarousel, ElCarouselItem, ElDescriptions, ElDescriptionsItem, ElDialog, ElInput, ElLink } from 'element-plus';
 import PrToolbar from 'primevue/toolbar';
 import { computed, ref, useTemplateRef, watch } from 'vue';
 import { useI18n } from 'vue-i18n';
@@ -154,12 +139,10 @@ import { BaseIconInfo } from '@/components/common/icon';
 import SaoleiImportHelper from '@/components/dialogs/SaoleiImportHelper.vue';
 import { httpErrorNotification } from '@/components/Notifications';
 import StackBar from '@/components/visualization/StackBar/App.vue';
-import { getAccountLinkUpdateErrorMessageKey, updateAccountLink } from '@/services/accountLinkService';
 import { store } from '@/store';
 import { cs_to_s } from '@/utils';
-import { AccountLinkPlatform, AccountSaolei, SaoleiImportSummaryDefault } from '@/utils/accountlinks';
+import { AccountSaolei, SaoleiImportSummaryDefault } from '@/utils/accountlinks';
 import type { SaoleiImportSummary } from '@/utils/accountlinks';
-import type { TaskStatus } from '@/utils/common/structInterface';
 import useCurrentInstance from '@/utils/common/useCurrentInstance';
 import { toISODateTimeString } from '@/utils/datetime';
 
@@ -169,52 +152,27 @@ const props = defineProps({
     info: { type: AccountSaolei, default: () => new AccountSaolei() },
 });
 
-defineEmits(['refresh']);
+const emit = defineEmits(['refresh']);
 
 const { proxy } = useCurrentInstance();
 
 const refCarousel = useTemplateRef<typeof ElCarousel>('refCarousel');
-const errorMsg = ref('');
-const taskStatus = ref<TaskStatus>('');
 const deleteDialogVisible = ref(false);
 const importQueueVisible = ref(false);
 const confirmSaoleiId = ref('');
 const syncModeAll = ref(false);
 const carouselLength = computed(() => (store.player.id == store.user.id ? 2 : 1));
 
-async function updateLink() {
-    taskStatus.value = 'loading';
-    await updateAccountLink(AccountLinkPlatform.Saolei).then(function (data) {
-        errorMsg.value = '';
-        taskStatus.value = data.type;
-        if (data.type == 'error') {
-            errorMsg.value = t('accountlink.updateError.title') + t('common.punct.colon') + t(getAccountLinkUpdateErrorMessageKey(data.category));
-        }
-    }).catch(function (error: unknown) {
-        errorMsg.value = '';
-        taskStatus.value = 'error';
-        httpErrorNotification(error);
-    });
-}
-
 function deleteAccountLink() {
     proxy.$axios.post('/accountlink/delete/', {
         platform: 'c',
-    }).then().catch(httpErrorNotification);
+    }).then(() => {
+        emit('refresh');
+    }).catch(httpErrorNotification);
     deleteDialogVisible.value = false;
 }
 
-function createSyncTask(mode: 'all' | 'new') {
-    proxy.$axios.post('/accountlink/saolei_import_videos/', {
-        mode: mode,
-    }).then(getImportSummary).catch(httpErrorNotification);
-}
-
 const importSummary = ref<SaoleiImportSummary>(SaoleiImportSummaryDefault);
-const importSummaryLoading = ref(false);
-let importSummarySaoleiId = 0;
-const videoImporting = computed(() => importSummary.value.new_connection + importSummary.value.new_failed + importSummary.value.new_success != importSummary.value.new_total);
-const videoListImporting = computed(() => ['READY', 'RUNNING'].includes(importSummary.value.bulk_task_status));
 const stackBarData = computed(() => [
     { name: t('accountlink.importStatus.successful'), color: '#34d399', value: importSummary.value.old_imported + importSummary.value.new_success },
     { name: t('accountlink.importStatus.running'), color: '#fbbf24', value: importSummary.value.new_total - importSummary.value.new_success - importSummary.value.new_ready - importSummary.value.new_failed - importSummary.value.new_connection },
@@ -232,31 +190,16 @@ const stackBarNewData = computed(() => [
 
 async function getImportSummary() {
     if (props.info.id == 0) return;
-    importSummaryLoading.value = true;
     await proxy.$axios.get('/accountlink/saolei/videoimport/stat/', {
         params: {
             saolei_id: props.info.id,
         },
     }).then((response) => {
         importSummary.value = response.data;
-    }).catch(httpErrorNotification).finally(() => {
-        importSummaryLoading.value = false;
-    });
+    }).catch(httpErrorNotification);
 }
 
 watch(() => props.info.id, getImportSummary, { immediate: true });
-
-async function pollImportSummary() {
-    if (props.info.id != importSummarySaoleiId) {
-        importSummarySaoleiId = props.info.id;
-    } else if (!importSummaryLoading.value && (videoImporting.value || videoListImporting.value)) {
-        await getImportSummary();
-    }
-}
-
-useIntervalFn(() => {
-    void pollImportSummary();
-}, 30000);
 
 /* 本地化 Localization */
 const i18nMessage = {
@@ -264,11 +207,13 @@ const i18nMessage = {
         name: '姓名',
         totalViews: '综合人气',
         videoCount: '录像数量',
+        crawlingDisabled: '扫雷网正在迁移，资料刷新和录像同步已关闭。账号关联和已保存的数据仍然保留。',
     } },
     en: { local: {
         name: 'Name',
         totalViews: 'Total Views',
         videoCount: 'Video Count',
+        crawlingDisabled: 'Profile refresh and replay synchronization are disabled while Saolei.wang migrates. Account links and saved data remain available.',
     } },
 };
 

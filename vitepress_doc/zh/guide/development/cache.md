@@ -17,6 +17,8 @@ description: 开源扫雷网Redis/Django缓存结构详解，包括录像队列�
 redis-cli -n 0 DEL io_s_old io_r_old io_s_spds io_r_spds cpus
 ```
 
+扫雷网旧站爬取已停用，账号关联和历史数据查询保留。元数据写入和文件导入仍可接收调用方提供的数据；旧爬取任务不会再访问外站或写入业务数据。具体入口见仓库 `back_end/saolei/accountlink/README.md`。
+
 ## 服务器内存统计
 
 `GET /api/monitor/memoryusage` 同时返回进程内存 `memory` 和 Redis 分配内存 `redis`。`monitor/cache.py` 通过 Django `default` Redis 缓存保存完整返回体，逻辑 key 为 `api:monitor/memoryusage`，TTL 300 秒。命中不重新采集、不读取用户 ID、不续期；到期后的首次请求重新计算。不新增 APScheduler 任务。
@@ -115,8 +117,6 @@ digraph cache {
         create_account_link [label="/api/accountlink/create/"];
         delete_link [label="/accountlink/delete/"];
         update_link [label="/accountlink/update/"];
-        view_saolei_import_one_video [label="/accountlink/saolei_import_video/"];
-        view_saolei_import_videos [label="/accountlink/saolei_import_videos/"];
         view_saolei_get_import_list [label="/accountlink/saolei/videolist/get/"];
         view_saolei_get_import_summary [label="/accountlink/saolei/videoimport/stat/"];
         task_summary [label="/api/monitor/tasksummary"];
@@ -252,8 +252,6 @@ digraph cache {
             fillcolor="${#ede9fe|#4c1d95}",
             color="${#8b5cf6|#a78bfa}"
         ];
-        task_saolei_video_import_bulk [label="task_saolei_video_import_bulk"];
-        task_saolei_video_import [label="task_saolei_video_import"];
         task_gsc_finish [label="task_gsc_finish"];
         task_gsc_refresh_best [label="task_gsc_refresh_best"];
         task_award_tournament [label="task_award_tournament"];
@@ -272,40 +270,6 @@ digraph cache {
     delete_link -> accountlinkplatform_db;
     accountlinkplatform_db -> update_link;
     update_link -> accountlinkplatform_db;
-    videosaolei_db -> view_saolei_import_one_video;
-    accountlinkplatform_db -> view_saolei_import_one_video;
-    task_db -> view_saolei_import_one_video;
-    video_db -> view_saolei_import_one_video;
-    video_files -> view_saolei_import_one_video;
-    view_saolei_import_one_video -> task_db;
-    view_saolei_import_one_video -> videosaolei_db;
-    view_saolei_import_one_video -> video_db;
-    view_saolei_import_one_video -> video_files;
-    accountlinkplatform_db -> view_saolei_import_videos;
-    videosaolei_db -> view_saolei_import_videos;
-    task_db -> view_saolei_import_videos;
-    view_saolei_import_videos -> task_db [label="enqueue/delete"];
-    view_saolei_import_videos -> accountlinkplatform_db;
-    view_saolei_import_videos -> task_saolei_video_import_bulk [label="enqueue"];
-    task_db -> task_saolei_video_import_bulk [label="read/delete"];
-    accountlinkplatform_db -> task_saolei_video_import_bulk [label="read"];
-    videosaolei_db -> task_saolei_video_import_bulk [label="read/write"];
-    task_saolei_video_import_bulk -> videosaolei_db [label="write"];
-    task_saolei_video_import_bulk -> task_db [label="enqueue/delete"];
-    task_saolei_video_import_bulk -> task_saolei_video_import [label="enqueue each"];
-    task_db -> task_saolei_video_import [label="status/read"];
-    videosaolei_db -> task_saolei_video_import [label="read"];
-    accountlinkplatform_db -> task_saolei_video_import [label="FK read"];
-    userprofile_db -> task_saolei_video_import [label="O2O read"];
-    userms_db -> task_saolei_video_import [label="O2O read"];
-    identifier_db -> task_saolei_video_import [label="read"];
-    video_db -> task_saolei_video_import [label="collision/read"];
-    video_files -> task_saolei_video_import [label="read"];
-    task_saolei_video_import -> task_db [label="status write"];
-    task_saolei_video_import -> videosaolei_db [label="write"];
-    task_saolei_video_import -> userms_db [label="create"];
-    task_saolei_video_import -> video_db [label="write"];
-    task_saolei_video_import -> video_files [label="write"];
     userprofile_db -> view_saolei_get_import_list;
     accountlinkplatform_db -> view_saolei_get_import_list;
     videosaolei_db -> view_saolei_get_import_list;
