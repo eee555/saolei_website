@@ -26,7 +26,7 @@
                     </h3>
                     <ul class="medal-list">
                         <li v-for="item in group.items" :key="itemKey(item)" class="medal-tile">
-                            <BaseTooltip>
+                            <BaseTooltip :show-animation="0" :hide-animation="0">
                                 <div
                                     class="medal-face" :class="{ 'is-pinned': isSelected(item.grant_id), 'is-pickable': canPick(item) }"
                                     :role="canEdit ? 'button' : undefined" :tabindex="canEdit ? 0 : undefined"

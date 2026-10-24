@@ -58,6 +58,20 @@ class PlayerMedalOut(Schema):
     series: list[SeriesOut]
 
 
+class PlayerStateGrantOut(Schema):
+    code: str
+    stage: int
+    timestamp: int | None
+    scope: str
+    tournament: int | None
+    rank: int | None
+
+
+class PlayerStateOut(Schema):
+    user_id: int
+    grants: list[PlayerStateGrantOut]
+
+
 class GrantPageOut(Schema):
     count: int
     page: int

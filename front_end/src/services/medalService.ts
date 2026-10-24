@@ -1,3 +1,5 @@
+import { serviceConfig } from './store';
+
 import $axios from '@/http';
 import en from '@/i18n/locales/en';
 import zhCn from '@/i18n/locales/zh-cn';
@@ -31,6 +33,21 @@ export interface PlayerMedals {
     pin_ids: number[];
     pins: MedalItem[];
     series: { series: string; items: MedalItem[] }[];
+}
+
+// 名字悬停用的已入档短记录。timestamp 是 Unix 秒，未记录时为 null。GET /api/medal/players/state 返回 PlayerMedalState[]。
+export interface MedalStateRecord {
+    code: string;
+    stage: number;
+    timestamp: number | null;
+    scope: string;
+    tournament: number | null;
+    rank: number | null;
+}
+
+export interface PlayerMedalState {
+    user_id: number;
+    grants: MedalStateRecord[];
 }
 
 const SUMMARY_TTL = 30_000;
@@ -145,6 +162,89 @@ export async function saveMedalPins(grantIds: number[], userId: number): Promise
     refreshPlayerMedals(userId);
 }
 
+const MEDAL_STATE_ID_LIMIT = 100;
+const MEDAL_STATE_CACHE_LIMIT = 200;
+type MedalStateStatus = 'pending' | 'inFlight';
+interface MedalStateRequest {
+    promise: Promise<MedalStateRecord[]>;
+    resolve: (value: MedalStateRecord[]) => void;
+    reject: (reason?: unknown) => void;
+    status: MedalStateStatus;
+}
+
+const medalStateCache = new Map<number, MedalStateRecord[]>();
+const medalStateRequests = new Map<number, MedalStateRequest>();
+let medalStateTimer: ReturnType<typeof setTimeout> | null = null;
+
+function rememberMedalState(userId: number, grants: MedalStateRecord[]) {
+    if (medalStateCache.has(userId)) medalStateCache.delete(userId);
+    medalStateCache.set(userId, grants);
+    while (medalStateCache.size > MEDAL_STATE_CACHE_LIMIT) {
+        const oldest = medalStateCache.keys().next().value;
+        if (oldest === undefined) break;
+        medalStateCache.delete(oldest);
+    }
+}
+
+function medalStateBatchSize() {
+    const configured = Math.trunc(serviceConfig.value.userInfoBatchSize);
+    const size = Number.isFinite(configured) ? configured : MEDAL_STATE_ID_LIMIT;
+    return Math.min(MEDAL_STATE_ID_LIMIT, Math.max(1, size));
+}
+
+function scheduleMedalStateBatch() {
+    if (medalStateTimer) return;
+    medalStateTimer = setTimeout(() => {
+        medalStateTimer = null;
+        void processMedalStateBatch();
+    }, serviceConfig.value.userInfoBatchDelay);
+}
+
+function grantedStateRecords(grants: MedalStateRecord[] | undefined) {
+    return (grants ?? []).filter((grant) => grant.stage > 0);
+}
+
+async function processMedalStateBatch() {
+    const pending = [...medalStateRequests.entries()].filter(([, request]) => request.status === 'pending');
+    const entries = pending.slice(0, medalStateBatchSize());
+    if (entries.length === 0) return;
+    entries.forEach(([, request]) => {
+        request.status = 'inFlight';
+    });
+    const userIds = entries.map(([id]) => id);
+    try {
+        const { data } = await $axios.get<PlayerMedalState[]>('/api/medal/players/state', { params: { ids: userIds.join(',') } });
+        const byId = new Map((data ?? []).map((row) => [row.user_id, grantedStateRecords(row.grants)]));
+        for (const [userId, { resolve }] of entries) {
+            const grants = byId.get(userId) ?? [];
+            rememberMedalState(userId, grants);
+            resolve(grants);
+        }
+    } catch (error) {
+        entries.forEach(([, { reject }]) => {
+            reject(error);
+        });
+    } finally {
+        entries.forEach(([userId]) => {
+            medalStateRequests.delete(userId);
+        });
+        if ([...medalStateRequests.values()].some((request) => request.status === 'pending')) scheduleMedalStateBatch();
+    }
+}
+
+// 名字出现时收集 id，延迟后打一次状态接口，结果留在内存。不读玩家主页的详情接口。
+export function fetchPlayerMedalState(userId: number): Promise<MedalStateRecord[]> {
+    if (userId === 0) return Promise.resolve([]);
+    const cached = medalStateCache.get(userId);
+    if (cached) return Promise.resolve(cached);
+    const existing = medalStateRequests.get(userId);
+    if (existing) return existing.promise;
+    const { promise, resolve, reject } = Promise.withResolvers<MedalStateRecord[]>();
+    medalStateRequests.set(userId, { promise, resolve, reject, status: 'pending' });
+    scheduleMedalStateBatch();
+    return promise;
+}
+
 const medalSeriesKeys: Record<string, keyof typeof en.medal.series> = {
     破境: 'breakthrough',
     神速: 'speed',
@@ -194,6 +294,33 @@ export function medalLevel(code: string): 'b' | 'i' | 'e' | '' {
     const matched = (/\.([bie])$/).exec(code);
     if (matched?.[1] === 'b' || matched?.[1] === 'i' || matched?.[1] === 'e') return matched[1];
     return '';
+}
+
+const medalCodeSeries = [
+    ['ability.time.nf.', '盲扫破境'],
+    ['ability.time.', '破境'],
+    ['ability.bvs.nf.', '盲扫神速'],
+    ['ability.bvs.', '神速'],
+    ['ability.stnb.nf.', '盲扫通明'],
+    ['ability.stnb.', '通明'],
+    ['ability.thrp.nf.three', '三阶盲扫·精工'],
+    ['ability.thrp.nf.', '盲扫·精工'],
+    ['ability.thrp.fl.three', '三阶标旗·精工'],
+    ['ability.thrp.fl.', '标旗·精工'],
+    ['novice.realname', '实名在册'],
+    ['novice.review', '录像过审'],
+    ['novice.levels_nf', '盲扫新秀'],
+    ['novice.levels', '扫雷新秀'],
+    ['novice.modes', '走马观花'],
+    ['novice.saolei', '旧迹新篇'],
+    ['shareholder.', '原始股东'],
+] as const;
+
+const medalSeriesByCodePrefix = [...medalCodeSeries].sort((left, right) => right[0].length - left[0].length);
+
+export function medalSeriesFromCode(code: string): string {
+    const matched = medalSeriesByCodePrefix.find(([prefix]) => code.startsWith(prefix));
+    return matched?.[1] ?? '';
 }
 
 const medalArtFolder: Record<string, string> = {

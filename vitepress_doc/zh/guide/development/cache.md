@@ -17,6 +17,8 @@ description: 开源扫雷网Redis/Django缓存结构详解，包括录像队列�
 redis-cli -n 0 DEL io_s_old io_r_old io_s_spds io_r_spds cpus
 ```
 
+扫雷网旧站爬取已停用，账号关联和历史数据查询保留。元数据写入和文件导入仍可接收调用方提供的数据；旧爬取任务不会再访问外站或写入业务数据。具体入口见仓库 `back_end/saolei/accountlink/README.md`。
+
 ## 服务器内存统计
 
 `GET /api/monitor/memoryusage` 同时返回进程内存 `memory` 和 Redis 分配内存 `redis`。`monitor/cache.py` 通过 Django `default` Redis 缓存保存完整返回体，逻辑 key 为 `api:monitor/memoryusage`，TTL 300 秒。命中不重新采集、不读取用户 ID、不续期；到期后的首次请求重新计算。不新增 APScheduler 任务。
@@ -115,8 +117,6 @@ digraph cache {
         create_account_link [label="/api/accountlink/create/"];
         delete_link [label="/accountlink/delete/"];
         update_link [label="/accountlink/update/"];
-        view_saolei_import_one_video [label="/accountlink/saolei_import_video/"];
-        view_saolei_import_videos [label="/accountlink/saolei_import_videos/"];
         view_saolei_get_import_list [label="/accountlink/saolei/videolist/get/"];
         view_saolei_get_import_summary [label="/accountlink/saolei/videoimport/stat/"];
         task_summary [label="/api/monitor/tasksummary"];
@@ -252,8 +252,6 @@ digraph cache {
             fillcolor="${#ede9fe|#4c1d95}",
             color="${#8b5cf6|#a78bfa}"
         ];
-        task_saolei_video_import_bulk [label="task_saolei_video_import_bulk"];
-        task_saolei_video_import [label="task_saolei_video_import"];
         task_gsc_finish [label="task_gsc_finish"];
         task_gsc_refresh_best [label="task_gsc_refresh_best"];
         task_award_tournament [label="task_award_tournament"];
@@ -272,40 +270,6 @@ digraph cache {
     delete_link -> accountlinkplatform_db;
     accountlinkplatform_db -> update_link;
     update_link -> accountlinkplatform_db;
-    videosaolei_db -> view_saolei_import_one_video;
-    accountlinkplatform_db -> view_saolei_import_one_video;
-    task_db -> view_saolei_import_one_video;
-    video_db -> view_saolei_import_one_video;
-    video_files -> view_saolei_import_one_video;
-    view_saolei_import_one_video -> task_db;
-    view_saolei_import_one_video -> videosaolei_db;
-    view_saolei_import_one_video -> video_db;
-    view_saolei_import_one_video -> video_files;
-    accountlinkplatform_db -> view_saolei_import_videos;
-    videosaolei_db -> view_saolei_import_videos;
-    task_db -> view_saolei_import_videos;
-    view_saolei_import_videos -> task_db [label="enqueue/delete"];
-    view_saolei_import_videos -> accountlinkplatform_db;
-    view_saolei_import_videos -> task_saolei_video_import_bulk [label="enqueue"];
-    task_db -> task_saolei_video_import_bulk [label="read/delete"];
-    accountlinkplatform_db -> task_saolei_video_import_bulk [label="read"];
-    videosaolei_db -> task_saolei_video_import_bulk [label="read/write"];
-    task_saolei_video_import_bulk -> videosaolei_db [label="write"];
-    task_saolei_video_import_bulk -> task_db [label="enqueue/delete"];
-    task_saolei_video_import_bulk -> task_saolei_video_import [label="enqueue each"];
-    task_db -> task_saolei_video_import [label="status/read"];
-    videosaolei_db -> task_saolei_video_import [label="read"];
-    accountlinkplatform_db -> task_saolei_video_import [label="FK read"];
-    userprofile_db -> task_saolei_video_import [label="O2O read"];
-    userms_db -> task_saolei_video_import [label="O2O read"];
-    identifier_db -> task_saolei_video_import [label="read"];
-    video_db -> task_saolei_video_import [label="collision/read"];
-    video_files -> task_saolei_video_import [label="read"];
-    task_saolei_video_import -> task_db [label="status write"];
-    task_saolei_video_import -> videosaolei_db [label="write"];
-    task_saolei_video_import -> userms_db [label="create"];
-    task_saolei_video_import -> video_db [label="write"];
-    task_saolei_video_import -> video_files [label="write"];
     userprofile_db -> view_saolei_get_import_list;
     accountlinkplatform_db -> view_saolei_get_import_list;
     videosaolei_db -> view_saolei_get_import_list;
@@ -685,11 +649,37 @@ participant 删除时，`revoke_rank_score_on_participant_delete` 在删除事�
 
 玩家摘要持久化到MySQL的`medal_playermedalsummary`，每名玩家一行，以玩家ID为主键。JSON只含有效授予的公开事实、进度数值、佩戴顺序和首次扫描状态；定义、隐藏条件和计分读取当前共享图鉴。图鉴缓存命中、摘要已建立时，`player_summary()`通过连接玩家表和摘要表的1次查询返回结果。此计数不包含认证、会话、Redis访问和中间件。
 
-后台评估、单项授予、人工决定和佩戴服务在同一玩家锁、同一数据库事务中更新业务记录和摘要；内容相同时不改写摘要。首次读取旧玩家时从现有勋章表补齐，不扫描录像。录像或比赛参加记录删除前，在同一玩家锁和删除事务内移除关联摘要，后续读取从完成外键置空的记录补齐。无需新增玩家Redis键，也不依赖跨存储失效通知。维护原始勋章表的脚本必须使用服务入口，或在相同玩家锁和事务中删除受影响摘要；现有管理员重算入口也会同步重建摘要。
+后台评估、单项授予、人工决定和佩戴服务在同一玩家锁、同一数据库事务中更新业务记录和摘要；内容相同时不改写摘要。首次读取旧玩家时从现有勋章表补齐，不扫描录像。录像或比赛参加记录删除前，在同一玩家锁和删除事务内移除关联摘要。事务提交后再删掉该玩家的 `medal:state:{user_id}`；删除回滚时摘要和键都还在。下次读取从完成外键置空的记录补齐摘要。维护原始勋章表的脚本必须使用服务入口，或在相同玩家锁和事务中删除受影响摘要；现有管理员重算入口也会同步重建摘要。
 
-前端侧栏与勋章页通过共享服务复用按玩家保存的摘要和进行中的请求。首次扫描未完成时有限轮询；切换玩家或停用页面时取消该组件订阅，旧请求不得覆盖新玩家。保存佩戴后使相关摘要失效并通知活跃订阅者刷新。前端缓存只用于当前页面会话，不增加 Redis 中按玩家增长的键。
+前端侧栏与勋章页通过共享服务复用按玩家保存的摘要和进行中的请求。首次扫描未完成时有限轮询；切换玩家或停用页面时取消该组件订阅，旧请求不得覆盖新玩家。保存佩戴后使相关摘要失效并通知活跃订阅者刷新。名字悬停另读 `medal:state:{user_id}`；浏览器里的悬停缓存只活在当前页面会话。
 
-管理员人工决定保存在 `medal_medaloverride`，操作记录追加到 `medal_medaloverridelog`，不放入 Redis。管理页提交后使同一浏览器内目标玩家的摘要失效，其他玩家缓存不变。恢复自动需要后台任务完成后重新加载；其他浏览器已打开的页面不会收到推送。详细优先规则见 [管理员勋章决定](./medal-overrides.md)。
+管理员人工决定保存在 `medal_medaloverride`，操作记录追加到 `medal_medaloverridelog`。撤销会在状态键里写成 `locked: true`，不把理由放进 Redis。管理页提交后使同一浏览器内目标玩家的摘要失效，其他玩家缓存不变。恢复自动需要后台任务完成后重新加载；其他浏览器已打开的页面不会收到推送。详细优先规则见 [管理员勋章决定](./medal-overrides.md)。
+
+## 勋章状态
+
+逻辑 key 为 `medal:state:{user_id}`，不过期。它只服务勋章自己的资格比较，以及 `GET /api/medal/players/state` 的名字悬停。生涯最佳不读排行榜 Redis，也不从这把键反推历史录像。
+
+没有这把键表示这名玩家还没扫过。工人必须走现有 `evaluate_player`，按库里已有录像、实名和绑定发放，写下 `MedalScan`，事务提交后再写 Redis。不能把缺键当成零枚勋章跳过。扫描后一枚都没有，写 `{"grants":[]}`，之后的上传才走比较。上线时运行 [enqueue_medal_backfill](./management-commands.md#enqueue-medal-backfill)，给还没有 `MedalScan` 的玩家入队补发；打开详情时的补发仍然保留。
+
+值是一个 JSON 对象，字段名是单词，时间是 Unix 秒：
+
+```json
+{"grants":[{"code":"ability.time.b","stage":20000,"value":15230,"timestamp":1761123456,"scope":"","tournament":null,"rank":null}]}
+```
+
+- `code` 是定义，`stage` 是当前档阈值，`value` 是当前成绩的整数刻度，`timestamp` 是原 `granted_at`。
+- `scope` 是原 `scope_key`，普通勋章为 `""`。`tournament`、`rank` 是赛事预留，现在多为 `null`。
+- `value` 必须在。同一档里 15.0 秒和 15.2 秒的 `stage` 相同，没有 `value` 就无法判断新录像是否更好。
+- 尚未入档的 code 也留下，`stage` 为 0，`value` 是当前最佳。没有这条，未入档的勋章只能再去扫库。
+- 未入档的全级别 / 盲扫全级别另有 `levels`，全模式另有 `modes`，供增量并集；已入档后不再保留。
+- 人工撤销的 code 用 `locked: true` 标出。比较时跳过，不自动发回。
+- 不放入 `video_id`、分数、阈值或系列名。
+
+已有 `MedalScan` 时，摘要在事务提交后从库重新组装再写这把键，避免同一玩家两次提交时旧快照盖住新结果。摘要删除则在提交后删键。业务回滚不会写出或删掉键。
+
+有状态行时，刷新任务只按主键读出这次碰到的录像，和同一难度、同一风格的 `value` 比较。不比已记录成绩更好、也够不着未入档第一档的勋章跳过。严格更好或第一次跨过第一档时，直接改进度和授予，不再为这一枚聚合历史录像。已授予的新手跳过；未授予的级别 / 模式用状态里的集合并集，凑齐后才查一次证据。状态行缺少 `levels` / `modes` 时先按库补齐一次再并集，避免升级后的旧键丢掉历史。退审、成绩变差、换玩家、删除录像可能废掉当前最佳，只聚合受影响的难度，再写回 Redis。标识批量绑定、解绑，以及还没有 `MedalScan` 的玩家，仍走全量 `evaluate_player`，跑完再写键。
+
+状态接口只返回 `stage > 0` 且未锁定的短记录：`code`、`stage`、`timestamp`、`scope`、`tournament`、`rank`。`value` 留在键里。命中时不查 MySQL。玩家主页的详情接口仍读 MySQL 摘要。
 
 ## 写入与重建入口
 
@@ -703,6 +693,7 @@ participant 删除时，`revoke_rank_score_on_participant_delete` 在删除事�
 | 比赛积分排行 | `TournamentCache.update_tournament_user` / `update_tournament_users`；APScheduler 年度锚点更新 | `manage.py rebuild_tournament_user_cache` 重建全部 7 个 zset；`manage.py rebuild_tournament_current_score_cache` 原子重算当前积分 zset 和年度锚点。 |
 | common 摘要 | 对应 API 内部 `cache.set` | TTL 到期自动失效。 |
 | 勋章图鉴 | `medal.signals.invalidate_medal_catalog` | 定义保存或删除后删除 `medal:catalog`。没有单独的重建命令，下次读取从 `MedalDefinition` 装回。 |
+| 勋章状态 | 评估、授予、人工决定和佩戴在事务提交后写 `medal:state:{user_id}` | 没有单独的重建命令。`manage.py enqueue_medal_backfill` 给没有 `MedalScan` 的玩家入队补发，跑完再写键。摘要删除提交后删键。 |
 | 文章目录 | `article.views.update_list` | 管理员手动调用 `update_list` 全量刷新。 |
 
 ## 读取约定

@@ -1,9 +1,14 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import type { PlayerMedals } from './medalService';
+import type { MedalStateRecord, PlayerMedals } from './medalService';
 
-const { axiosGet, axiosPut } = vi.hoisted(() => ({ axiosGet: vi.fn(), axiosPut: vi.fn() }));
+const { axiosGet, axiosPut, serviceConfig } = vi.hoisted(() => ({
+    axiosGet: vi.fn(),
+    axiosPut: vi.fn(),
+    serviceConfig: { value: { userInfoBatchDelay: 1, userInfoBatchSize: 100 } },
+}));
 vi.mock('@/http', () => ({ default: { get: axiosGet, put: axiosPut } }));
+vi.mock('./store', () => ({ serviceConfig }));
 
 function summary(scanPending = false, score = 0): PlayerMedals {
     return { scan_pending: scanPending, score, max_pins: 6, pin_ids: [], pins: [], series: [] };
@@ -33,6 +38,28 @@ describe('shared medal image parts', () => {
         expect(medalArtUrl('原始股东', 'shareholder.origin', 1000)).toBe('/assets/medals/shareholder.webp?v=5');
         expect(medalArtUrl('神速', 'ability.bvs.e', null)).toBeUndefined();
         expect(medalArtUrl('unknown', 'unknown', 1)).toBeUndefined();
+    });
+
+    it('maps a medal code prefix onto the series used by the art', async () => {
+        const { medalSeriesFromCode } = await import('./medalService');
+        expect(medalSeriesFromCode('ability.time.b')).toBe('破境');
+        expect(medalSeriesFromCode('ability.time.nf.e')).toBe('盲扫破境');
+        expect(medalSeriesFromCode('ability.bvs.i')).toBe('神速');
+        expect(medalSeriesFromCode('ability.bvs.nf.b')).toBe('盲扫神速');
+        expect(medalSeriesFromCode('ability.stnb.e')).toBe('通明');
+        expect(medalSeriesFromCode('ability.stnb.nf.b')).toBe('盲扫通明');
+        expect(medalSeriesFromCode('ability.thrp.nf.b')).toBe('盲扫·精工');
+        expect(medalSeriesFromCode('ability.thrp.nf.three')).toBe('三阶盲扫·精工');
+        expect(medalSeriesFromCode('ability.thrp.fl.e')).toBe('标旗·精工');
+        expect(medalSeriesFromCode('ability.thrp.fl.three')).toBe('三阶标旗·精工');
+        expect(medalSeriesFromCode('novice.realname')).toBe('实名在册');
+        expect(medalSeriesFromCode('novice.review')).toBe('录像过审');
+        expect(medalSeriesFromCode('novice.levels')).toBe('扫雷新秀');
+        expect(medalSeriesFromCode('novice.levels_nf')).toBe('盲扫新秀');
+        expect(medalSeriesFromCode('novice.modes')).toBe('走马观花');
+        expect(medalSeriesFromCode('novice.saolei')).toBe('旧迹新篇');
+        expect(medalSeriesFromCode('shareholder.origin')).toBe('原始股东');
+        expect(medalSeriesFromCode('manual.override')).toBe('');
     });
 });
 
@@ -187,5 +214,99 @@ describe('shared player medal summaries', () => {
         await fetchPlayerMedals(1);
         expect(axiosGet).toHaveBeenCalledTimes(3);
         expect(axiosGet).toHaveBeenLastCalledWith('/api/medal/players/1');
+    });
+});
+
+function stateRecord(overrides: Partial<MedalStateRecord> = {}): MedalStateRecord {
+    return { code: 'ability.time.e', stage: 30000, timestamp: 1761123456, scope: '', tournament: null, rank: null, ...overrides };
+}
+
+async function loadMedalState() {
+    vi.resetModules();
+    const { fetchPlayerMedalState } = await import('./medalService');
+    return fetchPlayerMedalState;
+}
+
+function waitForMedalStateBatch() {
+    return new Promise((resolve) => {
+        setTimeout(resolve, serviceConfig.value.userInfoBatchDelay + 30);
+    });
+}
+
+describe('player medal state for name hover', () => {
+    beforeEach(() => {
+        axiosGet.mockReset();
+        serviceConfig.value.userInfoBatchDelay = 1;
+        serviceConfig.value.userInfoBatchSize = 100;
+    });
+
+    it('does not request when the user id is zero', async () => {
+        const fetchPlayerMedalState = await loadMedalState();
+        await expect(fetchPlayerMedalState(0)).resolves.toEqual([]);
+        expect(axiosGet).not.toHaveBeenCalled();
+    });
+
+    it('batches ids into one state request and keeps the granted rows in memory', async () => {
+        const fetchPlayerMedalState = await loadMedalState();
+        const expert = stateRecord();
+        const novice = stateRecord({ code: 'novice.realname', stage: 1 });
+        const undated = stateRecord({ code: 'novice.review', stage: 1, timestamp: null });
+        axiosGet.mockResolvedValueOnce({
+            data: [
+                { user_id: 1, grants: [stateRecord({ stage: 0 }), expert] },
+                { user_id: 2, grants: [novice, undated] },
+            ],
+        });
+
+        const first = fetchPlayerMedalState(1);
+        const second = fetchPlayerMedalState(2);
+        const missing = fetchPlayerMedalState(3);
+        const skipped = fetchPlayerMedalState(0);
+        await waitForMedalStateBatch();
+
+        await expect(skipped).resolves.toEqual([]);
+        await expect(first).resolves.toEqual([expert]);
+        await expect(second).resolves.toEqual([novice, undated]);
+        await expect(missing).resolves.toEqual([]);
+        await expect(fetchPlayerMedalState(1)).resolves.toEqual([expert]);
+        await expect(fetchPlayerMedalState(3)).resolves.toEqual([]);
+        expect(axiosGet).toHaveBeenCalledTimes(1);
+        expect(axiosGet).toHaveBeenCalledWith('/api/medal/players/state', { params: { ids: '1,2,3' } });
+    });
+
+    it('remembers an empty state list and retries after a failed request', async () => {
+        const fetchPlayerMedalState = await loadMedalState();
+        axiosGet.mockResolvedValueOnce({ data: [] });
+        const empty = fetchPlayerMedalState(7);
+        await waitForMedalStateBatch();
+        await expect(empty).resolves.toEqual([]);
+        await expect(fetchPlayerMedalState(7)).resolves.toEqual([]);
+
+        axiosGet.mockRejectedValueOnce(new Error('offline'));
+        const failed = fetchPlayerMedalState(8);
+        const captured = failed.catch((error: unknown) => error);
+        await waitForMedalStateBatch();
+        await expect(captured).resolves.toBeInstanceOf(Error);
+
+        const expert = stateRecord();
+        axiosGet.mockResolvedValueOnce({ data: [{ user_id: 8, grants: [expert] }] });
+        const retried = fetchPlayerMedalState(8);
+        await waitForMedalStateBatch();
+        await expect(retried).resolves.toEqual([expert]);
+        expect(axiosGet).toHaveBeenCalledTimes(3);
+        expect(axiosGet).toHaveBeenLastCalledWith('/api/medal/players/state', { params: { ids: '8' } });
+    });
+
+    it('splits ids above the batch size into another state request', async () => {
+        const fetchPlayerMedalState = await loadMedalState();
+        serviceConfig.value.userInfoBatchSize = 2;
+        axiosGet.mockResolvedValue({ data: [] });
+        const pending = Promise.all([fetchPlayerMedalState(1), fetchPlayerMedalState(2), fetchPlayerMedalState(3)]);
+        await waitForMedalStateBatch();
+        await waitForMedalStateBatch();
+        await pending;
+        expect(axiosGet).toHaveBeenCalledTimes(2);
+        expect(axiosGet).toHaveBeenNthCalledWith(1, '/api/medal/players/state', { params: { ids: '1,2' } });
+        expect(axiosGet).toHaveBeenNthCalledWith(2, '/api/medal/players/state', { params: { ids: '3' } });
     });
 });

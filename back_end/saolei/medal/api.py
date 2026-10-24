@@ -9,11 +9,11 @@ from ninja.errors import HttpError
 
 from userprofile.decorators import login_required_error, staff_required
 from userprofile.models import UserProfile
-from .schema import CatalogItemOut, EnqueuedOut, GrantIdOut, GrantPageOut, PinsIn, PinsOut, PlayerMedalOut, RebuildIn, RevokeIn, StaffCatalogItemOut, StaffGrantIn, StaffOverrideIn, StaffOverrideOut, StaffPlayerMedalsOut
-from .services import catalog_for, grant_manual, list_grants, MedalError, player_summary, replace_pins, revoke_manual, set_player_override
+from .schema import CatalogItemOut, EnqueuedOut, GrantIdOut, GrantPageOut, PinsIn, PinsOut, PlayerMedalOut, PlayerStateOut, RebuildIn, RevokeIn, StaffCatalogItemOut, StaffGrantIn, StaffOverrideIn, StaffOverrideOut, StaffPlayerMedalsOut
+from .services import catalog_for, grant_manual, list_grants, MedalError, player_states, player_summary, replace_pins, revoke_manual, set_player_override
 from .staff_services import staff_catalog, staff_player_state
 from .tasks import enqueue_player_backfill, enqueue_player_refresh
-from .utils import GRANT_PAGE_SIZE, GRANT_PAGE_SIZE_MAX
+from .utils import GRANT_PAGE_SIZE, GRANT_PAGE_SIZE_MAX, STATE_ID_LIMIT
 
 router = Router()
 
@@ -26,6 +26,27 @@ def _http_error(exc: MedalError):
     raise HttpError(400, 'Invalid medal request')
 
 
+def _parse_state_ids(raw):
+    if raw is None or raw == '':
+        return []
+    parts = [item.strip() for item in str(raw).split(',')]
+    if any(not item or not item.isdigit() for item in parts):
+        raise HttpError(400, 'Invalid medal request')
+    parsed = []
+    seen = set()
+    for item in parts:
+        value = int(item)
+        if value <= 0:
+            raise HttpError(400, 'Invalid medal request')
+        if value in seen:
+            continue
+        seen.add(value)
+        parsed.append(value)
+    if len(parsed) > STATE_ID_LIMIT:
+        raise HttpError(400, 'Invalid medal request')
+    return parsed
+
+
 @router.get('/catalog', response=list[CatalogItemOut])
 @decorate_view(ratelimit(key='ip', rate='5/s'))
 def get_catalog(request):
@@ -35,6 +56,17 @@ def get_catalog(request):
     已启用的图鉴。未解锁的隐藏定义不出现。
     """
     return catalog_for(request.user)
+
+
+@router.get('/players/state', response=list[PlayerStateOut])
+@decorate_view(ratelimit(key='ip', rate='5/s'))
+def get_player_states(request, ids: str = ''):
+    """
+    - ratelimit(key='ip', rate='5/s')
+
+    批量返回已入档且未锁定的勋章。ids 最多 100 个。命中 Redis 时不查 MySQL。
+    """
+    return player_states(_parse_state_ids(ids))
 
 
 @router.get('/players/{user_id}', response=PlayerMedalOut)
