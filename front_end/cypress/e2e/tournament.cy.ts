@@ -127,6 +127,9 @@ function setEndDateTime(dateStr: string, timeStr: string) {
 }
 
 function assertTableData(expected: Record<string, unknown>[], exact = true) {
+    expected.forEach((exp) => {
+        cy.contains('table:visible tbody tr', String(exp.比赛)).should('be.visible');
+    });
     cy.get('table:visible').getTable().should((tableData) => {
         if (exact) {
             expect(tableData).to.have.length(expected.length);
@@ -158,6 +161,7 @@ function assertVisibleTournamentNames(expectedNames: string[]) {
 
 function selectHomepageListTab(name: string) {
     cy.contains('.el-tabs__item', name).click();
+    cy.contains('.el-tabs__item.is-active', name).should('be.visible');
 }
 
 function registerOnWeeklyTournamentPage(tournamentId: number) {
