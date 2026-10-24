@@ -123,4 +123,4 @@ npx.cmd cypress run --component --browser chrome --headless --spec "src/componen
 
 源码与契约：[客户端实现](https://github.com/putianyi889/wom-api/blob/823c3b0c9c7f6477fafd3767a5ad037320cd48ee/src/wom_api/client.py)、[接口字段目录](https://github.com/putianyi889/wom-api/blob/823c3b0c9c7f6477fafd3767a5ad037320cd48ee/docs/endpoints.md)、[连接和系统证书支持](https://github.com/putianyi889/wom-api/blob/823c3b0c9c7f6477fafd3767a5ad037320cd48ee/docs/connections.md)、[协议调查](https://github.com/putianyi889/wom-api/blob/823c3b0c9c7f6477fafd3767a5ad037320cd48ee/docs/research/README.md)。
 
-本次没有增加 WOM 录像导入。`get_game()` 返回原始 `InitGameEvent` 参数列表，实测游戏 6646633208 的快照约 724 KB，不能直接交给当前 AVF/EVF/RMV/MVF 解析器。旧 `utils/wom.py`、`wom2.py` 未发现业务调用，保留以避免影响仓库外脚本；当前资料刷新已经不使用这两份客户端。已删除只测试旧客户端、带固定等待与 `@skip` 的 `utils/test.py`；卡片组件的基础展示、公开成绩和累计数据合并到同一次挂载。
+本次没有增加 WOM 录像导入。`get_game()` 返回原始 `InitGameEvent` 参数列表，实测游戏 6646633208 的快照约 724 KB，不能直接交给当前 AVF/EVF/RMV/MVF 解析器。已删除无业务调用的旧 `utils/wom.py`、`utils/wom2.py` 及其 `websocket-client` 直接依赖；WOM 公开数据获取统一使用 `wom-api`，`accountlink/wom` 保留资料映射、错误转换和测试。已删除只测试旧客户端、带固定等待与 `@skip` 的 `utils/test.py`；卡片组件的基础展示、公开成绩和累计数据合并到同一次挂载。
